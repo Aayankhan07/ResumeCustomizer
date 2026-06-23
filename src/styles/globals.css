@@ -1,0 +1,135 @@
+@import "tailwindcss";
+
+@theme {
+  --color-ink: #0F172A;
+  --color-slate: #1E293B;
+  --color-mist: #F8FAFC;
+  --color-cobalt: #0F172A; /* Solid dark charcoal as main brand accent */
+  --color-cobalt-light: #334155;
+  --color-cobalt-subtle: #F1F5F9;
+  --color-graphite: #64748B;
+  --color-boundary: #E2E8F0;
+  
+  --font-serif: "DM Serif Display", Georgia, serif;
+  --font-sans: "Inter", system-ui, -apple-system, sans-serif;
+  --font-mono: "JetBrains Mono", Menlo, monospace;
+  
+  --shadow-card: 0 1px 2px rgba(0,0,0,0.05);
+  --shadow-card-hover: 0 4px 6px -1px rgba(0,0,0,0.05), 0 2px 4px -1px rgba(0,0,0,0.03);
+  --shadow-cobalt: 0 4px 6px -1px rgba(15,23,42,0.1), 0 2px 4px -1px rgba(15,23,42,0.06);
+  --shadow-document: 0 20px 25px -5px rgba(0,0,0,0.05), 0 10px 10px -5px rgba(0,0,0,0.02);
+  --shadow-glow: none;
+
+  --animate-slide-up: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
+  --animate-fade-in: fadeIn 0.3s ease-out both;
+  --animate-spin-slow: spin 1.5s linear infinite;
+}
+
+@keyframes slideUp {
+  0% { opacity: 0; transform: translateY(12px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+@keyframes fadeIn {
+  0% { opacity: 0; }
+  100% { opacity: 1; }
+}
+
+/* Base styles */
+html {
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-smoothing: grayscale;
+  scroll-behavior: smooth;
+  background-color: #F8FAFC;
+}
+
+body {
+  background-color: #F8FAFC;
+  color: #0F172A;
+  margin: 0;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: #E2E8F0;
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #CBD5E1;
+}
+
+:focus-visible {
+  outline: 1.5px solid #0F172A;
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Custom Utilities */
+@utility resume-document {
+  font-family: 'Times New Roman', Times, serif;
+  font-size: 14px;
+  line-height: 1.5;
+  color: #111111;
+  
+  & h1 {
+    font-size: 24px;
+    font-weight: bold;
+    text-align: center;
+    margin-bottom: 4px;
+    letter-spacing: -0.02em;
+  }
+  
+  & .section-title {
+    font-size: 12px;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    border-bottom: 1.5px solid #111111;
+    padding-bottom: 2px;
+    margin: 18px 0 8px;
+  }
+  
+  & .bullet-item::before {
+    content: '• ';
+  }
+}
+
+@utility stagger-children {
+  & > * {
+    animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+  & > *:nth-child(1) { animation-delay: 0ms; }
+  & > *:nth-child(2) { animation-delay: 40ms; }
+  & > *:nth-child(3) { animation-delay: 80ms; }
+  & > *:nth-child(4) { animation-delay: 120ms; }
+  & > *:nth-child(5) { animation-delay: 160ms; }
+}
+
+@utility glassmorphic {
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(226, 232, 240, 0.8);
+}
+
+@utility scrollbar-none {
+  scrollbar-width: none;
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
