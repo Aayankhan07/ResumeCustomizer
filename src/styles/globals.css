@@ -258,3 +258,192 @@ body {
     display: none;
   }
 }
+
+/* Sleek Obsidian Dark/Black Theme Overrides */
+.dark {
+  background-color: #030712 !important;
+  color: #F9FAFB !important;
+
+  & body, & html {
+    background-color: #030712 !important;
+    color: #F9FAFB !important;
+  }
+
+  /* Scrollbar override */
+  & ::-webkit-scrollbar-thumb {
+    background: #1F2937;
+  }
+  & ::-webkit-scrollbar-thumb:hover {
+    background: #374151;
+  }
+
+  /* Page background utilities */
+  & .bg-mist, & .bg-mist\/20 {
+    background-color: #030712 !important;
+  }
+
+  /* Primary white container backgrounds (cards, main panels) */
+  & .bg-white {
+    background-color: #0B0F19 !important;
+  }
+
+  /* Sidebar and secondary panels */
+  & .bg-slate-50\/70,
+  & .bg-slate-50\/50,
+  & .bg-slate-50,
+  & .bg-slate-100\/50 {
+    background-color: #0E1322 !important;
+  }
+
+  /* Interactive items hover state */
+  & .hover\:bg-slate-50:hover,
+  & .hover\:bg-slate-200\/50:hover,
+  & .hover\:bg-slate-100:hover {
+    background-color: #1F2937 !important;
+  }
+
+  /* Borders & Dividers */
+  & .border,
+  & .border-t,
+  & .border-b,
+  & .border-l,
+  & .border-r,
+  & .border-slate-200,
+  & .border-slate-200\/80,
+  & .border-slate-200\/70,
+  & .border-slate-200\/60,
+  & .border-slate-100,
+  & .border-boundary,
+  & .border-dashed {
+    border-color: #1F2937 !important;
+  }
+
+  & .divide-slate-100 > * + * {
+    border-color: #1F2937 !important;
+  }
+  & .divide-slate-200 > * + * {
+    border-color: #1F2937 !important;
+  }
+
+  /* Text color overrides */
+  & .text-slate-900,
+  & .text-slate-955,
+  & .text-slate-800,
+  & .text-slate-750,
+  & .text-slate-700,
+  & .text-slate-600,
+  & .text-ink {
+    color: #F3F4F6 !important;
+  }
+
+  & .text-slate-500,
+  & .text-slate-400,
+  & .text-graphite {
+    color: #9CA3AF !important;
+  }
+
+  /* Brand and Logo text */
+  & .text-slate-900.hover\:text-slate-800:hover {
+    color: #F9FAFB !important;
+  }
+
+  /* Navbars & Footers */
+  & nav, & footer {
+    background-color: #0B0F19 !important;
+    border-color: #1F2937 !important;
+  }
+
+  /* Buttons */
+  & .bg-slate-900 {
+    background-color: #F9FAFB !important;
+    color: #030712 !important;
+    &:hover {
+      background-color: #E5E7EB !important;
+    }
+  }
+
+  /* Inputs and Form Controls */
+  & input, & textarea, & select {
+    background-color: #0E1322 !important;
+    border-color: #1F2937 !important;
+    color: #F9FAFB !important;
+    &:focus {
+      border-color: #F9FAFB !important;
+      outline: none;
+    }
+  }
+
+  /* Shadow controls */
+  & .shadow-card,
+  & .shadow-card-hover,
+  & .shadow-sm,
+  & .shadow-document,
+  & .shadow-inner {
+    box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5) !important;
+  }
+  
+  /* Resume preview within the black app theme must keep its clean, authentic white paper background */
+  & .resume-document {
+    background-color: #FFFFFF !important;
+    color: #111111 !important;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6) !important;
+    
+    & * {
+      color: inherit !important;
+    }
+    & .text-gray-600, & .text-gray-500 {
+      color: #475569 !important;
+    }
+    & .text-gray-300 {
+      color: #CBD5E1 !important;
+    }
+    
+    /* Ensure dividers inside CV keep their light theme style */
+    & .section-title {
+      border-color: #111111 !important;
+    }
+    &.template-modern .section-title {
+      border-color: #CBD5E1 !important;
+    }
+    &.template-tech .section-title {
+      border-left-color: #0F172A !important;
+    }
+    &.template-executive .section-title {
+      border-color: #64748B !important;
+    }
+  }
+
+  /* Segmented control buttons in black theme */
+  & button.border-slate-900 {
+    border-color: #F9FAFB !important;
+  }
+
+  /* Specific icons & badges */
+  & .bg-emerald-50, & .bg-emerald-50\/20 {
+    background-color: rgba(16, 185, 129, 0.1) !important;
+    border-color: rgba(16, 185, 129, 0.2) !important;
+    color: #34D399 !important;
+  }
+  & .text-emerald-700, & .text-emerald-650 {
+    color: #34D399 !important;
+  }
+
+  & .bg-rose-50, & .bg-rose-50\/20 {
+    background-color: rgba(244, 63, 94, 0.1) !important;
+    border-color: rgba(244, 63, 94, 0.2) !important;
+    color: #F87171 !important;
+  }
+  & .text-rose-700, & .text-rose-650 {
+    color: #F87171 !important;
+  }
+
+  & .bg-amber-50, & .bg-amber-50\/50 {
+    background-color: rgba(245, 158, 11, 0.1) !important;
+    border-color: rgba(245, 158, 11, 0.2) !important;
+    color: #FBBF24 !important;
+  }
+  & .text-amber-700, & .text-amber-650 {
+    color: #FBBF24 !important;
+  }
+}
+

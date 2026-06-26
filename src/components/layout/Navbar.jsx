@@ -1,6 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Menu, X, Plus } from 'lucide-react';
+import { Menu, X, Plus, Sun, Moon } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { toast } from 'sonner';
 
@@ -9,6 +9,32 @@ export default function Navbar() {
   const navigate = useNavigate();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
+  const [isDark, setIsDark] = useState(false);
+
+  useEffect(() => {
+    const savedTheme = localStorage.getItem('theme');
+    if (savedTheme === 'dark') {
+      document.documentElement.classList.add('dark');
+      setIsDark(true);
+    } else {
+      document.documentElement.classList.remove('dark');
+      setIsDark(false);
+    }
+  }, []);
+
+  const toggleTheme = () => {
+    if (document.documentElement.classList.contains('dark')) {
+      document.documentElement.classList.remove('dark');
+      localStorage.setItem('theme', 'light');
+      setIsDark(false);
+      toast.success('Switched to Light Theme');
+    } else {
+      document.documentElement.classList.add('dark');
+      localStorage.setItem('theme', 'dark');
+      setIsDark(true);
+      toast.success('Switched to Black Theme');
+    }
+  };
 
   const handleSignOut = async () => {
     await signOut();
@@ -64,12 +90,30 @@ export default function Navbar() {
               </Link>
             </>
           )}
+
+          {/* Theme Toggle Button */}
+          <button
+            onClick={toggleTheme}
+            className="p-2 text-slate-500 hover:text-slate-900 hover:bg-slate-100 rounded-lg cursor-pointer transition-colors focus:outline-none flex items-center justify-center"
+            aria-label="Toggle Theme"
+          >
+            {isDark ? <Sun size={18} className="text-amber-500" /> : <Moon size={18} />}
+          </button>
         </div>
 
-        {/* Mobile hamburger */}
-        <button className="md:hidden text-slate-900 p-1 hover:bg-slate-100 rounded-lg cursor-pointer transition-colors" onClick={() => setMobileOpen(o => !o)} aria-label="Toggle menu">
-          {mobileOpen ? <X size={20} /> : <Menu size={20} />}
-        </button>
+        {/* Mobile menu triggers */}
+        <div className="flex items-center gap-2 md:hidden">
+          <button
+            onClick={toggleTheme}
+            className="p-2 text-slate-500 hover:text-slate-900 hover:bg-slate-100 rounded-lg cursor-pointer transition-colors focus:outline-none flex items-center justify-center"
+            aria-label="Toggle Theme"
+          >
+            {isDark ? <Sun size={18} className="text-amber-500" /> : <Moon size={18} />}
+          </button>
+          <button className="text-slate-900 p-1 hover:bg-slate-100 rounded-lg cursor-pointer transition-colors" onClick={() => setMobileOpen(o => !o)} aria-label="Toggle menu">
+            {mobileOpen ? <X size={20} /> : <Menu size={20} />}
+          </button>
+        </div>
       </div>
 
       {/* Mobile Menu */}
