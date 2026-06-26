@@ -60,6 +60,7 @@ export default function Transform() {
             result={result}
             plainText={plainText}
             originalText={resumeText}
+            jobDescriptionText={jobDescriptionText}
             onReset={handleReset}
           />
         )}

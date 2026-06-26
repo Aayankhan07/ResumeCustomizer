@@ -114,3 +114,13 @@ export async function getGlobalStats() {
   if (error) console.error('Global stats error:', error);
   return data || { total_transformations: 0, total_users: 0 };
 }
+
+export async function updateTransformationScore(id, score) {
+  const { error } = await supabase
+    .from('transformations')
+    .update({ match_score: score })
+    .eq('id', id);
+
+  if (error) throw error;
+}
+

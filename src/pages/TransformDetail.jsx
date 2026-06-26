@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import { getTransformation, updateTransformationLabel } from '../lib/api';
+import { getTransformation, updateTransformationLabel, updateTransformationScore } from '../lib/api';
+import { computeMatchScore } from '../utils/matchScore';
 import { ArrowLeft, Edit2, Check } from 'lucide-react';
 import { toast } from 'sonner';
 import Navbar from '../components/layout/Navbar';
@@ -23,6 +24,17 @@ export default function TransformDetail() {
         const res = await getTransformation(id);
         setData(res);
         setLabelValue(res.label || res.detected_job_title || 'Resume Optimization');
+        
+        // Dynamic client-side verification & background healing
+        if (res.output_json) {
+          const { score: localScore } = computeMatchScore(
+            res.output_json.original_job_description || '',
+            res.output_json
+          );
+          if (res.match_score !== localScore) {
+            updateTransformationScore(res.id, localScore).catch(console.error);
+          }
+        }
       } catch (err) {
         toast.error('Failed to load past optimization.');
         navigate('/dashboard');

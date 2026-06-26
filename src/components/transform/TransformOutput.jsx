@@ -14,6 +14,7 @@ import {
 import { toast } from 'sonner';
 import { generateResumePDF } from '../../lib/pdfGenerator';
 import { COMPREHENSIVE_STOP_WORDS } from '../../utils/constants';
+import { computeMatchScore } from '../../utils/matchScore';
 
 // UI components
 import Button from '../ui/Button';
@@ -39,7 +40,15 @@ import CoverLetterTab from './tabs/CoverLetterTab';
 import AtsCheckTab from './tabs/AtsCheckTab';
 import RescoreTab from './tabs/RescoreTab';
 
-export default function TransformOutput({ result, plainText, originalText, onReset }) {
+export default function TransformOutput({ result, plainText, originalText, jobDescriptionText, onReset }) {
+  // Compute highly accurate ATS metrics locally
+  const { 
+    score: localScore, 
+    matched: localMatched, 
+    missing: localMissing,
+    total: localTotal 
+  } = computeMatchScore(jobDescriptionText || result.original_job_description || '', result);
+
   // Set Compatibility Overview as the default active tab
   const [activeTab, setActiveTab] = useState('overview');
   const [cvSubTab, setCvSubTab] = useState('optimized'); // 'optimized' | 'compare' | 'plain'
@@ -68,7 +77,7 @@ export default function TransformOutput({ result, plainText, originalText, onRes
   const [isReScoring, setIsReScoring] = useState(false);
   const [adjustedScore, setAdjustedScore] = useState(null);
 
-  const targetScore = result.meta?.match_score ?? 85;
+  const targetScore = localScore;
 
   // Animate score count up on mount
   useEffect(() => {
@@ -156,30 +165,13 @@ export default function TransformOutput({ result, plainText, originalText, onRes
     ]
   };
 
-  // Extract missing keywords by comparing JD and matched keywords
-  const getMissingKeywords = () => {
-    if (!result.original_job_description) return ['Scalability', 'Cloud Computing'];
-
-    const words = result.original_job_description
-      .toLowerCase()
-      .replace(/[^a-z0-9\s\-]/g, ' ')
-      .split(/\s+/)
-      .filter(w => w.length >= 3 && !COMPREHENSIVE_STOP_WORDS.has(w) && !/^\d+$/.test(w));
-      
-    const uniqueKeywords = [...new Set(words)];
-    const matchedSet = new Set((result.meta?.keywords_matched || []).map(k => k.toLowerCase()));
-    const missing = uniqueKeywords.filter(k => !matchedSet.has(k));
-    const capitalized = missing.map(k => k.charAt(0).toUpperCase() + k.slice(1));
-    return capitalized.length > 0 ? capitalized.slice(0, 6) : ['Scalability', 'Cloud Computing'];
-  };
-
   // DYNAMIC SKILLS INTELLIGENCE DATA
-  const skillsIntell = result.skills_intelligence || {
+  const skillsIntell = {
     technical_count: technicalSkills.length || 8,
     soft_count: softSkills.length || 3,
-    certs_count: result.certifications?.length || 2,
-    missing_count: 2,
-    skills_to_add: ['System Scalability', 'Cloud Computing']
+    certs_count: result.certifications?.length || 0,
+    missing_count: localMissing.length,
+    skills_to_add: localMissing.length > 0 ? localMissing.slice(0, 3) : ['System Scalability', 'Cloud Computing']
   };
 
   // DYNAMIC REWRITES DATA
@@ -399,8 +391,8 @@ ${candidateName}`;
                   currentScore={currentScore}
                   jobTitle={jobTitle}
                   company={company}
-                  keywordsMatchedCount={result.meta?.keywords_matched?.length || 0}
-                  keywordsTotalCount={result.meta?.keywords_total || 0}
+                  keywordsMatchedCount={localMatched.length}
+                  keywordsTotalCount={localTotal}
                 />
               </ErrorBoundary>
             )}
@@ -560,8 +552,8 @@ ${candidateName}`;
               <ErrorBoundary>
                 <AtsCheckTab 
                   currentScore={currentScore}
-                  keywordsMatched={(result.meta?.keywords_matched || []).filter(kw => !COMPREHENSIVE_STOP_WORDS.has(kw.toLowerCase()))}
-                  missingKeywords={getMissingKeywords()}
+                  keywordsMatched={localMatched}
+                  missingKeywords={localMissing}
                   screeningIssues={recruiterScan.completely_missed}
                   nextMoves={roadmapData.tasks || []}
                 />

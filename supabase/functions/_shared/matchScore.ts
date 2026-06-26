@@ -1,17 +1,36 @@
+// Comprehensive 200+ word stop-words list for ATS keyword extraction
+// Synchronized with the frontend constants.js for absolute scoring accuracy
 const STOP_WORDS = new Set([
-  // Pronouns, prepositions, conjunctions, articles, basic helpers
-  'with', 'that', 'this', 'have', 'from', 'they', 'will', 'been',
-  'more', 'also', 'into', 'than', 'your', 'their', 'about', 'which',
-  'when', 'what', 'were', 'would', 'could', 'should', 'must', 'shall',
-  'very', 'just', 'some', 'such', 'each', 'most', 'over', 'work',
-  'team', 'role', 'year', 'years', 'time', 'using', 'used', 'other',
-  'there', 'about', 'above', 'after', 'before', 'under', 'below',
-  'their', 'these', 'those', 'them', 'then', 'than', 'into', 'only',
-  'also', 'here', 'when', 'who', 'whom', 'whose', 'why', 'how',
-  'both', 'each', 'few', 'down', 'once', 'much', 'many', 'same',
-  'some', 'such', 'very', 'just', 'only', 'than', 'then', 'once',
-  'here', 'very', 'just', 'much', 'any', 'own', 'same', 'should',
-  'your', 'mine', 'self', 'the', 'and', 'but', 'nor', 'off', 'out',
+  // Articles & conjunctions
+  'a', 'an', 'the', 'and', 'or', 'but', 'nor', 'so', 'yet', 'if', 'because', 'as', 'until', 'while', 'of', 'at', 'by', 'for', 'with', 'about', 'against', 'between', 'into', 'through', 'during', 'before', 'after', 'above', 'below', 'to', 'from', 'up', 'down', 'in', 'out', 'on', 'off', 'over', 'under', 'again', 'further', 'then', 'once',
+  
+  // Pronouns
+  'i', 'me', 'my', 'myself', 'we', 'our', 'ours', 'ourselves', 'you', 'your', 'yours', 'yourself', 'yourselves', 'he', 'him', 'his', 'himself', 'she', 'her', 'hers', 'herself', 'it', 'its', 'itself', 'they', 'them', 'their', 'theirs', 'themselves', 'what', 'which', 'who', 'whom', 'this', 'that', 'these', 'those', 'am', 'is', 'are', 'was', 'were', 'be', 'been', 'being', 'have', 'has', 'had', 'having', 'do', 'does', 'did', 'doing',
+  
+  // Contractions & helpers
+  're', 'll', 've', 'd', 'm', 's', 't', 'don', 't', 'can', 'will', 'just', 'should', 'would', 'could', 'shouldn', 'wouldn', 'couldn', 'isn', 'aren', 'wasn', 'weren', 'hasn', 'haven', 'hadn', 'doesn', 'don', 'didnt', 'wasnt', 'werent', 'hasnt', 'havent', 'hadnt', 'doesnt', 'dont', 'cant', 'wont', 'shouldnt', 'wouldnt', 'couldnt',
+  
+  // Common verbs and helpers
+  'looking', 'look', 'looks', 'seeking', 'seek', 'seeks', 'scale', 'scaling',
+  'combine', 'combining', 'combined', 'intelligent', 'concept', 'concepts',
+  'full', 'fully', 'part', 'time', 'date', 'dates', 'year', 'years', 'month',
+  'months', 'day', 'days', 'hour', 'hours', 'week', 'weeks', 'want', 'wants',
+  'wanted', 'need', 'needs', 'needed', 'find', 'finds', 'found', 'get', 'gets',
+  'got', 'make', 'makes', 'made', 'take', 'takes', 'took', 'give', 'gives',
+  'given', 'like', 'likes', 'liked', 'love', 'loves', 'loved', 'must', 'should',
+  'could', 'would', 'will', 'shall', 'may', 'might', 'can', 'cannot', 'couldnt',
+  'shouldnt', 'wouldnt', 'cant', 'wont', 'dont', 'didnt', 'doesnt', 'isnt',
+  'arent', 'wasnt', 'werent', 'hasnt', 'havent', 'hadnt', 'had', 'has', 'have',
+  'having', 'do', 'does', 'did', 'doing', 'done', 'go', 'goes', 'went', 'gone',
+  'going', 'come', 'comes', 'came', 'coming', 'use', 'uses', 'used', 'using',
+  'keep', 'keeps', 'kept', 'keeping', 'start', 'starts', 'started', 'starting',
+  'stop', 'stops', 'stopped', 'stopping', 'end', 'ends', 'ended', 'ending',
+  'show', 'shows', 'showed', 'shown', 'showing', 'tell', 'tells', 'told',
+  'telling', 'ask', 'asks', 'asked', 'asking', 'answer', 'answers', 'answered',
+  'answering', 'say', 'says', 'said', 'saying', 'think', 'thinks', 'thought',
+  'thinking', 'know', 'knows', 'knew', 'known', 'knowing', 'believe', 'believes',
+  'believed', 'believing', 'feel', 'feels', 'felt', 'feeling', 'seem', 'seems',
+  'seemed', 'seeming', 'appear', 'appears', 'appeared', 'appearing',
   
   // Generic job description verbs, nouns & roles
   'hiring', 'hired', 'join', 'joining', 'build', 'building', 'built',
@@ -45,7 +64,7 @@ const STOP_WORDS = new Set([
   'harden', 'hardening', 'hardened', 'secure', 'securing', 'secured',
   'ensure', 'ensuring', 'ensured', 'track', 'tracks', 'reporting',
   
-  // Generic modifiers, adverbs, and jargon
+  // Generic modifiers & jargon
   'highly', 'deeply', 'clean', 'cleanly', 'clear', 'clearly',
   'quick', 'quickly', 'fast', 'faster', 'flexible', 'flexibility',
   'complex', 'simple', 'simply', 'basic', 'basically', 'general',
@@ -57,6 +76,14 @@ const STOP_WORDS = new Set([
   'quarterly', 'prioritized', 'structured', 'unparalleled', 'comprehensive',
   'patented', 'valley', 'silicon', 'funded', 'startup', 'market',
   'focus', 'focused', 'focuses', 'focusing', 'harness', 'harnessing',
+  'about', 'above', 'across', 'after', 'against', 'along', 'amid', 'among',
+  'around', 'at', 'before', 'behind', 'below', 'beneath', 'beside', 'between',
+  'beyond', 'but', 'by', 'concerning', 'considering', 'despite', 'down',
+  'during', 'except', 'following', 'for', 'from', 'in', 'inside', 'into',
+  'like', 'minus', 'near', 'of', 'off', 'on', 'onto', 'opposite', 'out',
+  'outside', 'over', 'past', 'pending', 'regarding', 'since', 'through',
+  'throughout', 'to', 'toward', 'towards', 'under', 'underneath', 'unlike',
+  'until', 'up', 'upon', 'versus', 'via', 'with', 'within', 'without'
 ]);
 
 export function computeMatchScore(
@@ -89,8 +116,7 @@ export function computeMatchScore(
   const total = jdKeywords.length;
   const score = total > 0 ? Math.min(Math.round((matched.length / total) * 100), 100) : 0;
 
-  // Return top 20 most meaningful matched keywords for UI chips
-  const topMatched = matched.slice(0, 20);
-
-  return { score, matched: topMatched, total };
+  // Return the complete matched keywords list to the frontend to ensure
+  // 100% accurate missing keyword checks, rather than truncating it.
+  return { score, matched, total };
 }
