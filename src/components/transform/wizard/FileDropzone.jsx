@@ -1,6 +1,6 @@
 import { useState, useRef, useCallback } from 'react';
 import { Upload, CheckCircle, XCircle, Loader2 } from 'lucide-react';
-import { parseFile, getFileParseError } from '../../lib/parsers/fileParser';
+import { parseFile, getFileParseError } from '../../../lib/parsers/fileParser';
 
 export default function FileDropzone({ onTextExtracted, label = 'Drop your file here' }) {
   const [status, setStatus] = useState('idle'); // idle | dragging | parsing | success | error
@@ -92,4 +92,3 @@ export default function FileDropzone({ onTextExtracted, label = 'Drop your file 
     </div>
   );
 }
-

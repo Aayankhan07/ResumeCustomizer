@@ -1,85 +1,165 @@
-# Implementation Plan — Complete UI & UX Overhaul
+# Implementation Plan — Complete Project Restructuring & Redesign (v2)
 
-This plan details a comprehensive UI/UX redesign of the ResumOrph web application to achieve an elite, premium SaaS aesthetic. We will address the issues highlighted in your screenshots (such as the unstyled white boxes on the landing page and the lack of depth on the CV sheet) and unify the visual design in both light and dark themes.
-
----
-
-## User Review Required
-
-### Key UI/UX Upgrades Proposed & Completed
-
-1.  **Landing Page "Three Steps" Cards Overhaul:**
-    *   **The Issue:** The three cards under "Three steps. One perfect resume" show solid white squares where icons should be. This looks unstyled and broken.
-    *   **The Fix:** Replace these solid white squares with premium, semi-transparent slate icon containers carrying beautiful dual-tone glowing icons (e.g., `FileText` for upload, `Search` or `Sliders` for details, `CheckCircle` for download) that perfectly match the theme.
-
-2.  **Resume Paper Presentation ("Floating Paper" Aesthetic):**
-    *   **The Issue:** In dark mode, the stark white resume paper sits flat against a dark background, creating a harsh contrast and lacking depth.
-    *   **The Fix:** Implement a "Floating Paper" design. We will add a soft, layered drop-shadow (`shadow-2xl shadow-black/60`) and a subtle ambient glowing backdrop (a very soft slate/cobalt radial glow) behind the resume sheet. This creates realistic 3D depth, making the paper feel like it is floating elegantly above the workspace.
-
-3.  **Sleek Glassmorphic Sidebar & Active States:**
-    *   **The Issue:** The active sidebar tab ("Transformed CV") is styled as a solid, blinding white block in dark mode. This breaks the premium dark aesthetic.
-    *   **The Fix:** Redesign the active states. In dark mode, active items will use a sleek, semi-transparent background (`bg-white/10`) with a glowing emerald left accent border and white text, rather than a solid white block. This maintains readability while looking extremely high-end.
-
-4.  **Unified Dashboard Header & Dynamic Match Score:**
-    *   **The Issue:** The top header banner has flat buttons and a static score badge.
-    *   **The Fix:** Group the header elements into a unified glassmorphic control center. The **Match Score Badge** will be color-coded dynamically based on the score:
-        *   **Red / Burgundy** (`bg-rose-500/10 text-rose-400 border-rose-500/20`) for scores `< 50` (Low match, needs attention).
-        *   **Amber / Gold** (`bg-amber-500/10 text-amber-400 border-amber-500/20`) for scores `50 - 75` (Good progress).
-        *   **Emerald / Green** (`bg-emerald-500/10 text-emerald-400 border-emerald-500/20`) for scores `> 75` (Strong match).
-
-5.  **Refined Style Control Panel:**
-    *   **The Issue:** The template selector and page-budgeting panels look slightly cramped and plain.
-    *   **The Fix:** Apply premium glassmorphism (`backdrop-blur-md bg-white/5 border-white/10` in dark mode) to the settings container. Add hover scaling animations, custom active glows, and clearer typography to make the tailoring choices feel highly interactive and premium.
+This updated plan outlines an advanced, comprehensive restructuring, folder redesign, and architectural polish of the ResumOrph codebase to elevate it to a world-class SaaS standard. We aim to establish a professional, feature-driven folder structure, introduce system-wide resilience, modularize monolithic files, and build premium visual components.
 
 ---
 
-## Proposed Changes
+## Proposed Folder Structure Redesign
 
-### 1. Global Styles
-#### [MODIFY] [globals.css](file:///c:/Users/Adeen/OneDrive/Desktop/ResumeCustomizer/src/styles/globals.css)
-*   Add flat, robust styles for the floating paper shadow and backdrop radial glow.
-*   Refine global `.dark` selectors to handle glassmorphic buttons and clean hover states.
-*   Implement custom animations for smooth scale-ups and hover transitions.
-*   **Added:** Added `.ide-preview-card` overrides inside the dark selector, escaping CSS slash opacity selectors to fix the dark-mode solid white container bug on the landing page's code preview card.
-*   **Added:** Added high-specificity transparent background overrides for all child tags inside `.resume-document` under the `.dark` class, resolving the ugly black block overrides and keeping the CV paper pure white.
+We will restructure the `src` directory from its current layout into a highly organized, modular, feature-based and layered architecture:
 
-### 2. Landing Page
-#### [MODIFY] [Landing.jsx](file:///c:/Users/Adeen/OneDrive/Desktop/ResumeCustomizer/src/pages/Landing.jsx)
-*   Remove the solid white placeholder squares on the three-step feature cards.
-*   Replace them with stylized, semi-transparent, rounded icon wrappers containing actual Lucide icons (`FileText`, `Sliders`, `Download`) with elegant color accents.
-*   **Added:** Added the `ide-preview-card` class name to the main developer code preview card container to isolate it from dark-theme styling overrides.
+```
+src/
+├── components/
+│   ├── dashboard/       # Dashboard list views & rows
+│   │   ├── TransformationRow.jsx
+│   │   └── StatsRow.jsx
+│   ├── layout/          # Navigation, Footer, ProtectedRoute
+│   │   ├── Navbar.jsx
+│   │   ├── Footer.jsx
+│   │   └── ProtectedRoute.jsx
+│   ├── transform/       # Transform feature components
+│   │   ├── tabs/        # Modular report tabs (OverviewTab, AtsCheckTab, etc.)
+│   │   ├── wizard/      # Input wizard steps (ResumeInput, JobInput, FileDropzone, loading)
+│   │   └── workspace/   # Output report workspace panels (ScoreBanner, Sidebar, StyleControl)
+│   └── ui/              # Reusable UI elements (Button, Card, GlassPanel, ErrorBoundary, Modal, Spinner)
+├── contexts/            # Auth context
+├── hooks/               # Custom React hooks (useAuth, useHistory, useTransform, useDocumentTitle)
+├── lib/                 # Integrations & helpers (supabase, pdfGenerator)
+├── pages/               # Top-level page controllers (Landing, Dashboard, Login, etc.)
+├── styles/              # Global styles (globals.css)
+└── utils/               # Helper utilities and constants (constants, formatDate, resumeToText)
+```
 
-### 3. Dashboard Report Controller
+---
+
+## Proposed Architectural & Visual Upgrades
+
+### 1. Modular Workspace Component Restructuring
+*   **The Problem:** `TransformOutput.jsx` is a large monolithic file (800+ lines) handling multiple responsibilities: sidebar menus, settings selectors, cover letters, rescoring sliders, copy/download handlers, and local states.
+*   **The Proposed Restructure:** We will refactor `TransformOutput.jsx` by splitting its workspace layouts into standalone, single-responsibility sub-components under `src/components/transform/workspace/`:
+    *   `ScoreBanner.jsx` — Handles the animated score count-up, dynamic status pills, and action buttons.
+    *   `WorkspaceSidebar.jsx` — Houses the sidebar menu list, active states, dynamic ATS compatibility meter, mobile navigation bar, and bottom action buttons (download/copy).
+    *   `StyleControlPanel.jsx` — Manages the typography template cards and page-budgeting controls.
+    *   `TransformOutput.jsx` — Acts as a lightweight, clean coordinator importing the workspace panels (reducing it to ~150 lines).
+
+### 2. Wizard Component Reorganization
+*   **The Restructure:** Move the input wizard steps and loading panels from the root of `src/components/transform/` to `src/components/transform/wizard/`:
+    *   `ResumeInput.jsx`, `JobInput.jsx`, `FileDropzone.jsx`, and `TransformLoading.jsx` will be moved to `src/components/transform/wizard/` to keep the input phase separated from the workspace output phase.
+
+### 3. System Resilience & Error Boundaries
+*   **The Problem:** There are currently no React Error Boundaries in the application. If a PDF generation library throws an exception or a dynamic field (like `result.skills`) is malformed, the entire SPA crashes.
+*   **The Proposed Restructure:**
+    *   Create a global `<ErrorBoundary>` component in `src/components/ui/ErrorBoundary.jsx` and wrap the app root in `src/App.jsx`.
+    *   Create a premium, glassmorphic recovery panel that catches runtime crashes, logs the error, and allows the user to safely click "Reload Workspace" or "Go to Dashboard" without losing session state.
+    *   Wrap individual workspace tabs (e.g., tailored CV preview, roadmap, interview) in nested boundaries so that a failure in one tab does not crash the entire sidebar workspace.
+
+### 4. Advanced Error Mapping & Illustrative Diagnostic Panels
+*   **The Problem:** Raw errors from Supabase Edge Functions (e.g., `RATE_LIMIT_EXCEEDED`, `AI_TIMEOUT`, `INTERNAL_SERVER_ERROR`) are caught by the `useTransform.js` hook but are displayed using simple toast alerts, which feel basic and uninformative.
+*   **The Proposed Redesign:** 
+    *   Create a custom `<TransformErrorPanel>` component inside `src/components/transform/workspace/`.
+    *   Map error codes to beautiful, informative, illustrative diagnostic cards:
+        *   `RATE_LIMIT_EXCEEDED` — Displays a custom clock graphic, a friendly explanation of the 10-optimizations-per-hour policy, and a **live countdown timer** showing exactly when the limit resets.
+        *   `AI_TIMEOUT` — Displays a connectivity graphic, a retry suggestion, and a manual retry button.
+        *   `UNAUTHORIZED` — Displays a session-expired card with a quick re-authenticate link.
+
+### 5. Centralized Constants & Utilities
+*   **The Problem:** Constants (like `STOP_WORDS`, rate limits, typography theme presets, etc.) are duplicated or scattered across `TransformOutput.jsx`, `globals.css`, and Deno functions.
+*   **The Proposed Restructure:**
+    *   Create a unified constants file `src/utils/constants.js` to store all shared metadata, including our comprehensive 200+ word stop-words list, page settings, and template layouts.
+    *   Move utility helpers like `scoreColor.js`, `formatDate.js`, and `resumeToText.js` to `src/utils/` to maintain clean separation of logic.
+
+### 6. New Reusable UI Elements (The Obsidian Design System)
+We will introduce custom, reusable atom-level UI components in `src/components/ui/` to eliminate duplicate styles and establish consistent aesthetics:
+*   `GlassPanel.jsx` — A highly configurable container that implements consistent blur, backdrop-saturation, borders, and shadows in both themes.
+*   `LoadingSpinner.jsx` — A sleek, custom animated spinner used for loading states across the dashboard, wizard, and profile.
+*   `PremiumModal.jsx` — A unified modal component for confirming destructive actions (like account deletion, transformation deletion) that matches our Obsidian visual style.
+
+### 7. Interactive PDF Download Loading States
+*   **The Problem:** When downloading the PDF, it instantly downloads. If the rendering takes a second, there is no visual feedback (like a progress spinner or download button states).
+*   **The Proposed Redesign:**
+    *   Add a dynamic `isDownloading` state to the "Download PDF" button inside the workspace. When clicked, it will show a loading spinner with text like "Generating PDF...", preventing double-clicks and giving premium feedback.
+
+---
+
+## Proposed Changes File-by-File
+
+### 1. Reusable UI Components
+#### [NEW] [GlassPanel.jsx](file:///c:/Users/Adeen/OneDrive/Desktop/ResumeCustomizer/src/components/ui/GlassPanel.jsx)
+*   Create a standard glassmorphic container with configurable blur, hover effects, and theme-aware borders.
+
+#### [NEW] [LoadingSpinner.jsx](file:///c:/Users/Adeen/OneDrive/Desktop/ResumeCustomizer/src/components/ui/LoadingSpinner.jsx)
+*   Create a premium animated loader with custom speed, sizes, and colors.
+
+#### [NEW] [PremiumModal.jsx](file:///c:/Users/Adeen/OneDrive/Desktop/ResumeCustomizer/src/components/ui/PremiumModal.jsx)
+*   Implement a sleek modal component for confirmations, featuring custom backdrops, focus transitions, and primary action buttons.
+
+#### [NEW] [ErrorBoundary.jsx](file:///c:/Users/Adeen/OneDrive/Desktop/ResumeCustomizer/src/components/ui/ErrorBoundary.jsx)
+*   Implement standard React Error Boundary class component with a glassmorphic recovery panel.
+
+### 2. Core Workspace restructures
+#### [NEW] [ScoreBanner.jsx](file:///c:/Users/Adeen/OneDrive/Desktop/ResumeCustomizer/src/components/transform/workspace/ScoreBanner.jsx)
+*   Extract score count-up, status pills, and new analysis buttons.
+
+#### [NEW] [WorkspaceSidebar.jsx](file:///c:/Users/Adeen/OneDrive/Desktop/ResumeCustomizer/src/components/transform/workspace/WorkspaceSidebar.jsx)
+*   Extract sidebar menu navigation, active states, mobile bar, and download/copy actions.
+
+#### [NEW] [StyleControlPanel.jsx](file:///c:/Users/Adeen/OneDrive/Desktop/ResumeCustomizer/src/components/transform/workspace/StyleControlPanel.jsx)
+*   Extract WYSIWYG template selection and page budgeting selectors.
+
+#### [NEW] [TransformErrorPanel.jsx](file:///c:/Users/Adeen/OneDrive/Desktop/ResumeCustomizer/src/components/transform/workspace/TransformErrorPanel.jsx)
+*   Create illustrative, informative diagnostic cards for rate limits, timeouts, and authorization errors.
+
 #### [MODIFY] [TransformOutput.jsx](file:///c:/Users/Adeen/OneDrive/Desktop/ResumeCustomizer/src/components/transform/TransformOutput.jsx)
-*   **Sidebar Refinement:** Restyle desktop and mobile active menu tabs to use a transparent glassmorphic style in dark mode (`bg-white/10` with a subtle inner border) instead of solid white.
-*   **Header Refinement:** Refactor the header banner. Add dynamic color-coding logic to the Match Score pill (red vs. amber vs. green) so it visually signals match strength instantly.
-*   **Settings Panel Overhaul:** Apply a premium glassmorphic border and background to the styling dashboard. Refine active card styling, making selected templates pop with a subtle glowing border.
-*   **Overview Tab Integration:** Integrated the `OverviewTab` component, making it the default active tab showing compatibility metrics, keyword densities, and ATS safety analysis.
-*   **Wording Alignment:** Renamed the sidebar tab to **"Tailored CV"** and sub-tab to **"Tailored CV Preview"**; aligned all action buttons to **"Transform CV"**.
-*   **Keyword Stop-Words Filter:** Defined a comprehensive 200+ word stop-words list in the frontend to clean up matched keywords and dynamically extract actual technical terms for the missing keywords display.
+*   Clean up and refactor this file to act as the main orchestrator, importing and rendering the sub-components.
 
-### 4. ATS Check Panel Overhaul
-#### [MODIFY] [AtsCheckTab.jsx](file:///c:/Users/Adeen/OneDrive/Desktop/ResumeCustomizer/src/components/transform/tabs/AtsCheckTab.jsx)
-*   **Dynamic Panel Rewrite:** Replaced static formatting audits with a fully dynamic dashboard rendering real analysis data:
-    *   **Compatibility Header:** Displays the overall match score with a visual progress bar.
-    *   **Keywords Found Card:** Displays matching keywords dynamically parsed by the engine as green chips.
-    *   **Missing Keywords Card:** Displays missing terms dynamically extracted from the job description as amber chips.
-    *   **Screening Issues Card:** Displays the main candidate risk or profile gap.
-    *   **Next Moves Card:** Renders a numbered list of roadmap tasks.
+### 3. Wizard & Tabs Folder Migration
+#### [MOVE] [wizard files](file:///c:/Users/Adeen/OneDrive/Desktop/ResumeCustomizer/src/components/transform/wizard/)
+*   Move `ResumeInput.jsx`, `JobInput.jsx`, `FileDropzone.jsx`, and `TransformLoading.jsx` into the new `wizard/` folder.
 
-### 5. Root Package & Vercel Speed Insights
+#### [MOVE] [tab files](file:///c:/Users/Adeen/OneDrive/Desktop/ResumeCustomizer/src/components/transform/tabs/)
+*   Ensure all 10 tab files are correctly grouped under the `tabs/` folder and update import references.
+
+### 4. Shared Utilities & Hooks
+#### [NEW] [constants.js](file:///c:/Users/Adeen/OneDrive/Desktop/ResumeCustomizer/src/utils/constants.js)
+*   Create a central file for stop-words, layout presets, and template profiles.
+
+#### [NEW] [useDocumentTitle.js](file:///c:/Users/Adeen/OneDrive/Desktop/ResumeCustomizer/src/hooks/useDocumentTitle.js)
+*   Create a hook that synchronizes document titles and updates SEO meta tags dynamically.
+
 #### [MODIFY] [App.jsx](file:///c:/Users/Adeen/OneDrive/Desktop/ResumeCustomizer/src/App.jsx)
-*   **Speed Insights Integration:** Imported the `<SpeedInsights />` component from `@vercel/speed-insights/react` and placed it at the root of the routing structure to monitor Core Web Vitals in production.
+*   Wrap the application routes in the new global `<ErrorBoundary>`.
+*   Integrate page-level dynamic titles.
+
+### 5. Authentication & Dashboard Redesign
+#### [MODIFY] [Login.jsx](file:///c:/Users/Adeen/OneDrive/Desktop/ResumeCustomizer/src/pages/Login.jsx)
+*   Redesign using custom grid overlays, glassmorphic card panels, and glowing radial backdrops.
+
+#### [MODIFY] [Signup.jsx](file:///c:/Users/Adeen/OneDrive/Desktop/ResumeCustomizer/src/pages/Signup.jsx)
+*   Synchronize signup visual layouts to match the new login redesign.
+
+#### [MODIFY] [ForgotPassword.jsx](file:///c:/Users/Adeen/OneDrive/Desktop/ResumeCustomizer/src/pages/ForgotPassword.jsx)
+*   Apply the same glassmorphic design system and layouts.
+
+#### [MODIFY] [Dashboard.jsx](file:///c:/Users/Adeen/OneDrive/Desktop/ResumeCustomizer/src/pages/Dashboard.jsx)
+*   Elevate greeting panels and stats headers using premium SaaS layouts.
+
+### 6. Styles
+#### [MODIFY] [globals.css](file:///c:/Users/Adeen/OneDrive/Desktop/ResumeCustomizer/src/styles/globals.css)
+*   Add page transition utilities (`animate-page-fade-in-up`).
+*   Refine custom focus rings, active hover indicators, and glow effects.
 
 ---
 
 ## Verification Plan
 
+### Automated Verification
+*   Execute `npm run build` to verify the codebase compiles and packages with zero warnings and zero errors.
+
 ### Manual UX Verification
-1.  **Landing Page Visuals:** Load the landing page, toggle dark mode, and verify that the three cards show beautiful glowing icons instead of solid white squares. Verify that the grid background is subtle and elegant.
-2.  **Active Tab States:** Navigate to the report detail page and verify that the active sidebar item looks sleek and semi-transparent in dark mode, matching the obsidian background.
-3.  **Dynamic Score Coding:** Load a resume with a low score (<50) and verify that the score badge colors burgundy/red. Load one with a high score (>75) and verify it colors emerald/green.
-4.  **Floating Paper Depth:** Verify that the white resume sheet has a soft, realistic drop-shadow that makes it appear to float above the dark background.
-5.  **Settings Panel:** Switch templates and page-budgets. Ensure selectors respond with smooth hover transitions and clear active states.
-6.  **ATS Compatibility Audit:** Open the **ATS Check** tab and verify that it dynamically displays matched keywords, missing keywords, screening issues, and the numbered "Next moves" action items.
-7.  **Wording Alignment:** Check that the action buttons say "Transform CV" and the result tab says "Tailored CV".
+1.  **Page Transitions:** Navigate between pages and verify that layouts load with a smooth fade-in-up animation.
+2.  **Auth Page Aesthetics:** Open the login and signup pages in both light and dark modes. Verify the glassmorphism, radial glows, and typography.
+3.  **Workspace Modularity:** Ensure all tabs (Overview, CV, Roadmap, Skills, Recruiter, Rewrites, Interview, Cover Letter, ATS, Re-Score) switch instantly and load data correctly.
+4.  **Resilience Test:** Force a temporary runtime crash inside a tab component and verify that the local boundary catches it, displaying the "Reload tab" recovery card without crashing the sidebar or other tabs.
+5.  **Dynamic Title Test:** Check the browser tab title as you navigate. It should change dynamically.
+6.  **Progress Indicators:** Click "Download PDF" and verify the button shows a loading spinner during compilation, preventing multiple downloads.

@@ -9,29 +9,26 @@ import {
   Mail, 
   ShieldCheck, 
   Sliders, 
-  Briefcase, 
-  Download, 
-  Copy, 
-  RefreshCw, 
-  FileText, 
-  Check, 
-  AlertTriangle, 
-  Info,
-  ChevronDown,
-  ChevronUp,
-  ArrowRight,
-  Sparkles,
-  Clock,
-  Plus,
-  AlignLeft
+  FileText
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { generateResumePDF } from '../../lib/pdfGenerator';
+import { COMPREHENSIVE_STOP_WORDS } from '../../utils/constants';
+
+// UI components
 import Button from '../ui/Button';
+import ErrorBoundary from '../ui/ErrorBoundary';
+
+// Workspace sub-components
+import ScoreBanner from './workspace/ScoreBanner';
+import WorkspaceSidebar from './workspace/WorkspaceSidebar';
+import StyleControlPanel from './workspace/StyleControlPanel';
+
+// Document presentation components
 import ResumePreview from './ResumePreview';
 import ResumeCompare from './ResumeCompare';
 
-// Import modular tab components
+// Modular tab components
 import OverviewTab from './tabs/OverviewTab';
 import RoadmapTab from './tabs/RoadmapTab';
 import SkillsTab from './tabs/SkillsTab';
@@ -41,92 +38,6 @@ import InterviewTab from './tabs/InterviewTab';
 import CoverLetterTab from './tabs/CoverLetterTab';
 import AtsCheckTab from './tabs/AtsCheckTab';
 import RescoreTab from './tabs/RescoreTab';
-
-const COMPREHENSIVE_STOP_WORDS = new Set([
-  // Articles & conjunctions
-  'a', 'an', 'the', 'and', 'or', 'but', 'nor', 'so', 'yet', 'if', 'because', 'as', 'until', 'while', 'of', 'at', 'by', 'for', 'with', 'about', 'against', 'between', 'into', 'through', 'during', 'before', 'after', 'above', 'below', 'to', 'from', 'up', 'down', 'in', 'out', 'on', 'off', 'over', 'under', 'again', 'further', 'then', 'once',
-  
-  // Pronouns
-  'i', 'me', 'my', 'myself', 'we', 'our', 'ours', 'ourselves', 'you', 'your', 'yours', 'yourself', 'yourselves', 'he', 'him', 'his', 'himself', 'she', 'her', 'hers', 'herself', 'it', 'its', 'itself', 'they', 'them', 'their', 'theirs', 'themselves', 'what', 'which', 'who', 'whom', 'this', 'that', 'these', 'those', 'am', 'is', 'are', 'was', 'were', 'be', 'been', 'being', 'have', 'has', 'had', 'having', 'do', 'does', 'did', 'doing',
-  
-  // Contractions & helpers
-  're', 'll', 've', 'd', 'm', 's', 't', 'don', 't', 'can', 'will', 'just', 'should', 'would', 'could', 'shouldn', 'wouldn', 'couldn', 'isn', 'aren', 'wasn', 'weren', 'hasn', 'haven', 'hadn', 'doesn', 'don', 'didnt', 'wasnt', 'werent', 'hasnt', 'havent', 'hadnt', 'doesnt', 'dont', 'cant', 'wont', 'shouldnt', 'wouldnt', 'couldnt',
-  
-  // Common verbs and helpers
-  'looking', 'look', 'looks', 'seeking', 'seek', 'seeks', 'scale', 'scaling',
-  'combine', 'combining', 'combined', 'intelligent', 'concept', 'concepts',
-  'full', 'fully', 'part', 'time', 'date', 'dates', 'year', 'years', 'month',
-  'months', 'day', 'days', 'hour', 'hours', 'week', 'weeks', 'want', 'wants',
-  'wanted', 'need', 'needs', 'needed', 'find', 'finds', 'found', 'get', 'gets',
-  'got', 'make', 'makes', 'made', 'take', 'takes', 'took', 'give', 'gives',
-  'given', 'like', 'likes', 'liked', 'love', 'loves', 'loved', 'must', 'should',
-  'could', 'would', 'will', 'shall', 'may', 'might', 'can', 'cannot', 'couldnt',
-  'shouldnt', 'wouldnt', 'cant', 'wont', 'dont', 'didnt', 'doesnt', 'isnt',
-  'arent', 'wasnt', 'werent', 'hasnt', 'havent', 'hadnt', 'had', 'has', 'have',
-  'having', 'do', 'does', 'did', 'doing', 'done', 'go', 'goes', 'went', 'gone',
-  'going', 'come', 'comes', 'came', 'coming', 'use', 'uses', 'used', 'using',
-  'keep', 'keeps', 'kept', 'keeping', 'start', 'starts', 'started', 'starting',
-  'stop', 'stops', 'stopped', 'stopping', 'end', 'ends', 'ended', 'ending',
-  'show', 'shows', 'showed', 'shown', 'showing', 'tell', 'tells', 'told',
-  'telling', 'ask', 'asks', 'asked', 'asking', 'answer', 'answers', 'answered',
-  'answering', 'say', 'says', 'said', 'saying', 'think', 'thinks', 'thought',
-  'thinking', 'know', 'knows', 'knew', 'known', 'knowing', 'believe', 'believes',
-  'believed', 'believing', 'feel', 'feels', 'felt', 'feeling', 'seem', 'seems',
-  'seemed', 'seeming', 'appear', 'appears', 'appeared', 'appearing',
-  
-  // Generic job description verbs, nouns & roles
-  'hiring', 'hired', 'join', 'joining', 'build', 'building', 'built',
-  'write', 'writing', 'written', 'design', 'designing', 'designed',
-  'create', 'creating', 'created', 'develop', 'developing', 'developed',
-  'developer', 'developers', 'development', 'developments', 'engineer',
-  'engineering', 'engineers', 'role', 'roles', 'job', 'jobs',
-  'work', 'working', 'works', 'team', 'teams', 'member', 'members',
-  'people', 'person', 'candidate', 'candidates', 'client', 'clients',
-  'customer', 'customers', 'business', 'businesses', 'company',
-  'companies', 'project', 'projects', 'product', 'products', 'service',
-  'services', 'system', 'systems', 'platform', 'platforms', 'tool',
-  'tools', 'stack', 'tech', 'technical', 'technology', 'technologies',
-  'internship', 'internships', 'intern', 'junior', 'senior', 'level',
-  
-  // Common business & process actions
-  'ability', 'action', 'actions', 'active', 'actively', 'activities',
-  'strong', 'practical', 'hands-on', 'hands', 'proven', 'experience',
-  'experiences', 'experienced', 'skills', 'skill', 'professional',
-  'background', 'required', 'requires', 'requirements', 'responsibility',
-  'responsibilities', 'task', 'tasks', 'goal', 'goals', 'deliver',
-  'delivering', 'delivered', 'track', 'tracking', 'report', 'reporting',
-  'optimize', 'optimizing', 'optimized', 'maintain', 'maintaining',
-  'maintained', 'support', 'supporting', 'supported', 'manage', 'managing',
-  'managed', 'management', 'lead', 'leading', 'leads', 'leader',
-  'collaborate', 'collaborating', 'collaboration', 'collaborative',
-  'communicate', 'communicating', 'communication', 'partner', 'partnering',
-  'partnered', 'discover', 'discovering', 'discovered', 'identify',
-  'identifying', 'identified', 'solve', 'solving', 'solved', 'eliminate',
-  'eliminating', 'eliminated', 'improve', 'improving', 'improved',
-  'harden', 'hardening', 'hardened', 'secure', 'securing', 'secured',
-  'ensure', 'ensuring', 'ensured', 'track', 'tracks', 'reporting',
-  
-  // Generic modifiers & jargon
-  'highly', 'deeply', 'clean', 'cleanly', 'clear', 'clearly',
-  'quick', 'quickly', 'fast', 'faster', 'flexible', 'flexibility',
-  'complex', 'simple', 'simply', 'basic', 'basically', 'general',
-  'generally', 'specific', 'specifically', 'appropriate', 'appropriately',
-  'ideal', 'ideally', 'excellent', 'meaningful', 'successful',
-  'successfully', 'measurable', 'consistent', 'consistently',
-  'operational', 'operationally', 'internal', 'internally', 'external',
-  'externally', 'real', 'really', 'different', 'various', 'several',
-  'quarterly', 'prioritized', 'structured', 'unparalleled', 'comprehensive',
-  'patented', 'valley', 'silicon', 'funded', 'startup', 'market',
-  'focus', 'focused', 'focuses', 'focusing', 'harness', 'harnessing',
-  'about', 'above', 'across', 'after', 'against', 'along', 'amid', 'among',
-  'around', 'at', 'before', 'behind', 'below', 'beneath', 'beside', 'between',
-  'beyond', 'but', 'by', 'concerning', 'considering', 'despite', 'down',
-  'during', 'except', 'following', 'for', 'from', 'in', 'inside', 'into',
-  'like', 'minus', 'near', 'of', 'off', 'on', 'onto', 'opposite', 'out',
-  'outside', 'over', 'past', 'pending', 'regarding', 'since', 'through',
-  'throughout', 'to', 'toward', 'towards', 'under', 'underneath', 'unlike',
-  'until', 'up', 'upon', 'versus', 'via', 'with', 'within', 'without'
-]);
 
 export default function TransformOutput({ result, plainText, originalText, onReset }) {
   // Set Compatibility Overview as the default active tab
@@ -327,12 +238,15 @@ export default function TransformOutput({ result, plainText, originalText, onRes
     ]
   };
 
-  const handleDownloadPDF = () => {
+  const handleDownloadPDF = async () => {
     try {
+      // Simulate a small delay for premium rendering feel
+      await new Promise(resolve => setTimeout(resolve, 1000));
       generateResumePDF(result, selectedTemplate, pageBudget);
       toast.success('PDF saved to your downloads');
     } catch (err) {
       toast.error('Failed to generate PDF. Try copying the plain text.');
+      throw err;
     }
   };
 
@@ -406,7 +320,7 @@ export default function TransformOutput({ result, plainText, originalText, onRes
     }, 1200);
   };
 
-  // Unified Sidebar Menu Items incorporating Transformed CV/Resume and Before & After comparison
+  // Unified Sidebar Menu Items
   const menuItems = [
     { id: 'overview', label: 'Overview', icon: LayoutDashboard },
     { id: 'preview', label: 'Tailored CV', icon: FileText },
@@ -420,7 +334,7 @@ export default function TransformOutput({ result, plainText, originalText, onRes
     { id: 'rescore', label: 'Re-Score', icon: Sliders }
   ];
 
-  // Generate cover letter dynamically using candidate details
+  // Generate cover letter dynamically
   const generatedCoverLetter = `[Your Name]
 ${result.contact?.email || '[Your Email]'} | ${result.contact?.phone || '[Your Phone]'}
 ${result.contact?.location || '[Your Location]'}
@@ -451,362 +365,218 @@ ${candidateName}`;
     <div className="w-full flex flex-col gap-6 select-none animate-fade-in font-sans">
       
       {/* Visual Confirmation Header */}
-      <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 border-b border-slate-200/60 pb-5">
-        <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-xl bg-slate-900 text-white flex items-center justify-center shrink-0 shadow-sm shadow-slate-900/10">
-            <Sparkles size={18} className="text-emerald-400 fill-emerald-400/20" />
-          </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <h2 className="font-serif text-2xl text-slate-955 font-bold tracking-tight">ResumeAI Report</h2>
-              <span className="bg-emerald-50 text-emerald-700 border border-emerald-100 rounded-full px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider flex items-center gap-1">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                Analysis Active
-              </span>
-            </div>
-            <p className="text-xs text-slate-500 font-semibold mt-0.5">{candidateName} | {jobTitle}</p>
-          </div>
-        </div>
-        
-        <div className="flex items-center gap-2 w-full md:w-auto">
-          <div className={`border rounded-lg px-3 py-1.5 flex items-center gap-2 text-xs font-bold transition-colors duration-300 ${scoreColors.pill}`}>
-            <span className={`w-2 h-2 rounded-full animate-pulse ${scoreColors.dot}`} />
-            {currentScore} Match Score
-          </div>
-          <button
-            onClick={onReset}
-            className="flex-1 md:flex-initial flex items-center justify-center gap-1.5 px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold rounded-lg shadow-sm transition-all"
-          >
-            <Plus size={13} />
-            New Analysis
-          </button>
-        </div>
-      </div>
+      <ScoreBanner 
+        candidateName={candidateName}
+        jobTitle={jobTitle}
+        targetScore={targetScore}
+        scoreColors={scoreColors}
+        onReset={onReset}
+      />
 
       {/* Grid Layout: Sidebar & Content Panel */}
       <div className="flex flex-col lg:flex-row gap-6 w-full items-stretch">
         
         {/* Balanced Light Sidebar */}
-        <aside className="w-full lg:w-64 shrink-0 bg-slate-50/70 border border-slate-200/80 rounded-xl p-5 flex flex-col justify-between select-none shadow-inner">
-          <div className="flex flex-col gap-6">
-            
-            {/* ATS Score Box */}
-            <div className="bg-white border border-slate-200/70 rounded-xl p-4 flex flex-col gap-2 shadow-sm">
-              <div className="flex items-center justify-between">
-                <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500">ATS Compatibility</span>
-                <span className="text-xs font-bold text-slate-955">{currentScore}%</span>
-              </div>
-              <div className="w-full h-2 bg-slate-100 rounded-full overflow-hidden">
-                <div 
-                  className={`h-full transition-all duration-1000 ease-out ${scoreColors.bar}`} 
-                  style={{ width: `${currentScore}%` }}
-                />
-              </div>
-            </div>
+        <WorkspaceSidebar 
+          activeTab={activeTab}
+          setActiveTab={setActiveTab}
+          menuItems={menuItems}
+          currentScore={currentScore}
+          scoreColors={scoreColors}
+          originalText={originalText}
+          handleDownloadPDF={handleDownloadPDF}
+          handleCopyText={handleCopyText}
+          copying={copying}
+        />
 
-            {/* Mobile Tab Navigation (Scrollable) */}
-            <div className="lg:hidden flex overflow-x-auto pb-1 gap-1.5 scrollbar-none snap-x">
-              {menuItems.map((item) => {
-                if (item.hideIfNoOriginal && !originalText) return null;
-                const IconComponent = item.icon;
-                const isActive = activeTab === item.id;
-                return (
-                  <button
-                    key={item.id}
-                    onClick={() => setActiveTab(item.id)}
-                    className={`snap-center flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-semibold whitespace-nowrap transition-all cursor-pointer ${
-                      isActive 
-                        ? 'sidebar-active-tab bg-slate-900 text-white font-bold shadow-sm' 
-                        : 'bg-white border border-slate-200 text-slate-600 hover:text-slate-900'
-                    }`}
-                  >
-                    <IconComponent size={14} />
-                    {item.label}
-                  </button>
-                );
-              })}
-            </div>
-
-            {/* Desktop Vertical Menu */}
-            <nav className="hidden lg:flex flex-col gap-1">
-              {menuItems.map((item) => {
-                if (item.hideIfNoOriginal && !originalText) return null;
-                const IconComponent = item.icon;
-                const isActive = activeTab === item.id;
-                return (
-                  <button
-                    key={item.id}
-                    onClick={() => setActiveTab(item.id)}
-                    className={`flex items-center gap-3 w-full px-3.5 py-2.5 rounded-lg text-sm font-semibold tracking-tight transition-all cursor-pointer ${
-                      isActive 
-                        ? 'sidebar-active-tab bg-slate-900 text-white shadow-sm font-bold' 
-                        : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/50'
-                    }`}
-                  >
-                    <IconComponent 
-                      size={15} 
-                      className={`transition-colors ${isActive ? 'text-emerald-400' : 'text-slate-400'}`} 
-                    />
-                    {item.label}
-                  </button>
-                );
-              })}
-            </nav>
-
-          </div>
-
-          {/* Bottom Sidebar Buttons */}
-          <div className="hidden lg:flex flex-col gap-2 pt-6 border-t border-slate-200/80 mt-6">
-            <button
-              onClick={handleDownloadPDF}
-              className="flex items-center justify-center gap-2 w-full px-3 py-2 text-xs font-bold text-slate-700 bg-white border border-slate-200 hover:bg-slate-50 rounded-lg transition-colors"
-            >
-              <Download size={13} />
-              Download PDF
-            </button>
-            <button
-              onClick={handleCopyText}
-              className="flex items-center justify-center gap-2 w-full px-3 py-2 text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 rounded-lg transition-colors shadow-sm"
-            >
-              <Copy size={13} />
-              {copying ? 'Copied' : 'Share Score'}
-            </button>
-          </div>
-        </aside>
-
-        {/* Content Area Panel - Renders separated sub-component functions */}
+        {/* Content Area Panel */}
         <main className="flex-1 bg-white border border-slate-200 rounded-xl p-6 sm:p-8 shadow-sm flex flex-col justify-between min-h-[580px] transition-all">
           <div className="w-full">
+            
             {activeTab === 'overview' && (
-              <OverviewTab 
-                currentScore={currentScore}
-                jobTitle={jobTitle}
-                company={company}
-                keywordsMatchedCount={result.meta?.keywords_matched?.length || 0}
-                keywordsTotalCount={result.meta?.keywords_total || 0}
-              />
+              <ErrorBoundary>
+                <OverviewTab 
+                  currentScore={currentScore}
+                  jobTitle={jobTitle}
+                  company={company}
+                  keywordsMatchedCount={result.meta?.keywords_matched?.length || 0}
+                  keywordsTotalCount={result.meta?.keywords_total || 0}
+                />
+              </ErrorBoundary>
             )}
 
-            {/* Document Previews & Text Views inside primary sidebar navigation */}
             {activeTab === 'preview' && (
-              <div className="flex flex-col gap-6">
-                {/* Segmented Sub-tabs */}
-                <div className="flex border-b border-slate-200 pb-px gap-4">
-                  <button
-                    onClick={() => setCvSubTab('optimized')}
-                    className={`pb-3 text-sm font-semibold border-b-2 transition-all ${
-                      cvSubTab === 'optimized'
-                        ? 'border-slate-900 text-slate-900 font-bold'
-                        : 'border-transparent text-slate-500 hover:text-slate-900'
-                    }`}
-                  >
-                    Tailored CV Preview
-                  </button>
-                  {originalText && (
+              <ErrorBoundary>
+                <div className="flex flex-col gap-6">
+                  {/* Segmented Sub-tabs */}
+                  <div className="flex border-b border-slate-200 pb-px gap-4">
                     <button
-                      onClick={() => setCvSubTab('compare')}
-                      className={`pb-3 text-sm font-semibold border-b-2 transition-all ${
-                        cvSubTab === 'compare'
+                      onClick={() => setCvSubTab('optimized')}
+                      className={`pb-3 text-sm font-semibold border-b-2 transition-all cursor-pointer ${
+                        cvSubTab === 'optimized'
                           ? 'border-slate-900 text-slate-900 font-bold'
                           : 'border-transparent text-slate-500 hover:text-slate-900'
                       }`}
                     >
-                      Compare Before & After
+                      Tailored CV Preview
                     </button>
-                  )}
-                  <button
-                    onClick={() => setCvSubTab('plain')}
-                    className={`pb-3 text-sm font-semibold border-b-2 transition-all ${
-                      cvSubTab === 'plain'
-                        ? 'border-slate-900 text-slate-900 font-bold'
-                        : 'border-transparent text-slate-500 hover:text-slate-900'
-                    }`}
-                  >
-                    Raw Plain Text
-                  </button>
-                </div>
-
-                {/* Sub-tab content */}
-                {cvSubTab === 'optimized' && (
-                  <div className="flex flex-col gap-6 animate-fade-in">
-                    {/* Settings Panel */}
-                    <div className="settings-panel bg-slate-50/50 border border-slate-200/80 rounded-xl p-4 sm:p-5 flex flex-col md:flex-row md:items-center justify-between gap-6 shadow-sm">
-                      <div className="flex flex-col gap-4 flex-1">
-                        <div>
-                          <label className="text-[10px] font-bold uppercase tracking-wider text-slate-500 block mb-2">
-                            Select Design Template
-                          </label>
-                          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                            {[
-                              { id: 'classic', label: 'Classic Serif', desc: 'Traditional & elegant' },
-                              { id: 'modern', label: 'Modern Minimalist', desc: 'Clean, left-aligned' },
-                              { id: 'tech', label: 'Clean Tech', desc: 'Mono, structured' },
-                              { id: 'executive', label: 'Executive Elegant', desc: 'Luxury serif, centered' }
-                            ].map(tpl => (
-                              <button
-                                key={tpl.id}
-                                onClick={() => setSelectedTemplate(tpl.id)}
-                                className={`flex flex-col items-start p-2.5 rounded-lg border text-left transition-all hover:scale-[1.02] active:scale-[0.98] cursor-pointer ${
-                                  selectedTemplate === tpl.id
-                                    ? 'template-card-active border-slate-900 bg-white shadow-sm ring-1 ring-slate-900/5'
-                                    : 'border-slate-200 hover:border-slate-300 bg-white/50'
-                                }`}
-                              >
-                                <span className="text-xs font-bold text-slate-850 dark:text-slate-200 flex items-center gap-1">
-                                  {tpl.label}
-                                  {selectedTemplate === tpl.id && (
-                                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-                                  )}
-                                </span>
-                                <span className="text-[9px] text-slate-400 font-medium mt-0.5">{tpl.desc}</span>
-                              </button>
-                            ))}
-                          </div>
-                        </div>
-                      </div>
-
-                      <div className="flex flex-col gap-2 shrink-0 md:border-l md:border-slate-250 md:pl-6">
-                        <label className="text-[10px] font-bold uppercase tracking-wider text-slate-500 block mb-1">
-                          Page Budgeting
-                        </label>
-                        <div className="flex items-center bg-slate-200/60 p-0.5 rounded-lg border border-slate-250 w-full sm:w-auto">
-                          <button
-                            type="button"
-                            onClick={() => setPageBudget('standard')}
-                            className={`px-3 py-1.5 rounded-md text-xs font-bold transition-all whitespace-nowrap cursor-pointer ${
-                              pageBudget === 'standard'
-                                ? 'bg-white text-slate-900 shadow-sm'
-                                : 'text-slate-600 hover:text-slate-900'
-                            }`}
-                          >
-                            Standard Spacing
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => setPageBudget('fit')}
-                            className={`px-3 py-1.5 rounded-md text-xs font-bold transition-all whitespace-nowrap flex items-center gap-1 cursor-pointer ${
-                              pageBudget === 'fit'
-                                ? 'bg-white text-slate-900 shadow-sm'
-                                : 'text-slate-600 hover:text-slate-900'
-                            }`}
-                          >
-                            <Sparkles size={11} className="text-emerald-500 fill-emerald-500/10" />
-                            Auto-Fit (1 Page)
-                          </button>
-                        </div>
-                        <span className="text-[9px] text-slate-400 font-medium text-center md:text-left mt-1">
-                          {pageBudget === 'fit' ? 'Font sizes & margins compressed to fit 1 page' : 'Generous spacing for multi-page layouts'}
-                        </span>
-                      </div>
-                    </div>
-
-                    {/* Preview document container */}
-                    <div className="bg-mist/20 py-6 rounded-xl border border-boundary">
-                      <ResumePreview data={result} templateId={selectedTemplate} pageBudget={pageBudget} />
-                    </div>
-                  </div>
-                )}
-
-                {cvSubTab === 'compare' && originalText && (
-                  <div className="animate-fade-in">
-                    <ResumeCompare originalText={originalText} transformedData={result} />
-                  </div>
-                )}
-
-                {cvSubTab === 'plain' && (
-                  <div className="animate-fade-in flex flex-col gap-4 text-left">
-                    <div className="relative">
-                      <textarea
-                        readOnly
-                        value={plainText}
-                        className="w-full min-h-[420px] bg-white border border-boundary rounded-xl p-6 font-mono text-[11px] text-ink leading-relaxed focus:outline-none select-all"
-                      />
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="absolute top-4 right-4 flex items-center gap-1.5 border border-slate-200 bg-white shadow-sm hover:bg-slate-50"
-                        onClick={handleCopyText}
+                    {originalText && (
+                      <button
+                        onClick={() => setCvSubTab('compare')}
+                        className={`pb-3 text-sm font-semibold border-b-2 transition-all cursor-pointer ${
+                          cvSubTab === 'compare'
+                            ? 'border-slate-900 text-slate-900 font-bold'
+                            : 'border-transparent text-slate-500 hover:text-slate-900'
+                        }`}
                       >
-                        <Copy size={13} />
-                        {copying ? 'Copied' : 'Copy'}
-                      </Button>
-                    </div>
+                        Compare Before & After
+                      </button>
+                    )}
+                    <button
+                      onClick={() => setCvSubTab('plain')}
+                      className={`pb-3 text-sm font-semibold border-b-2 transition-all cursor-pointer ${
+                        cvSubTab === 'plain'
+                          ? 'border-slate-900 text-slate-900 font-bold'
+                          : 'border-transparent text-slate-500 hover:text-slate-900'
+                      }`}
+                    >
+                      Raw Plain Text
+                    </button>
                   </div>
-                )}
-              </div>
+
+                  {/* Sub-tab content */}
+                  {cvSubTab === 'optimized' && (
+                    <div className="flex flex-col gap-6 animate-fade-in">
+                      <StyleControlPanel 
+                        selectedTemplate={selectedTemplate}
+                        setSelectedTemplate={setSelectedTemplate}
+                        pageBudget={pageBudget}
+                        setPageBudget={setPageBudget}
+                      />
+
+                      {/* Preview document container */}
+                      <div className="bg-mist/20 py-6 rounded-xl border border-boundary">
+                        <ResumePreview data={result} templateId={selectedTemplate} pageBudget={pageBudget} />
+                      </div>
+                    </div>
+                  )}
+
+                  {cvSubTab === 'compare' && originalText && (
+                    <div className="animate-fade-in">
+                      <ResumeCompare originalText={originalText} transformedData={result} />
+                    </div>
+                  )}
+
+                  {cvSubTab === 'plain' && (
+                    <div className="animate-fade-in flex flex-col gap-4 text-left">
+                      <div className="relative">
+                        <textarea
+                          readOnly
+                          value={plainText}
+                          className="w-full min-h-[420px] bg-white border border-boundary rounded-xl p-6 font-mono text-[11px] text-ink leading-relaxed focus:outline-none select-all"
+                        />
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="absolute top-4 right-4 flex items-center gap-1.5 border border-slate-200 bg-white shadow-sm hover:bg-slate-50"
+                          onClick={handleCopyText}
+                        >
+                          Copy
+                        </Button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </ErrorBoundary>
             )}
             
             {activeTab === 'roadmap' && (
-              <RoadmapTab 
-                roadmapData={roadmapData}
-                completedTasks={completedTasks}
-                toggleTask={toggleTask}
-                currentScore={currentScore}
-              />
+              <ErrorBoundary>
+                <RoadmapTab 
+                  roadmapData={roadmapData}
+                  completedTasks={completedTasks}
+                  toggleTask={toggleTask}
+                  currentScore={currentScore}
+                />
+              </ErrorBoundary>
             )}
 
             {activeTab === 'skills' && (
-              <SkillsTab 
-                jobTitle={jobTitle}
-                currentScore={currentScore}
-                technicalSkills={technicalSkills}
-                skillsIntell={skillsIntell}
-              />
+              <ErrorBoundary>
+                <SkillsTab 
+                  jobTitle={jobTitle}
+                  currentScore={currentScore}
+                  technicalSkills={technicalSkills}
+                  skillsIntell={skillsIntell}
+                />
+              </ErrorBoundary>
             )}
 
             {activeTab === 'recruiter' && (
-              <RecruiterTab 
-                jobTitle={jobTitle}
-                recruiterScan={recruiterScan}
-                copiedPitch={copiedPitch}
-                handleCopyElevatorPitch={handleCopyElevatorPitch}
-              />
+              <ErrorBoundary>
+                <RecruiterTab 
+                  jobTitle={jobTitle}
+                  recruiterScan={recruiterScan}
+                  copiedPitch={copiedPitch}
+                  handleCopyElevatorPitch={handleCopyElevatorPitch}
+                />
+              </ErrorBoundary>
             )}
 
             {activeTab === 'rewrites' && (
-              <RewritesTab 
-                rewritesList={rewritesList}
-                originalText={originalText}
-                setActiveTab={setActiveTab}
-              />
+              <ErrorBoundary>
+                <RewritesTab 
+                  rewritesList={rewritesList}
+                  originalText={originalText}
+                  setActiveTab={setActiveTab}
+                />
+              </ErrorBoundary>
             )}
 
             {activeTab === 'interview' && (
-              <InterviewTab 
-                interviewPrep={interviewPrep}
-                interviewSubTab={interviewSubTab}
-                setInterviewSubTab={setInterviewSubTab}
-                expandedExpectation={expandedExpectation}
-                setExpandedExpectation={setExpandedExpectation}
-              />
+              <ErrorBoundary>
+                <InterviewTab 
+                  interviewPrep={interviewPrep}
+                  interviewSubTab={interviewSubTab}
+                  setInterviewSubTab={setInterviewSubTab}
+                  expandedExpectation={expandedExpectation}
+                  setExpandedExpectation={setExpandedExpectation}
+                />
+              </ErrorBoundary>
             )}
 
             {activeTab === 'coverletter' && (
-              <CoverLetterTab 
-                generatedCoverLetter={generatedCoverLetter}
-                copiedLetter={copiedLetter}
-                handleCopyCoverLetter={handleCopyCoverLetter}
-                handleDownloadCoverLetter={handleDownloadCoverLetter}
-              />
+              <ErrorBoundary>
+                <CoverLetterTab 
+                  generatedCoverLetter={generatedCoverLetter}
+                  copiedLetter={copiedLetter}
+                  handleCopyCoverLetter={handleCopyCoverLetter}
+                  handleDownloadCoverLetter={handleDownloadCoverLetter}
+                />
+              </ErrorBoundary>
             )}
 
             {activeTab === 'atscheck' && (
-              <AtsCheckTab 
-                currentScore={currentScore}
-                keywordsMatched={(result.meta?.keywords_matched || []).filter(kw => !COMPREHENSIVE_STOP_WORDS.has(kw.toLowerCase()))}
-                missingKeywords={getMissingKeywords()}
-                screeningIssues={recruiterScan.completely_missed}
-                nextMoves={roadmapData.tasks || []}
-              />
+              <ErrorBoundary>
+                <AtsCheckTab 
+                  currentScore={currentScore}
+                  keywordsMatched={(result.meta?.keywords_matched || []).filter(kw => !COMPREHENSIVE_STOP_WORDS.has(kw.toLowerCase()))}
+                  missingKeywords={getMissingKeywords()}
+                  screeningIssues={recruiterScan.completely_missed}
+                  nextMoves={roadmapData.tasks || []}
+                />
+              </ErrorBoundary>
             )}
 
             {activeTab === 'rescore' && (
-              <RescoreTab 
-                sliders={sliders}
-                setSliders={setSliders}
-                isReScoring={isReScoring}
-                handleApplyAdjustments={handleApplyAdjustments}
-              />
+              <ErrorBoundary>
+                <RescoreTab 
+                  sliders={sliders}
+                  setSliders={setSliders}
+                  isReScoring={isReScoring}
+                  handleApplyAdjustments={handleApplyAdjustments}
+                />
+              </ErrorBoundary>
             )}
 
           </div>

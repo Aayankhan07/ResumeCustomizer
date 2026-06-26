@@ -3,10 +3,11 @@ import { useTransform } from '../hooks/useTransform';
 import { ArrowLeft, ArrowRight, Sparkles, AlertCircle } from 'lucide-react';
 import Navbar from '../components/layout/Navbar';
 import Footer from '../components/layout/Footer';
-import ResumeInput from '../components/transform/ResumeInput';
-import JobInput from '../components/transform/JobInput';
-import TransformLoading from '../components/transform/TransformLoading';
+import ResumeInput from '../components/transform/wizard/ResumeInput';
+import JobInput from '../components/transform/wizard/JobInput';
+import TransformLoading from '../components/transform/wizard/TransformLoading';
 import TransformOutput from '../components/transform/TransformOutput';
+import TransformErrorPanel from '../components/transform/workspace/TransformErrorPanel';
 import Button from '../components/ui/Button';
 
 export default function Transform() {
@@ -63,39 +64,22 @@ export default function Transform() {
           />
         )}
 
-        {(status === 'idle' || status === 'error') && (
+        {status === 'error' && (
+          <TransformErrorPanel
+            errorCode={error}
+            errorDetails={errorDetails}
+            rateLimit={rateLimit}
+            onRetry={handleTransform}
+          />
+        )}
+
+        {status === 'idle' && (
           <div className="w-full flex flex-col gap-8 stagger-children">
             {/* Header */}
             <div>
               <h1 className="font-serif text-3xl text-ink font-bold">Optimize Resume</h1>
               <p className="text-sm text-graphite mt-1">Transform your resume to match the requirements of the job description.</p>
             </div>
-
-            {/* Error States */}
-            {status === 'error' && (
-              <div className="bg-red-50 border border-red-200 text-red-700 rounded-xl p-4 flex gap-3 items-start text-sm">
-                <AlertCircle className="shrink-0 mt-0.5" size={16} />
-                <div className="w-full">
-                  <h4 className="font-semibold">Transformation Failed</h4>
-                  <div className="mt-1 leading-relaxed">
-                    {error === 'RATE_LIMIT_EXCEEDED' ? (
-                      `You have reached the hourly limit. Reset time is scheduled for ${
-                        rateLimit?.resetAt ? new Date(rateLimit.resetAt).toLocaleTimeString() : 'later'
-                      }.`
-                    ) : error === 'DATABASE_SAVE_FAILED' ? (
-                      <div className="flex flex-col gap-2">
-                        <p>The resume was tailored successfully but could not be saved to your dashboard history due to a database error:</p>
-                        <pre className="bg-red-100/60 border border-red-200 rounded-lg p-3 font-mono text-[11px] text-red-800 overflow-x-auto whitespace-pre-wrap max-w-full">
-                          {JSON.stringify(errorDetails, null, 2)}
-                        </pre>
-                      </div>
-                    ) : (
-                      'An error occurred while communicating with the AI model. Please check your inputs and try again.'
-                    )}
-                  </div>
-                </div>
-              </div>
-            )}
 
             {/* Step progress bar */}
             <div className="flex items-center justify-between max-w-sm w-full mx-auto mb-6 select-none px-4">

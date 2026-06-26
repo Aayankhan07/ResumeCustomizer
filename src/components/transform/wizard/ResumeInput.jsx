@@ -1,5 +1,5 @@
 import FileDropzone from './FileDropzone';
-import Textarea from '../ui/Textarea';
+import Textarea from '../../ui/Textarea';
 
 export default function ResumeInput({ value, onChange }) {
   const MAX_CHARS = 10000;

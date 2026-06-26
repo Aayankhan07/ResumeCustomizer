@@ -15,12 +15,12 @@ import TransformDetail from './pages/TransformDetail';
 import Profile         from './pages/Profile';
 import NotFound        from './pages/NotFound';
 
-// Layout
 import ProtectedRoute  from './components/layout/ProtectedRoute';
+import ErrorBoundary   from './components/ui/ErrorBoundary';
 
 export default function App() {
   return (
-    <>
+    <ErrorBoundary variant="global">
       <Routes>
       {/* Public */}
       <Route path="/"                element={<Landing />} />
@@ -43,6 +43,6 @@ export default function App() {
       <Route path="*"    element={<Navigate to="/404" replace />} />
     </Routes>
     <SpeedInsights />
-    </>
+    </ErrorBoundary>
   );
 }

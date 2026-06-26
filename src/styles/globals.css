@@ -23,6 +23,8 @@
   --animate-slide-up: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
   --animate-fade-in: fadeIn 0.3s ease-out both;
   --animate-spin-slow: spin 1.5s linear infinite;
+  --animate-page-fade-in-up: pageFadeInUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+  --animate-pulse-subtle: pulseSubtle 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
 
 @keyframes slideUp {
@@ -32,6 +34,14 @@
 @keyframes fadeIn {
   0% { opacity: 0; }
   100% { opacity: 1; }
+}
+@keyframes pageFadeInUp {
+  0% { opacity: 0; transform: translateY(16px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+@keyframes pulseSubtle {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.9; transform: scale(0.995); }
 }
 
 /* Base styles */
