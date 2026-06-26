@@ -44,6 +44,9 @@ import RescoreTab from './tabs/RescoreTab';
 export default function TransformOutput({ result, plainText, originalText, onReset }) {
   // Set Transformed CV (preview) as the default active tab
   const [activeTab, setActiveTab] = useState('preview');
+  const [cvSubTab, setCvSubTab] = useState('optimized'); // 'optimized' | 'compare' | 'plain'
+  const [selectedTemplate, setSelectedTemplate] = useState('classic');
+  const [pageBudget, setPageBudget] = useState('standard');
   const [copying, setCopying] = useState(false);
   const [copiedPitch, setCopiedPitch] = useState(false);
   const [copiedLetter, setCopiedLetter] = useState(false);
@@ -198,7 +201,7 @@ export default function TransformOutput({ result, plainText, originalText, onRes
 
   const handleDownloadPDF = () => {
     try {
-      generateResumePDF(result);
+      generateResumePDF(result, selectedTemplate, pageBudget);
       toast.success('PDF saved to your downloads');
     } catch (err) {
       toast.error('Failed to generate PDF. Try copying the plain text.');
@@ -278,8 +281,6 @@ export default function TransformOutput({ result, plainText, originalText, onRes
   // Unified Sidebar Menu Items incorporating Transformed CV/Resume and Before & After comparison
   const menuItems = [
     { id: 'preview', label: 'Transformed CV', icon: FileText },
-    { id: 'compare', label: 'Before & After', icon: Diff, hideIfNoOriginal: true },
-    { id: 'text', label: 'Plain Text', icon: AlignLeft },
     { id: 'roadmap', label: 'Roadmap', icon: Milestone },
     { id: 'skills', label: 'Skills', icon: Target },
     { id: 'recruiter', label: 'Recruiter', icon: UserCheck },
@@ -450,35 +451,150 @@ ${candidateName}`;
 
             {/* Document Previews & Text Views inside primary sidebar navigation */}
             {activeTab === 'preview' && (
-              <div className="animate-fade-in bg-mist/20 py-4 rounded-xl border border-boundary">
-                <ResumePreview data={result} />
-              </div>
-            )}
-
-            {activeTab === 'compare' && originalText && (
-              <div className="animate-fade-in">
-                <ResumeCompare originalText={originalText} transformedData={result} />
-              </div>
-            )}
-
-            {activeTab === 'text' && (
-              <div className="animate-fade-in flex flex-col gap-4 text-left">
-                <div className="relative">
-                  <textarea
-                    readOnly
-                    value={plainText}
-                    className="w-full min-h-[420px] bg-white border border-boundary rounded-xl p-6 font-mono text-[11px] text-ink leading-relaxed focus:outline-none select-all"
-                  />
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="absolute top-4 right-4 flex items-center gap-1.5 border border-slate-200 bg-white"
-                    onClick={handleCopyText}
+              <div className="flex flex-col gap-6">
+                {/* Segmented Sub-tabs */}
+                <div className="flex border-b border-slate-200 pb-px gap-4">
+                  <button
+                    onClick={() => setCvSubTab('optimized')}
+                    className={`pb-3 text-sm font-semibold border-b-2 transition-all ${
+                      cvSubTab === 'optimized'
+                        ? 'border-slate-900 text-slate-900 font-bold'
+                        : 'border-transparent text-slate-500 hover:text-slate-900'
+                    }`}
                   >
-                    <Copy size={13} />
-                    {copying ? 'Copied' : 'Copy'}
-                  </Button>
+                    Optimized CV Preview
+                  </button>
+                  {originalText && (
+                    <button
+                      onClick={() => setCvSubTab('compare')}
+                      className={`pb-3 text-sm font-semibold border-b-2 transition-all ${
+                        cvSubTab === 'compare'
+                          ? 'border-slate-900 text-slate-900 font-bold'
+                          : 'border-transparent text-slate-500 hover:text-slate-900'
+                      }`}
+                    >
+                      Compare Before & After
+                    </button>
+                  )}
+                  <button
+                    onClick={() => setCvSubTab('plain')}
+                    className={`pb-3 text-sm font-semibold border-b-2 transition-all ${
+                      cvSubTab === 'plain'
+                        ? 'border-slate-900 text-slate-900 font-bold'
+                        : 'border-transparent text-slate-500 hover:text-slate-900'
+                    }`}
+                  >
+                    Raw Plain Text
+                  </button>
                 </div>
+
+                {/* Sub-tab content */}
+                {cvSubTab === 'optimized' && (
+                  <div className="flex flex-col gap-6 animate-fade-in">
+                    {/* Settings Panel */}
+                    <div className="bg-slate-50/50 border border-slate-200/80 rounded-xl p-4 sm:p-5 flex flex-col md:flex-row md:items-center justify-between gap-6 shadow-sm">
+                      <div className="flex flex-col gap-4 flex-1">
+                        <div>
+                          <label className="text-[10px] font-bold uppercase tracking-wider text-slate-500 block mb-2">
+                            Select Design Template
+                          </label>
+                          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                            {[
+                              { id: 'classic', label: 'Classic Serif', desc: 'Traditional & elegant' },
+                              { id: 'modern', label: 'Modern Minimalist', desc: 'Clean, left-aligned' },
+                              { id: 'tech', label: 'Clean Tech', desc: 'Mono, structured' },
+                              { id: 'executive', label: 'Executive Elegant', desc: 'Luxury serif, centered' }
+                            ].map(tpl => (
+                              <button
+                                key={tpl.id}
+                                onClick={() => setSelectedTemplate(tpl.id)}
+                                className={`flex flex-col items-start p-2.5 rounded-lg border text-left transition-all ${
+                                  selectedTemplate === tpl.id
+                                    ? 'border-slate-900 bg-white shadow-sm ring-1 ring-slate-900/5'
+                                    : 'border-slate-200 hover:border-slate-300 bg-white/50'
+                                }`}
+                              >
+                                <span className="text-xs font-bold text-slate-800 flex items-center gap-1">
+                                  {tpl.label}
+                                  {selectedTemplate === tpl.id && (
+                                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                                  )}
+                                </span>
+                                <span className="text-[9px] text-slate-400 font-medium mt-0.5">{tpl.desc}</span>
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="flex flex-col gap-2 shrink-0 md:border-l md:border-slate-200 md:pl-6">
+                        <label className="text-[10px] font-bold uppercase tracking-wider text-slate-500 block mb-1">
+                          Page Budgeting
+                        </label>
+                        <div className="flex items-center bg-slate-200/60 p-0.5 rounded-lg border border-slate-200 w-full sm:w-auto">
+                          <button
+                            type="button"
+                            onClick={() => setPageBudget('standard')}
+                            className={`px-3 py-1.5 rounded-md text-xs font-bold transition-all whitespace-nowrap ${
+                              pageBudget === 'standard'
+                                ? 'bg-white text-slate-900 shadow-sm'
+                                : 'text-slate-600 hover:text-slate-900'
+                            }`}
+                          >
+                            Standard Spacing
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setPageBudget('fit')}
+                            className={`px-3 py-1.5 rounded-md text-xs font-bold transition-all whitespace-nowrap flex items-center gap-1 ${
+                              pageBudget === 'fit'
+                                ? 'bg-white text-slate-900 shadow-sm'
+                                : 'text-slate-600 hover:text-slate-900'
+                            }`}
+                          >
+                            <Sparkles size={11} className="text-emerald-500 fill-emerald-500/10" />
+                            Auto-Fit (1 Page)
+                          </button>
+                        </div>
+                        <span className="text-[9px] text-slate-400 font-medium text-center md:text-left">
+                          {pageBudget === 'fit' ? 'Font sizes & margins compressed to fit 1 page' : 'Generous spacing for multi-page layouts'}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Preview document container */}
+                    <div className="bg-mist/20 py-6 rounded-xl border border-boundary">
+                      <ResumePreview data={result} templateId={selectedTemplate} pageBudget={pageBudget} />
+                    </div>
+                  </div>
+                )}
+
+                {cvSubTab === 'compare' && originalText && (
+                  <div className="animate-fade-in">
+                    <ResumeCompare originalText={originalText} transformedData={result} />
+                  </div>
+                )}
+
+                {cvSubTab === 'plain' && (
+                  <div className="animate-fade-in flex flex-col gap-4 text-left">
+                    <div className="relative">
+                      <textarea
+                        readOnly
+                        value={plainText}
+                        className="w-full min-h-[420px] bg-white border border-boundary rounded-xl p-6 font-mono text-[11px] text-ink leading-relaxed focus:outline-none select-all"
+                      />
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="absolute top-4 right-4 flex items-center gap-1.5 border border-slate-200 bg-white shadow-sm hover:bg-slate-50"
+                        onClick={handleCopyText}
+                      >
+                        <Copy size={13} />
+                        {copying ? 'Copied' : 'Copy'}
+                      </Button>
+                    </div>
+                  </div>
+                )}
               </div>
             )}
             

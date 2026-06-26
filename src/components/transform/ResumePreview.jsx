@@ -1,27 +1,28 @@
-export default function ResumePreview({ data }) {
+export default function ResumePreview({ data, templateId = 'classic', pageBudget = 'standard' }) {
   if (!data) return null;
 
   const { contact, summary, skills, experience, education, projects, certifications } = data;
+  const isCentered = templateId === 'classic' || templateId === 'executive';
 
   return (
-    <div className="resume-document w-full bg-white rounded-lg border border-boundary shadow-document p-4 sm:p-8 md:p-12 max-w-2xl mx-auto text-left">
+    <div className={`resume-document w-full bg-white rounded-lg border border-boundary shadow-document p-4 sm:p-8 md:p-12 max-w-2xl mx-auto text-left template-${templateId} budget-${pageBudget}`}>
       {/* Header */}
-      <div className="text-center mb-5">
+      <div className={`${isCentered ? 'text-center' : 'text-left'} mb-5`}>
         <h1>{contact.name}</h1>
-        <div className="text-xs text-gray-600 mt-1 flex flex-wrap justify-center gap-x-2 gap-y-1">
+        <div className={`contact-line text-xs text-gray-600 mt-1 flex flex-wrap ${isCentered ? 'justify-center' : 'justify-start'} gap-x-2 gap-y-1`}>
           {[
             contact.email,
             contact.phone,
             contact.location,
-            contact.linkedin,
-            contact.github,
-            contact.portfolio
+            contact.linkedin ? contact.linkedin.replace(/^(https?:\/\/)?(www\.)?/, '') : null,
+            contact.github ? contact.github.replace(/^(https?:\/\/)?(www\.)?/, '') : null,
+            contact.portfolio ? contact.portfolio.replace(/^(https?:\/\/)?(www\.)?/, '') : null
           ]
             .filter(Boolean)
             .map((item, idx, arr) => (
-              <span key={item}>
+              <span key={item} className="flex items-center">
                 {item}
-                {idx < arr.length - 1 && <span className="ml-2 text-gray-300">|</span>}
+                {idx < arr.length - 1 && <span className="mx-2 text-gray-300">{templateId === 'executive' ? '·' : '|'}</span>}
               </span>
             ))}
         </div>
@@ -58,7 +59,7 @@ export default function ResumePreview({ data }) {
         <section className="mb-4">
           <div className="section-title">Experience</div>
           {experience.map((exp, i) => (
-            <div key={i} className="mb-3">
+            <div key={i} className="experience-item">
               <div className="flex justify-between items-baseline gap-4">
                 <strong className="text-sm">{exp.title}</strong>
                 <span className="text-xs text-gray-500 font-mono shrink-0">{exp.start_date} – {exp.end_date}</span>
@@ -81,12 +82,12 @@ export default function ResumePreview({ data }) {
         <section className="mb-4">
           <div className="section-title">Education</div>
           {education.map((edu, i) => (
-            <div key={i} className="mb-2">
+            <div key={i} className="education-item">
               <div className="flex justify-between items-baseline gap-4">
                 <strong className="text-sm">{edu.degree} in {edu.field}</strong>
                 <span className="text-xs text-gray-500 font-mono shrink-0">{edu.start_year} – {edu.end_year}</span>
               </div>
-              <div className="text-xs text-gray-600 italic">
+              <div className="text-xs text-gray-600 italic font-medium">
                 {[edu.institution, edu.location].filter(Boolean).join(', ')}
               </div>
               {edu.gpa && <div className="text-xs text-gray-500">GPA: {edu.gpa}</div>}
@@ -107,7 +108,7 @@ export default function ResumePreview({ data }) {
         <section className="mb-4">
           <div className="section-title">Projects</div>
           {projects.map((proj, i) => (
-            <div key={i} className="mb-2">
+            <div key={i} className="project-item">
               <div className="flex items-center gap-2">
                 <strong className="text-sm">{proj.name}</strong>
                 {proj.link && (

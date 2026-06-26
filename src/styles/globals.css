@@ -81,31 +81,156 @@ body {
 
 /* Custom Utilities */
 @utility resume-document {
-  font-family: 'Times New Roman', Times, serif;
-  font-size: 14px;
-  line-height: 1.5;
   color: #111111;
   
-  & h1 {
-    font-size: 24px;
-    font-weight: bold;
-    text-align: center;
-    margin-bottom: 4px;
-    letter-spacing: -0.02em;
+  /* Spacing Budgets */
+  &.budget-fit {
+    font-size: 13px;
+    line-height: 1.35;
+    & h1 {
+      font-size: 20px;
+      margin-bottom: 2px;
+    }
+    & .section-title {
+      font-size: 11px;
+      margin: 10px 0 4px;
+      padding-bottom: 1px;
+    }
+    & .bullet-item {
+      margin-bottom: 2px;
+    }
+    & .experience-item, & .education-item, & .project-item {
+      margin-bottom: 6px;
+    }
   }
-  
-  & .section-title {
-    font-size: 12px;
-    font-weight: bold;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    border-bottom: 1.5px solid #111111;
-    padding-bottom: 2px;
-    margin: 18px 0 8px;
+
+  &.budget-standard {
+    font-size: 14px;
+    line-height: 1.5;
+    & h1 {
+      font-size: 24px;
+      margin-bottom: 4px;
+    }
+    & .section-title {
+      font-size: 12px;
+      margin: 18px 0 8px;
+      padding-bottom: 2px;
+    }
+    & .bullet-item {
+      margin-bottom: 4px;
+    }
+    & .experience-item, & .education-item, & .project-item {
+      margin-bottom: 12px;
+    }
   }
-  
-  & .bullet-item::before {
-    content: '• ';
+
+  /* Typography Templates */
+  &.template-classic {
+    font-family: 'Times New Roman', Times, serif;
+    & h1 {
+      font-weight: bold;
+      text-align: center;
+      letter-spacing: -0.02em;
+    }
+    & .contact-line {
+      text-align: center;
+    }
+    & .section-title {
+      font-weight: bold;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      border-bottom: 1.5px solid #111111;
+    }
+    & .bullet-item::before {
+      content: '• ';
+    }
+  }
+
+  &.template-modern {
+    font-family: var(--font-sans);
+    & h1 {
+      font-weight: 800;
+      text-align: left;
+      letter-spacing: -0.03em;
+      color: #0f172a;
+    }
+    & .contact-line {
+      text-align: left;
+      color: #475569;
+    }
+    & .section-title {
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      border-bottom: 1px solid #cbd5e1;
+      color: #334155;
+    }
+    & .bullet-item::before {
+      content: '– ';
+      color: #94a3b8;
+    }
+  }
+
+  &.template-tech {
+    font-family: var(--font-sans);
+    & h1 {
+      font-family: var(--font-mono);
+      font-weight: 700;
+      text-align: left;
+      color: #0f172a;
+    }
+    & .contact-line {
+      font-family: var(--font-mono);
+      text-align: left;
+      font-size: 11px;
+      color: #475569;
+    }
+    & .section-title {
+      font-family: var(--font-mono);
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      border-left: 3px solid #0f172a;
+      padding-left: 8px;
+      padding-bottom: 0px;
+      border-bottom: none;
+      color: #0f172a;
+    }
+    & .bullet-item::before {
+      content: '> ';
+      font-family: var(--font-mono);
+      color: #64748b;
+    }
+  }
+
+  &.template-executive {
+    font-family: Georgia, serif;
+    & h1 {
+      font-weight: normal;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      text-align: center;
+      color: #1e293b;
+    }
+    & .contact-line {
+      text-align: center;
+      font-style: italic;
+      color: #475569;
+    }
+    & .section-title {
+      font-weight: normal;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      border-bottom: 0.5px solid #64748b;
+      color: #1e293b;
+      text-align: center;
+    }
+    & .bullet-item::before {
+      content: '▪ ';
+      font-size: 8px;
+      vertical-align: middle;
+      color: #475569;
+    }
   }
 }
 
