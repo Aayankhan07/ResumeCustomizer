@@ -1,5 +1,6 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { useAuth } from './contexts/AuthContext';
+import { SpeedInsights } from '@vercel/speed-insights/react';
 
 // Pages (These will be created in later phases)
 import Landing         from './pages/Landing';
@@ -19,7 +20,8 @@ import ProtectedRoute  from './components/layout/ProtectedRoute';
 
 export default function App() {
   return (
-    <Routes>
+    <>
+      <Routes>
       {/* Public */}
       <Route path="/"                element={<Landing />} />
       <Route path="/login"           element={<Login />} />
@@ -40,5 +42,7 @@ export default function App() {
       <Route path="/404" element={<NotFound />} />
       <Route path="*"    element={<Navigate to="/404" replace />} />
     </Routes>
+    <SpeedInsights />
+    </>
   );
 }

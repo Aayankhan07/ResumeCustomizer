@@ -42,6 +42,92 @@ import CoverLetterTab from './tabs/CoverLetterTab';
 import AtsCheckTab from './tabs/AtsCheckTab';
 import RescoreTab from './tabs/RescoreTab';
 
+const COMPREHENSIVE_STOP_WORDS = new Set([
+  // Articles & conjunctions
+  'a', 'an', 'the', 'and', 'or', 'but', 'nor', 'so', 'yet', 'if', 'because', 'as', 'until', 'while', 'of', 'at', 'by', 'for', 'with', 'about', 'against', 'between', 'into', 'through', 'during', 'before', 'after', 'above', 'below', 'to', 'from', 'up', 'down', 'in', 'out', 'on', 'off', 'over', 'under', 'again', 'further', 'then', 'once',
+  
+  // Pronouns
+  'i', 'me', 'my', 'myself', 'we', 'our', 'ours', 'ourselves', 'you', 'your', 'yours', 'yourself', 'yourselves', 'he', 'him', 'his', 'himself', 'she', 'her', 'hers', 'herself', 'it', 'its', 'itself', 'they', 'them', 'their', 'theirs', 'themselves', 'what', 'which', 'who', 'whom', 'this', 'that', 'these', 'those', 'am', 'is', 'are', 'was', 'were', 'be', 'been', 'being', 'have', 'has', 'had', 'having', 'do', 'does', 'did', 'doing',
+  
+  // Contractions & helpers
+  're', 'll', 've', 'd', 'm', 's', 't', 'don', 't', 'can', 'will', 'just', 'should', 'would', 'could', 'shouldn', 'wouldn', 'couldn', 'isn', 'aren', 'wasn', 'weren', 'hasn', 'haven', 'hadn', 'doesn', 'don', 'didnt', 'wasnt', 'werent', 'hasnt', 'havent', 'hadnt', 'doesnt', 'dont', 'cant', 'wont', 'shouldnt', 'wouldnt', 'couldnt',
+  
+  // Common verbs and helpers
+  'looking', 'look', 'looks', 'seeking', 'seek', 'seeks', 'scale', 'scaling',
+  'combine', 'combining', 'combined', 'intelligent', 'concept', 'concepts',
+  'full', 'fully', 'part', 'time', 'date', 'dates', 'year', 'years', 'month',
+  'months', 'day', 'days', 'hour', 'hours', 'week', 'weeks', 'want', 'wants',
+  'wanted', 'need', 'needs', 'needed', 'find', 'finds', 'found', 'get', 'gets',
+  'got', 'make', 'makes', 'made', 'take', 'takes', 'took', 'give', 'gives',
+  'given', 'like', 'likes', 'liked', 'love', 'loves', 'loved', 'must', 'should',
+  'could', 'would', 'will', 'shall', 'may', 'might', 'can', 'cannot', 'couldnt',
+  'shouldnt', 'wouldnt', 'cant', 'wont', 'dont', 'didnt', 'doesnt', 'isnt',
+  'arent', 'wasnt', 'werent', 'hasnt', 'havent', 'hadnt', 'had', 'has', 'have',
+  'having', 'do', 'does', 'did', 'doing', 'done', 'go', 'goes', 'went', 'gone',
+  'going', 'come', 'comes', 'came', 'coming', 'use', 'uses', 'used', 'using',
+  'keep', 'keeps', 'kept', 'keeping', 'start', 'starts', 'started', 'starting',
+  'stop', 'stops', 'stopped', 'stopping', 'end', 'ends', 'ended', 'ending',
+  'show', 'shows', 'showed', 'shown', 'showing', 'tell', 'tells', 'told',
+  'telling', 'ask', 'asks', 'asked', 'asking', 'answer', 'answers', 'answered',
+  'answering', 'say', 'says', 'said', 'saying', 'think', 'thinks', 'thought',
+  'thinking', 'know', 'knows', 'knew', 'known', 'knowing', 'believe', 'believes',
+  'believed', 'believing', 'feel', 'feels', 'felt', 'feeling', 'seem', 'seems',
+  'seemed', 'seeming', 'appear', 'appears', 'appeared', 'appearing',
+  
+  // Generic job description verbs, nouns & roles
+  'hiring', 'hired', 'join', 'joining', 'build', 'building', 'built',
+  'write', 'writing', 'written', 'design', 'designing', 'designed',
+  'create', 'creating', 'created', 'develop', 'developing', 'developed',
+  'developer', 'developers', 'development', 'developments', 'engineer',
+  'engineering', 'engineers', 'role', 'roles', 'job', 'jobs',
+  'work', 'working', 'works', 'team', 'teams', 'member', 'members',
+  'people', 'person', 'candidate', 'candidates', 'client', 'clients',
+  'customer', 'customers', 'business', 'businesses', 'company',
+  'companies', 'project', 'projects', 'product', 'products', 'service',
+  'services', 'system', 'systems', 'platform', 'platforms', 'tool',
+  'tools', 'stack', 'tech', 'technical', 'technology', 'technologies',
+  'internship', 'internships', 'intern', 'junior', 'senior', 'level',
+  
+  // Common business & process actions
+  'ability', 'action', 'actions', 'active', 'actively', 'activities',
+  'strong', 'practical', 'hands-on', 'hands', 'proven', 'experience',
+  'experiences', 'experienced', 'skills', 'skill', 'professional',
+  'background', 'required', 'requires', 'requirements', 'responsibility',
+  'responsibilities', 'task', 'tasks', 'goal', 'goals', 'deliver',
+  'delivering', 'delivered', 'track', 'tracking', 'report', 'reporting',
+  'optimize', 'optimizing', 'optimized', 'maintain', 'maintaining',
+  'maintained', 'support', 'supporting', 'supported', 'manage', 'managing',
+  'managed', 'management', 'lead', 'leading', 'leads', 'leader',
+  'collaborate', 'collaborating', 'collaboration', 'collaborative',
+  'communicate', 'communicating', 'communication', 'partner', 'partnering',
+  'partnered', 'discover', 'discovering', 'discovered', 'identify',
+  'identifying', 'identified', 'solve', 'solving', 'solved', 'eliminate',
+  'eliminating', 'eliminated', 'improve', 'improving', 'improved',
+  'harden', 'hardening', 'hardened', 'secure', 'securing', 'secured',
+  'ensure', 'ensuring', 'ensured', 'track', 'tracks', 'reporting',
+  
+  // Generic modifiers & jargon
+  'highly', 'deeply', 'clean', 'cleanly', 'clear', 'clearly',
+  'quick', 'quickly', 'fast', 'faster', 'flexible', 'flexibility',
+  'complex', 'simple', 'simply', 'basic', 'basically', 'general',
+  'generally', 'specific', 'specifically', 'appropriate', 'appropriately',
+  'ideal', 'ideally', 'excellent', 'meaningful', 'successful',
+  'successfully', 'measurable', 'consistent', 'consistently',
+  'operational', 'operationally', 'internal', 'internally', 'external',
+  'externally', 'real', 'really', 'different', 'various', 'several',
+  'quarterly', 'prioritized', 'structured', 'unparalleled', 'comprehensive',
+  'patented', 'valley', 'silicon', 'funded', 'startup', 'market',
+  'focus', 'focused', 'focuses', 'focusing', 'harness', 'harnessing',
+  'about', 'above', 'across', 'after', 'against', 'along', 'amid', 'among',
+  'around', 'at', 'before', 'behind', 'below', 'beneath', 'beside', 'between',
+  'beyond', 'but', 'by', 'concerning', 'considering', 'despite', 'down',
+  'during', 'except', 'following', 'for', 'from', 'in', 'inside', 'into',
+  'like', 'minus', 'near', 'of', 'off', 'on', 'onto', 'opposite', 'out',
+  'outside', 'over', 'past', 'pending', 'regarding', 'since', 'through',
+  'throughout', 'to', 'toward', 'towards', 'under', 'underneath', 'unlike',
+  'until', 'up', 'upon', 'versus', 'via', 'with', 'within', 'without'
+]);
+
 export default function TransformOutput({ result, plainText, originalText, onReset }) {
   // Set Compatibility Overview as the default active tab
   const [activeTab, setActiveTab] = useState('overview');
@@ -162,66 +248,12 @@ export default function TransformOutput({ result, plainText, originalText, onRes
   // Extract missing keywords by comparing JD and matched keywords
   const getMissingKeywords = () => {
     if (!result.original_job_description) return ['Scalability', 'Cloud Computing'];
-    
-    const STOP_WORDS = new Set([
-      'with', 'that', 'this', 'have', 'from', 'they', 'will', 'been',
-      'more', 'also', 'into', 'than', 'your', 'their', 'about', 'which',
-      'when', 'what', 'were', 'would', 'could', 'should', 'must', 'shall',
-      'very', 'just', 'some', 'such', 'each', 'most', 'over', 'work',
-      'team', 'role', 'year', 'years', 'time', 'using', 'used', 'other',
-      'there', 'about', 'above', 'after', 'before', 'under', 'below',
-      'their', 'these', 'those', 'them', 'then', 'than', 'into', 'only',
-      'also', 'here', 'when', 'who', 'whom', 'whose', 'why', 'how',
-      'both', 'each', 'few', 'down', 'once', 'much', 'many', 'same',
-      'some', 'such', 'very', 'just', 'only', 'than', 'then', 'once',
-      'here', 'very', 'just', 'much', 'any', 'own', 'same', 'should',
-      'your', 'mine', 'self', 'the', 'and', 'but', 'nor', 'off', 'out',
-      'hiring', 'hired', 'join', 'joining', 'build', 'building', 'built',
-      'write', 'writing', 'written', 'design', 'designing', 'designed',
-      'create', 'creating', 'created', 'develop', 'developing', 'developed',
-      'developer', 'developers', 'development', 'developments', 'engineer',
-      'engineering', 'engineers', 'role', 'roles', 'job', 'jobs',
-      'work', 'working', 'works', 'team', 'teams', 'member', 'members',
-      'people', 'person', 'candidate', 'candidates', 'client', 'clients',
-      'customer', 'customers', 'business', 'businesses', 'company',
-      'companies', 'project', 'projects', 'product', 'products', 'service',
-      'services', 'system', 'systems', 'platform', 'platforms', 'tool',
-      'tools', 'stack', 'tech', 'technical', 'technology', 'technologies',
-      'internship', 'internships', 'intern', 'junior', 'senior', 'level',
-      'ability', 'action', 'actions', 'active', 'actively', 'activities',
-      'strong', 'practical', 'hands-on', 'hands', 'proven', 'experience',
-      'experiences', 'experienced', 'skills', 'skill', 'professional',
-      'background', 'required', 'requires', 'requirements', 'responsibility',
-      'responsibilities', 'task', 'tasks', 'goal', 'goals', 'deliver',
-      'delivering', 'delivered', 'track', 'tracking', 'report', 'reporting',
-      'optimize', 'optimizing', 'optimized', 'maintain', 'maintaining',
-      'maintained', 'support', 'supporting', 'supported', 'manage', 'managing',
-      'managed', 'management', 'lead', 'leading', 'leads', 'leader',
-      'collaborate', 'collaborating', 'collaboration', 'collaborative',
-      'communicate', 'communicating', 'communication', 'partner', 'partnering',
-      'partnered', 'discover', 'discovering', 'discovered', 'identify',
-      'identifying', 'identified', 'solve', 'solving', 'solved', 'eliminate',
-      'eliminating', 'eliminated', 'improve', 'improving', 'improved',
-      'harden', 'hardening', 'hardened', 'secure', 'securing', 'secured',
-      'ensure', 'ensuring', 'ensured', 'track', 'tracks', 'reporting',
-      'highly', 'deeply', 'clean', 'cleanly', 'clear', 'clearly',
-      'quick', 'quickly', 'fast', 'faster', 'flexible', 'flexibility',
-      'complex', 'simple', 'simply', 'basic', 'basically', 'general',
-      'generally', 'specific', 'specifically', 'appropriate', 'appropriately',
-      'ideal', 'ideally', 'excellent', 'meaningful', 'successful',
-      'successfully', 'measurable', 'consistent', 'consistently',
-      'operational', 'operationally', 'internal', 'internally', 'external',
-      'externally', 'real', 'really', 'different', 'various', 'several',
-      'quarterly', 'prioritized', 'structured', 'unparalleled', 'comprehensive',
-      'patented', 'valley', 'silicon', 'funded', 'startup', 'market',
-      'focus', 'focused', 'focuses', 'focusing', 'harness', 'harnessing'
-    ]);
 
     const words = result.original_job_description
       .toLowerCase()
       .replace(/[^a-z0-9\s\-]/g, ' ')
       .split(/\s+/)
-      .filter(w => w.length >= 3 && !STOP_WORDS.has(w) && !/^\d+$/.test(w));
+      .filter(w => w.length >= 3 && !COMPREHENSIVE_STOP_WORDS.has(w) && !/^\d+$/.test(w));
       
     const uniqueKeywords = [...new Set(words)];
     const matchedSet = new Set((result.meta?.keywords_matched || []).map(k => k.toLowerCase()));
@@ -761,7 +793,7 @@ ${candidateName}`;
             {activeTab === 'atscheck' && (
               <AtsCheckTab 
                 currentScore={currentScore}
-                keywordsMatched={result.meta?.keywords_matched || []}
+                keywordsMatched={(result.meta?.keywords_matched || []).filter(kw => !COMPREHENSIVE_STOP_WORDS.has(kw.toLowerCase()))}
                 missingKeywords={getMissingKeywords()}
                 screeningIssues={recruiterScan.completely_missed}
                 nextMoves={roadmapData.tasks || []}
