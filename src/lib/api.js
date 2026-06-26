@@ -29,6 +29,7 @@ export async function transformResume({ resumeText, jobDescriptionText }) {
     const error = new Error(data.error || 'TRANSFORM_FAILED');
     error.code = data.error;
     error.resetAt = data.reset_at;
+    error.details = data.details || null;
     throw error;
   }
 

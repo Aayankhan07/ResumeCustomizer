@@ -11,6 +11,7 @@ export function useTransform() {
     plainText: null,
     transformationId: null,
     error: null,
+    errorDetails: null,
     rateLimit: null,
   });
 
@@ -38,9 +39,10 @@ export function useTransform() {
           ...s,
           status: 'error',
           error: err.code ?? 'UNKNOWN_ERROR',
+          errorDetails: err.details ?? null,
           rateLimit: err.code === 'RATE_LIMIT_EXCEEDED' ? { resetAt: err.resetAt } : s.rateLimit,
         }));
-        if (err.code !== 'RATE_LIMIT_EXCEEDED') {
+        if (err.code !== 'RATE_LIMIT_EXCEEDED' && err.code !== 'DATABASE_SAVE_FAILED') {
           toast.error('Transform failed. Please try again.');
         }
       }

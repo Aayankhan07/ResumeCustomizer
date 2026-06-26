@@ -13,7 +13,7 @@ export default function Transform() {
   const [step, setStep] = useState(1);
   const [resumeText, setResumeText] = useState('');
   const [jobDescriptionText, setJobDescriptionText] = useState('');
-  const { status, result, plainText, error, rateLimit, transform, reset } = useTransform();
+  const { status, result, plainText, error, errorDetails, rateLimit, transform, reset } = useTransform();
 
   const handleNext = () => {
     if (step === 1 && resumeText.trim().length >= 50) {
@@ -75,15 +75,24 @@ export default function Transform() {
             {status === 'error' && (
               <div className="bg-red-50 border border-red-200 text-red-700 rounded-xl p-4 flex gap-3 items-start text-sm">
                 <AlertCircle className="shrink-0 mt-0.5" size={16} />
-                <div>
+                <div className="w-full">
                   <h4 className="font-semibold">Transformation Failed</h4>
-                  <p className="mt-1">
-                    {error === 'RATE_LIMIT_EXCEEDED'
-                      ? `You have reached the hourly limit. Reset time is scheduled for ${
-                          rateLimit?.resetAt ? new Date(rateLimit.resetAt).toLocaleTimeString() : 'later'
-                        }.`
-                      : 'An error occurred while communicating with the AI model. Please check your inputs and try again.'}
-                  </p>
+                  <div className="mt-1 leading-relaxed">
+                    {error === 'RATE_LIMIT_EXCEEDED' ? (
+                      `You have reached the hourly limit. Reset time is scheduled for ${
+                        rateLimit?.resetAt ? new Date(rateLimit.resetAt).toLocaleTimeString() : 'later'
+                      }.`
+                    ) : error === 'DATABASE_SAVE_FAILED' ? (
+                      <div className="flex flex-col gap-2">
+                        <p>The resume was tailored successfully but could not be saved to your dashboard history due to a database error:</p>
+                        <pre className="bg-red-100/60 border border-red-200 rounded-lg p-3 font-mono text-[11px] text-red-800 overflow-x-auto whitespace-pre-wrap max-w-full">
+                          {JSON.stringify(errorDetails, null, 2)}
+                        </pre>
+                      </div>
+                    ) : (
+                      'An error occurred while communicating with the AI model. Please check your inputs and try again.'
+                    )}
+                  </div>
                 </div>
               </div>
             )}
