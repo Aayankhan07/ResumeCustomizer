@@ -93,6 +93,30 @@ export default function TransformOutput({ result, plainText, originalText, onRes
 
   const currentScore = adjustedScore !== null ? adjustedScore : score;
 
+  const getScoreColorInfo = (scoreValue) => {
+    if (scoreValue < 50) {
+      return {
+        pill: 'bg-rose-50 border-rose-200 text-rose-700 dark:bg-rose-500/15 dark:border-rose-500/25 dark:text-rose-400',
+        dot: 'bg-rose-500',
+        bar: 'bg-rose-500'
+      };
+    } else if (scoreValue < 75) {
+      return {
+        pill: 'bg-amber-50 border-amber-200 text-amber-700 dark:bg-amber-500/15 dark:border-amber-500/25 dark:text-amber-400',
+        dot: 'bg-amber-500',
+        bar: 'bg-amber-500'
+      };
+    } else {
+      return {
+        pill: 'bg-emerald-50 border-emerald-200 text-emerald-700 dark:bg-emerald-500/15 dark:border-emerald-500/25 dark:text-emerald-400',
+        dot: 'bg-emerald-500',
+        bar: 'bg-emerald-500'
+      };
+    }
+  };
+
+  const scoreColors = getScoreColorInfo(currentScore);
+
   // Derive dynamic fields from results
   const jobTitle = result.meta?.detected_job_title || 'Machine Learning Engineer';
   const company = result.meta?.detected_company || 'Target Company';
@@ -340,8 +364,8 @@ ${candidateName}`;
         </div>
         
         <div className="flex items-center gap-2 w-full md:w-auto">
-          <div className="bg-slate-50 border border-slate-200/75 rounded-lg px-3 py-1.5 flex items-center gap-2 text-xs font-bold text-slate-800">
-            <span className="w-2.5 h-2.5 rounded-full bg-emerald-500" />
+          <div className={`border rounded-lg px-3 py-1.5 flex items-center gap-2 text-xs font-bold transition-colors duration-300 ${scoreColors.pill}`}>
+            <span className={`w-2 h-2 rounded-full animate-pulse ${scoreColors.dot}`} />
             {currentScore} Match Score
           </div>
           <button
@@ -369,7 +393,7 @@ ${candidateName}`;
               </div>
               <div className="w-full h-2 bg-slate-100 rounded-full overflow-hidden">
                 <div 
-                  className="h-full bg-emerald-500 transition-all duration-1000 ease-out" 
+                  className={`h-full transition-all duration-1000 ease-out ${scoreColors.bar}`} 
                   style={{ width: `${currentScore}%` }}
                 />
               </div>
@@ -385,9 +409,9 @@ ${candidateName}`;
                   <button
                     key={item.id}
                     onClick={() => setActiveTab(item.id)}
-                    className={`snap-center flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-semibold whitespace-nowrap transition-all ${
+                    className={`snap-center flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-semibold whitespace-nowrap transition-all cursor-pointer ${
                       isActive 
-                        ? 'bg-slate-900 text-white font-bold shadow-sm' 
+                        ? 'sidebar-active-tab bg-slate-900 text-white font-bold shadow-sm' 
                         : 'bg-white border border-slate-200 text-slate-600 hover:text-slate-900'
                     }`}
                   >
@@ -408,9 +432,9 @@ ${candidateName}`;
                   <button
                     key={item.id}
                     onClick={() => setActiveTab(item.id)}
-                    className={`flex items-center gap-3 w-full px-3.5 py-2.5 rounded-lg text-sm font-semibold tracking-tight transition-all ${
+                    className={`flex items-center gap-3 w-full px-3.5 py-2.5 rounded-lg text-sm font-semibold tracking-tight transition-all cursor-pointer ${
                       isActive 
-                        ? 'bg-slate-900 text-white shadow-sm font-bold' 
+                        ? 'sidebar-active-tab bg-slate-900 text-white shadow-sm font-bold' 
                         : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/50'
                     }`}
                   >
@@ -492,7 +516,7 @@ ${candidateName}`;
                 {cvSubTab === 'optimized' && (
                   <div className="flex flex-col gap-6 animate-fade-in">
                     {/* Settings Panel */}
-                    <div className="bg-slate-50/50 border border-slate-200/80 rounded-xl p-4 sm:p-5 flex flex-col md:flex-row md:items-center justify-between gap-6 shadow-sm">
+                    <div className="settings-panel bg-slate-50/50 border border-slate-200/80 rounded-xl p-4 sm:p-5 flex flex-col md:flex-row md:items-center justify-between gap-6 shadow-sm">
                       <div className="flex flex-col gap-4 flex-1">
                         <div>
                           <label className="text-[10px] font-bold uppercase tracking-wider text-slate-500 block mb-2">
@@ -508,13 +532,13 @@ ${candidateName}`;
                               <button
                                 key={tpl.id}
                                 onClick={() => setSelectedTemplate(tpl.id)}
-                                className={`flex flex-col items-start p-2.5 rounded-lg border text-left transition-all ${
+                                className={`flex flex-col items-start p-2.5 rounded-lg border text-left transition-all hover:scale-[1.02] active:scale-[0.98] cursor-pointer ${
                                   selectedTemplate === tpl.id
-                                    ? 'border-slate-900 bg-white shadow-sm ring-1 ring-slate-900/5'
+                                    ? 'template-card-active border-slate-900 bg-white shadow-sm ring-1 ring-slate-900/5'
                                     : 'border-slate-200 hover:border-slate-300 bg-white/50'
                                 }`}
                               >
-                                <span className="text-xs font-bold text-slate-800 flex items-center gap-1">
+                                <span className="text-xs font-bold text-slate-850 dark:text-slate-200 flex items-center gap-1">
                                   {tpl.label}
                                   {selectedTemplate === tpl.id && (
                                     <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
@@ -527,15 +551,15 @@ ${candidateName}`;
                         </div>
                       </div>
 
-                      <div className="flex flex-col gap-2 shrink-0 md:border-l md:border-slate-200 md:pl-6">
+                      <div className="flex flex-col gap-2 shrink-0 md:border-l md:border-slate-250 md:pl-6">
                         <label className="text-[10px] font-bold uppercase tracking-wider text-slate-500 block mb-1">
                           Page Budgeting
                         </label>
-                        <div className="flex items-center bg-slate-200/60 p-0.5 rounded-lg border border-slate-200 w-full sm:w-auto">
+                        <div className="flex items-center bg-slate-200/60 p-0.5 rounded-lg border border-slate-250 w-full sm:w-auto">
                           <button
                             type="button"
                             onClick={() => setPageBudget('standard')}
-                            className={`px-3 py-1.5 rounded-md text-xs font-bold transition-all whitespace-nowrap ${
+                            className={`px-3 py-1.5 rounded-md text-xs font-bold transition-all whitespace-nowrap cursor-pointer ${
                               pageBudget === 'standard'
                                 ? 'bg-white text-slate-900 shadow-sm'
                                 : 'text-slate-600 hover:text-slate-900'
@@ -546,7 +570,7 @@ ${candidateName}`;
                           <button
                             type="button"
                             onClick={() => setPageBudget('fit')}
-                            className={`px-3 py-1.5 rounded-md text-xs font-bold transition-all whitespace-nowrap flex items-center gap-1 ${
+                            className={`px-3 py-1.5 rounded-md text-xs font-bold transition-all whitespace-nowrap flex items-center gap-1 cursor-pointer ${
                               pageBudget === 'fit'
                                 ? 'bg-white text-slate-900 shadow-sm'
                                 : 'text-slate-600 hover:text-slate-900'
@@ -556,7 +580,7 @@ ${candidateName}`;
                             Auto-Fit (1 Page)
                           </button>
                         </div>
-                        <span className="text-[9px] text-slate-400 font-medium text-center md:text-left">
+                        <span className="text-[9px] text-slate-400 font-medium text-center md:text-left mt-1">
                           {pageBudget === 'fit' ? 'Font sizes & margins compressed to fit 1 page' : 'Generous spacing for multi-page layouts'}
                         </span>
                       </div>

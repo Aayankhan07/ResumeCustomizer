@@ -196,7 +196,7 @@ export default function Landing() {
       {/* How It Works Section */}
       <section id="how-it-works" className="py-28 bg-white border-b border-slate-100 relative">
         {/* Background Grid Pattern */}
-        <div className="absolute inset-0 bg-[linear-gradient(to_right,#f1f5f9_1px,transparent_1px),linear-gradient(to_bottom,#f1f5f9_1px,transparent_1px)] bg-[size:4.5rem_4.5rem] opacity-40 z-0" />
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,var(--color-slate-200)_1px,transparent_1px),linear-gradient(to_bottom,var(--color-slate-200)_1px,transparent_1px)] bg-[size:4.5rem_4.5rem] opacity-20 z-0" />
 
         <div className="max-w-5xl mx-auto px-6 text-center relative z-10">
           <h2 className="font-serif text-3xl sm:text-4xl text-slate-900 font-bold mb-4">Three steps. One perfect resume.</h2>
@@ -208,30 +208,44 @@ export default function Landing() {
                 step: '01',
                 title: 'Add your resume',
                 desc: 'Upload a PDF, DOCX, or TXT file — or just paste your resume text directly into the workspace wizard.',
+                icon: FileText,
+                color: 'text-blue-500 bg-blue-500/10 border-blue-500/20'
               },
               {
                 step: '02',
                 title: 'Add the job details',
                 desc: 'Paste the target job description or requirements. Our system parses the parameters.',
+                icon: Sparkles,
+                color: 'text-amber-500 bg-amber-500/10 border-amber-500/20'
               },
               {
                 step: '03',
                 title: 'Download tailored PDF',
                 desc: 'Download a clean, ATS-optimized resume PDF formatted in Times New Roman for maximum readability.',
+                icon: CheckCircle,
+                color: 'text-emerald-500 bg-emerald-500/10 border-emerald-500/20'
               },
-            ].map((item, idx) => (
-              <div 
-                key={idx} 
-                className="bg-white border border-slate-200 shadow-sm rounded-lg p-8 text-left flex flex-col gap-4 hover:border-slate-400 transition-colors duration-150 relative group"
-              >
-                <span className="w-10 h-10 rounded-md bg-slate-100 text-slate-700 flex items-center justify-center font-bold text-sm select-none border border-slate-200 shadow-sm">
-                  {item.step}
-                </span>
-                
-                <h3 className="font-serif text-lg font-bold text-slate-900 mt-1">{item.title}</h3>
-                <p className="text-xs text-slate-500 leading-relaxed">{item.desc}</p>
-              </div>
-            ))}
+            ].map((item, idx) => {
+              const IconComponent = item.icon;
+              return (
+                <div 
+                  key={idx} 
+                  className="bg-white border border-slate-200 shadow-sm rounded-xl p-8 text-left flex flex-col gap-5 hover:border-slate-400 transition-all duration-300 relative group hover:-translate-y-1 hover:shadow-md"
+                >
+                  <div className="flex justify-between items-center">
+                    <div className={`w-12 h-12 rounded-xl border flex items-center justify-center shadow-sm transition-transform duration-300 group-hover:scale-110 ${item.color}`}>
+                      <IconComponent size={20} className="stroke-[2]" />
+                    </div>
+                    <span className="text-xs font-mono font-bold text-slate-400 select-none bg-slate-50 border border-slate-250/60 px-2.5 py-0.5 rounded-md dark:bg-slate-800/30 dark:border-slate-700/30">
+                      Step {item.step}
+                    </span>
+                  </div>
+                  
+                  <h3 className="font-serif text-lg font-bold text-slate-900 mt-2 tracking-tight">{item.title}</h3>
+                  <p className="text-xs text-slate-500 leading-relaxed font-medium">{item.desc}</p>
+                </div>
+              );
+            })}
           </div>
         </div>
       </section>
