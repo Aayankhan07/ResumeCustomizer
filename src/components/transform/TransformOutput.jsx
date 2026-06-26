@@ -306,7 +306,7 @@ export default function TransformOutput({ result, plainText, originalText, onRes
   // Unified Sidebar Menu Items incorporating Transformed CV/Resume and Before & After comparison
   const menuItems = [
     { id: 'overview', label: 'Overview', icon: LayoutDashboard },
-    { id: 'preview', label: 'Transformed CV', icon: FileText },
+    { id: 'preview', label: 'Tailored CV', icon: FileText },
     { id: 'roadmap', label: 'Roadmap', icon: Milestone },
     { id: 'skills', label: 'Skills', icon: Target },
     { id: 'recruiter', label: 'Recruiter', icon: UserCheck },
@@ -497,7 +497,7 @@ ${candidateName}`;
                         : 'border-transparent text-slate-500 hover:text-slate-900'
                     }`}
                   >
-                    Optimized CV Preview
+                    Tailored CV Preview
                   </button>
                   {originalText && (
                     <button

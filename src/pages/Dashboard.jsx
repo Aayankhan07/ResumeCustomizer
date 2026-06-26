@@ -49,7 +49,7 @@ export default function Dashboard() {
           <Link to="/transform" className="w-full md:w-auto">
             <Button variant="primary" className="w-full md:w-auto flex items-center justify-center gap-2 px-5 py-2.5 bg-slate-900 text-white rounded-md hover:bg-slate-800 transition-colors">
               <Plus size={16} className="stroke-[2.5]" />
-              New Transform
+              Transform CV
             </Button>
           </Link>
         </div>
@@ -96,7 +96,7 @@ export default function Dashboard() {
               <Link to="/transform">
                 <Button variant="primary" className="flex items-center gap-2 rounded-md px-6 py-2.5 bg-slate-900 text-white hover:bg-slate-800">
                   <Plus size={16} className="stroke-[2.5]" />
-                  Optimize Resume
+                  Transform CV
                 </Button>
               </Link>
             </div>

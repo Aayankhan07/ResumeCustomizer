@@ -19,7 +19,7 @@ export default function ResumeCompare({ originalText, transformedData }) {
       {/* Transformed Panel */}
       <div className="flex-1 bg-white border border-slate-200 rounded-lg p-6 flex flex-col min-w-0 shadow-sm">
         <div className="flex items-center justify-between mb-4 border-b border-slate-100 pb-3 shrink-0">
-          <h4 className="font-serif text-lg font-bold text-slate-900">Transformed Resume</h4>
+          <h4 className="font-serif text-lg font-bold text-slate-900">Tailored CV</h4>
           <span className="px-2.5 py-0.5 text-[9px] font-mono font-semibold uppercase tracking-wider text-emerald-700 bg-emerald-50 border border-emerald-200 rounded">
             Tailored Result
           </span>

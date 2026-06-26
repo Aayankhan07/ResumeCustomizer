@@ -161,7 +161,7 @@ export default function Transform() {
                     disabled={!isStep2Valid || status === 'loading'}
                     className="flex items-center gap-2 bg-slate-900 text-white hover:bg-slate-800 py-2 px-5 rounded-md text-sm font-medium"
                   >
-                    Tailor Resume
+                    Transform CV
                     <ArrowRight size={15} />
                   </Button>
                 )}

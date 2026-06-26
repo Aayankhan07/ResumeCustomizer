@@ -61,7 +61,7 @@ export default function Navbar() {
               <Link to="/transform"
                 className="flex items-center gap-1.5 px-4 py-2 bg-slate-900 text-white text-sm font-medium rounded-md hover:bg-slate-800 hover:shadow-sm transition-all duration-150">
                 <Plus size={14} className="stroke-[2.5]" />
-                New Transform
+                Transform CV
               </Link>
               <div className="relative">
                 <button
