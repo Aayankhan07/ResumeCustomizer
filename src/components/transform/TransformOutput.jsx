@@ -32,6 +32,7 @@ import ResumePreview from './ResumePreview';
 import ResumeCompare from './ResumeCompare';
 
 // Import modular tab components
+import OverviewTab from './tabs/OverviewTab';
 import RoadmapTab from './tabs/RoadmapTab';
 import SkillsTab from './tabs/SkillsTab';
 import RecruiterTab from './tabs/RecruiterTab';
@@ -42,8 +43,8 @@ import AtsCheckTab from './tabs/AtsCheckTab';
 import RescoreTab from './tabs/RescoreTab';
 
 export default function TransformOutput({ result, plainText, originalText, onReset }) {
-  // Set Transformed CV (preview) as the default active tab
-  const [activeTab, setActiveTab] = useState('preview');
+  // Set Compatibility Overview as the default active tab
+  const [activeTab, setActiveTab] = useState('overview');
   const [cvSubTab, setCvSubTab] = useState('optimized'); // 'optimized' | 'compare' | 'plain'
   const [selectedTemplate, setSelectedTemplate] = useState('classic');
   const [pageBudget, setPageBudget] = useState('standard');
@@ -304,6 +305,7 @@ export default function TransformOutput({ result, plainText, originalText, onRes
 
   // Unified Sidebar Menu Items incorporating Transformed CV/Resume and Before & After comparison
   const menuItems = [
+    { id: 'overview', label: 'Overview', icon: LayoutDashboard },
     { id: 'preview', label: 'Transformed CV', icon: FileText },
     { id: 'roadmap', label: 'Roadmap', icon: Milestone },
     { id: 'skills', label: 'Skills', icon: Target },
@@ -472,6 +474,15 @@ ${candidateName}`;
         {/* Content Area Panel - Renders separated sub-component functions */}
         <main className="flex-1 bg-white border border-slate-200 rounded-xl p-6 sm:p-8 shadow-sm flex flex-col justify-between min-h-[580px] transition-all">
           <div className="w-full">
+            {activeTab === 'overview' && (
+              <OverviewTab 
+                currentScore={currentScore}
+                jobTitle={jobTitle}
+                company={company}
+                keywordsMatchedCount={result.meta?.keywords_matched?.length || 0}
+                keywordsTotalCount={result.meta?.keywords_total || 0}
+              />
+            )}
 
             {/* Document Previews & Text Views inside primary sidebar navigation */}
             {activeTab === 'preview' && (
