@@ -265,10 +265,10 @@ body {
   --color-white: #0B0F19;
   --color-mist: #030712;
   
-  --color-slate-50: #0E1322;
-  --color-slate-100: #161B2B;
-  --color-slate-200: #1F2937;
-  --color-slate-300: #374151;
+  --color-slate-50: #080C14;
+  --color-slate-100: #0E1322;
+  --color-slate-200: #121724;
+  --color-slate-300: #1C2333;
   --color-slate-400: #9CA3AF;
   --color-slate-500: #9CA3AF;
   --color-slate-600: #D1D5DB;
@@ -279,7 +279,7 @@ body {
   
   --color-ink: #F9FAFB;
   --color-slate: #E5E7EB;
-  --color-boundary: #1F2937;
+  --color-boundary: #121724;
   --color-graphite: #9CA3AF;
 
   background-color: #030712 !important;
@@ -292,10 +292,10 @@ body {
 
   /* Scrollbar override */
   & ::-webkit-scrollbar-thumb {
-    background: #1F2937;
+    background: #1C2333;
   }
   & ::-webkit-scrollbar-thumb:hover {
-    background: #374151;
+    background: #2D3748;
   }
 
   /* Page background utilities */
@@ -313,14 +313,22 @@ body {
   & .bg-slate-50\/50,
   & .bg-slate-50,
   & .bg-slate-100\/50 {
-    background-color: #0E1322 !important;
+    background-color: #080C14 !important;
+  }
+
+  /* Section backgrounds blending */
+  & section, 
+  & #how-it-works,
+  & footer {
+    background-color: #030712 !important;
+    background: #030712 !important;
   }
 
   /* Interactive items hover state */
   & .hover\:bg-slate-50:hover,
   & .hover\:bg-slate-200\/50:hover,
   & .hover\:bg-slate-100:hover {
-    background-color: #1F2937 !important;
+    background-color: #121724 !important;
   }
 
   /* Borders & Dividers */
@@ -336,14 +344,14 @@ body {
   & .border-slate-100,
   & .border-boundary,
   & .border-dashed {
-    border-color: #1F2937 !important;
+    border-color: #121724 !important;
   }
 
   & .divide-slate-100 > * + * {
-    border-color: #1F2937 !important;
+    border-color: #121724 !important;
   }
   & .divide-slate-200 > * + * {
-    border-color: #1F2937 !important;
+    border-color: #121724 !important;
   }
 
   /* Text color overrides */
@@ -357,6 +365,7 @@ body {
     color: #F3F4F6 !important;
   }
 
+  & .text-slate-555,
   & .text-slate-550,
   & .text-slate-500,
   & .text-slate-400,
@@ -370,9 +379,13 @@ body {
   }
 
   /* Navbars & Footers */
-  & nav, & footer {
-    background-color: #0B0F19 !important;
-    border-color: #1F2937 !important;
+  & nav {
+    background-color: #030712 !important;
+    border-color: #121724 !important;
+  }
+  & footer {
+    background-color: #030712 !important;
+    border-top-color: #121724 !important;
   }
 
   /* Buttons */
@@ -386,8 +399,8 @@ body {
 
   /* Inputs and Form Controls */
   & input, & textarea, & select {
-    background-color: #0E1322 !important;
-    border-color: #1F2937 !important;
+    background-color: #080C14 !important;
+    border-color: #121724 !important;
     color: #F9FAFB !important;
     &:focus {
       border-color: #F9FAFB !important;
@@ -401,7 +414,7 @@ body {
   & .shadow-sm,
   & .shadow-document,
   & .shadow-inner {
-    box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5) !important;
+    box-shadow: 0 10px 35px -10px rgba(0, 0, 0, 0.7) !important;
   }
   
   /* Resume preview within the black app theme must keep its clean, authentic white paper background */
@@ -417,7 +430,7 @@ body {
     
     background-color: #FFFFFF !important;
     color: #111111 !important;
-    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6) !important;
+    box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.9), 0 0 40px -10px rgba(99, 102, 241, 0.05) !important;
     
     & * {
       color: inherit !important;
