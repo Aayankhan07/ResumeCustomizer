@@ -22,7 +22,8 @@ import {
   ArrowRight,
   Sparkles,
   Clock,
-  Plus
+  Plus,
+  AlignLeft
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { generateResumePDF } from '../../lib/pdfGenerator';
@@ -31,7 +32,6 @@ import ResumePreview from './ResumePreview';
 import ResumeCompare from './ResumeCompare';
 
 // Import modular tab components
-import OverviewTab from './tabs/OverviewTab';
 import RoadmapTab from './tabs/RoadmapTab';
 import SkillsTab from './tabs/SkillsTab';
 import RecruiterTab from './tabs/RecruiterTab';
@@ -40,10 +40,10 @@ import InterviewTab from './tabs/InterviewTab';
 import CoverLetterTab from './tabs/CoverLetterTab';
 import AtsCheckTab from './tabs/AtsCheckTab';
 import RescoreTab from './tabs/RescoreTab';
-import JdMatchTab from './tabs/JdMatchTab';
 
 export default function TransformOutput({ result, plainText, originalText, onReset }) {
-  const [activeTab, setActiveTab] = useState('overview');
+  // Set Transformed CV (preview) as the default active tab
+  const [activeTab, setActiveTab] = useState('preview');
   const [copying, setCopying] = useState(false);
   const [copiedPitch, setCopiedPitch] = useState(false);
   const [copiedLetter, setCopiedLetter] = useState(false);
@@ -275,9 +275,11 @@ export default function TransformOutput({ result, plainText, originalText, onRes
     }, 1200);
   };
 
-  // Sidebar Menu Items
+  // Unified Sidebar Menu Items incorporating Transformed CV/Resume and Before & After comparison
   const menuItems = [
-    { id: 'overview', label: 'Overview', icon: LayoutDashboard },
+    { id: 'preview', label: 'Transformed CV', icon: FileText },
+    { id: 'compare', label: 'Before & After', icon: Diff, hideIfNoOriginal: true },
+    { id: 'text', label: 'Plain Text', icon: AlignLeft },
     { id: 'roadmap', label: 'Roadmap', icon: Milestone },
     { id: 'skills', label: 'Skills', icon: Target },
     { id: 'recruiter', label: 'Recruiter', icon: UserCheck },
@@ -285,8 +287,7 @@ export default function TransformOutput({ result, plainText, originalText, onRes
     { id: 'interview', label: 'Interview', icon: Mic },
     { id: 'coverletter', label: 'Cover Letter', icon: Mail },
     { id: 'atscheck', label: 'ATS Check', icon: ShieldCheck },
-    { id: 'rescore', label: 'Re-Score', icon: Sliders },
-    { id: 'jdmatch', label: 'JD Match', icon: Briefcase }
+    { id: 'rescore', label: 'Re-Score', icon: Sliders }
   ];
 
   // Generate cover letter dynamically using candidate details
@@ -376,6 +377,7 @@ ${candidateName}`;
             {/* Mobile Tab Navigation (Scrollable) */}
             <div className="lg:hidden flex overflow-x-auto pb-1 gap-1.5 scrollbar-none snap-x">
               {menuItems.map((item) => {
+                if (item.hideIfNoOriginal && !originalText) return null;
                 const IconComponent = item.icon;
                 const isActive = activeTab === item.id;
                 return (
@@ -398,6 +400,7 @@ ${candidateName}`;
             {/* Desktop Vertical Menu */}
             <nav className="hidden lg:flex flex-col gap-1">
               {menuItems.map((item) => {
+                if (item.hideIfNoOriginal && !originalText) return null;
                 const IconComponent = item.icon;
                 const isActive = activeTab === item.id;
                 return (
@@ -444,17 +447,41 @@ ${candidateName}`;
         {/* Content Area Panel - Renders separated sub-component functions */}
         <main className="flex-1 bg-white border border-slate-200 rounded-xl p-6 sm:p-8 shadow-sm flex flex-col justify-between min-h-[580px] transition-all">
           <div className="w-full">
-            
-            {activeTab === 'overview' && (
-              <OverviewTab 
-                currentScore={currentScore} 
-                jobTitle={jobTitle} 
-                company={company} 
-                keywordsMatchedCount={result.meta?.keywords_matched?.length || 0}
-                keywordsTotalCount={result.meta?.keywords_total || 0}
-              />
+
+            {/* Document Previews & Text Views inside primary sidebar navigation */}
+            {activeTab === 'preview' && (
+              <div className="animate-fade-in bg-mist/20 py-4 rounded-xl border border-boundary">
+                <ResumePreview data={result} />
+              </div>
             )}
 
+            {activeTab === 'compare' && originalText && (
+              <div className="animate-fade-in">
+                <ResumeCompare originalText={originalText} transformedData={result} />
+              </div>
+            )}
+
+            {activeTab === 'text' && (
+              <div className="animate-fade-in flex flex-col gap-4 text-left">
+                <div className="relative">
+                  <textarea
+                    readOnly
+                    value={plainText}
+                    className="w-full min-h-[420px] bg-white border border-boundary rounded-xl p-6 font-mono text-[11px] text-ink leading-relaxed focus:outline-none select-all"
+                  />
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="absolute top-4 right-4 flex items-center gap-1.5 border border-slate-200 bg-white"
+                    onClick={handleCopyText}
+                  >
+                    <Copy size={13} />
+                    {copying ? 'Copied' : 'Copy'}
+                  </Button>
+                </div>
+              </div>
+            )}
+            
             {activeTab === 'roadmap' && (
               <RoadmapTab 
                 roadmapData={roadmapData}
@@ -522,89 +549,10 @@ ${candidateName}`;
               />
             )}
 
-            {activeTab === 'jdmatch' && (
-              <JdMatchTab 
-                jobTitle={jobTitle}
-                technicalSkills={technicalSkills}
-              />
-            )}
-
-            {/* Fallbacks / Document Previews */}
-            {activeTab === 'preview' && (
-              <div className="animate-fade-in bg-mist/20 py-4 rounded-xl border border-boundary">
-                <ResumePreview data={result} />
-              </div>
-            )}
-
-            {activeTab === 'compare' && originalText && (
-              <div className="animate-fade-in">
-                <ResumeCompare originalText={originalText} transformedData={result} />
-              </div>
-            )}
-
-            {activeTab === 'text' && (
-              <div className="animate-fade-in flex flex-col gap-4 text-left">
-                <div className="relative">
-                  <textarea
-                    readOnly
-                    value={plainText}
-                    className="w-full min-h-[420px] bg-white border border-boundary rounded-xl p-6 font-mono text-[11px] text-ink leading-relaxed focus:outline-none select-all"
-                  />
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="absolute top-4 right-4 flex items-center gap-1.5 border border-slate-200 bg-white"
-                    onClick={handleCopyText}
-                  >
-                    <Copy size={13} />
-                    {copying ? 'Copied' : 'Copy'}
-                  </Button>
-                </div>
-              </div>
-            )}
-
           </div>
 
-          {/* Standard Navigation Toggle inside Content Panel */}
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 border-t border-slate-150 pt-5 mt-8 select-none">
-            <div className="flex items-center gap-3">
-              <span className="text-xs font-bold text-slate-505 font-medium">Document View:</span>
-              <div className="flex bg-slate-100 rounded-lg p-0.5 border border-slate-200/45">
-                <button
-                  onClick={() => setActiveTab('preview')}
-                  className={`px-3 py-1 rounded-md text-xs font-bold transition-all cursor-pointer ${
-                    activeTab === 'preview' 
-                      ? 'bg-white text-slate-900 shadow-sm' 
-                      : 'text-slate-500 hover:text-slate-900'
-                  }`}
-                >
-                  Preview Document
-                </button>
-                {originalText && (
-                  <button
-                    onClick={() => setActiveTab('compare')}
-                    className={`px-3 py-1 rounded-md text-xs font-bold transition-all cursor-pointer ${
-                      activeTab === 'compare' 
-                        ? 'bg-white text-slate-900 shadow-sm' 
-                        : 'text-slate-500 hover:text-slate-900'
-                    }`}
-                  >
-                    Before & After
-                  </button>
-                )}
-                <button
-                  onClick={() => setActiveTab('text')}
-                  className={`px-3 py-1 rounded-md text-xs font-bold transition-all cursor-pointer ${
-                    activeTab === 'text' 
-                      ? 'bg-white text-slate-900 shadow-sm' 
-                      : 'text-slate-500 hover:text-slate-900'
-                  }`}
-                >
-                  Plain Text
-                </button>
-              </div>
-            </div>
-
+          {/* Simple Clean Footer */}
+          <div className="flex justify-end border-t border-slate-150 pt-5 mt-8 select-none">
             <span className="text-[10px] font-mono text-slate-400 font-bold">
               ResumOrph Engine v1.2
             </span>
