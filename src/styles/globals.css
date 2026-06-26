@@ -432,6 +432,23 @@ body {
     color: #111111 !important;
     box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.9), 0 0 40px -10px rgba(99, 102, 241, 0.05) !important;
     
+    /* Force transparent backgrounds on all nested document sections to neutralize dark theme overrides */
+    & section,
+    & div,
+    & p,
+    & ul,
+    & li,
+    & span,
+    & strong,
+    & h1,
+    & h2,
+    & h3,
+    & h4,
+    & a {
+      background-color: transparent !important;
+      background: transparent !important;
+    }
+    
     & * {
       color: inherit !important;
     }
