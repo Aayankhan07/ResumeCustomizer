@@ -99,7 +99,7 @@ export default function TransformDetail() {
             <TransformOutput
               result={data.output_json}
               plainText={data.output_plain_text}
-              originalText={""} // Compare tab won't render original text in history if not stored, which is expected by data retention policy
+              originalText={data.output_json?.original_resume_text || ""}
               onReset={() => navigate('/transform')}
             />
           </div>

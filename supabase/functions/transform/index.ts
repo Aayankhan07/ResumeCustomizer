@@ -98,6 +98,10 @@ Deno.serve(async (req: Request) => {
     transformResult.meta.keywords_matched = scoreResult.matched;
     transformResult.meta.keywords_total = scoreResult.total;
 
+    // Store original texts inside transformResult for history retrieval
+    transformResult.original_resume_text = resume_text;
+    transformResult.original_job_description = job_description_text;
+
     // 7. Generate plain text
     const plainText = resumeToPlainText(transformResult);
 
