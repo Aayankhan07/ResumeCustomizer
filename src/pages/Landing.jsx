@@ -90,7 +90,7 @@ export default function Landing() {
       <Navbar />
 
       {/* Hero Section */}
-      <section className="relative bg-slate-50/50 py-24 lg:py-32 flex flex-col items-center justify-center text-center px-6 border-b border-slate-200">
+      <section className="relative py-24 lg:py-32 flex flex-col items-center justify-center text-center px-6">
         {/* Subtle Background Grid Pattern */}
         <div className="absolute inset-0 bg-[linear-gradient(to_right,var(--color-slate-200)_1px,transparent_1px),linear-gradient(to_bottom,var(--color-slate-200)_1px,transparent_1px)] bg-[size:3rem_3rem] opacity-25 z-0" />
 
@@ -166,26 +166,13 @@ export default function Landing() {
               <div className="flex flex-col gap-2 pl-0 md:pl-2">
                 <div className="flex items-center justify-between pb-1.5 border-b border-slate-800">
                   <span className="text-[10px] text-slate-500 uppercase tracking-wider font-bold">AI Tailored Bullet</span>
-                  <span className="text-[9px] px-1.5 py-0.5 rounded bg-emerald-950/20 text-emerald-400 border border-emerald-900/30 font-semibold uppercase">After</span>
+                  <span className="text-[9px] px-1.5 py-0.5 rounded bg-emerald-955/20 text-emerald-400 border border-emerald-900/30 font-semibold uppercase">After</span>
                 </div>
                 <div className="text-emerald-400 flex items-start gap-1.5 mt-2 animate-fade-in" key={`after-${exampleIdx}`}>
                   <span className="text-emerald-500 font-bold select-none">+</span>
-                  <div>
-                    {currentExample.after.split(' ').map((word, idx) => {
-                      const cleanWord = word.toLowerCase().replace(/[^a-z0-9]/g, '');
-                      const match = currentExample.keywords.find(kw =>
-                        cleanWord.includes(kw.toLowerCase()) || kw.toLowerCase().includes(cleanWord)
-                      );
-                      if (match && cleanWord.length > 2) {
-                        return (
-                          <span key={idx} className="bg-emerald-900/30 text-emerald-300 font-semibold border border-emerald-800/30 px-1 py-0.5 rounded mx-0.5 inline-block select-none transition-all">
-                            {word}
-                          </span>
-                        );
-                      }
-                      return <span key={idx} className="inline-block my-0.5">{word}&nbsp;</span>;
-                    })}
-                  </div>
+                  <p className="text-emerald-400 leading-relaxed m-0 font-sans text-xs sm:text-sm">
+                    {currentExample.after}
+                  </p>
                 </div>
               </div>
             </div>
@@ -194,7 +181,7 @@ export default function Landing() {
       </section>
 
       {/* How It Works Section */}
-      <section id="how-it-works" className="py-28 bg-white border-b border-slate-100 relative">
+      <section id="how-it-works" className="py-28 relative">
         {/* Background Grid Pattern */}
         <div className="absolute inset-0 bg-[linear-gradient(to_right,var(--color-slate-200)_1px,transparent_1px),linear-gradient(to_bottom,var(--color-slate-200)_1px,transparent_1px)] bg-[size:4.5rem_4.5rem] opacity-20 z-0" />
 
@@ -251,7 +238,7 @@ export default function Landing() {
       </section>
 
       {/* Stats Band */}
-      <section className="py-16 bg-slate-50 border-y border-slate-200 px-6">
+      <section className="py-16 px-6">
         <div className="max-w-4xl mx-auto">
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-8 text-center">
             <div className="flex flex-col items-center">
@@ -279,10 +266,10 @@ export default function Landing() {
       </section>
 
       {/* FAQ Section */}
-      <section className="py-24 bg-white border-b border-slate-100">
+      <section className="py-24">
         <div className="max-w-3xl mx-auto px-6">
           <h2 className="font-serif text-3xl text-slate-900 font-bold mb-10 text-center">Frequently Asked Questions</h2>
-          <div className="bg-slate-50/50 border border-slate-200 rounded-xl p-6 sm:p-8 shadow-sm">
+          <div className="border border-slate-200 rounded-xl p-6 sm:p-8 shadow-sm bg-white">
             <Accordion items={FAQ_ITEMS} />
           </div>
         </div>
