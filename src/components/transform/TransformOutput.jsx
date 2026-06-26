@@ -159,6 +159,77 @@ export default function TransformOutput({ result, plainText, originalText, onRes
     ]
   };
 
+  // Extract missing keywords by comparing JD and matched keywords
+  const getMissingKeywords = () => {
+    if (!result.original_job_description) return ['Scalability', 'Cloud Computing'];
+    
+    const STOP_WORDS = new Set([
+      'with', 'that', 'this', 'have', 'from', 'they', 'will', 'been',
+      'more', 'also', 'into', 'than', 'your', 'their', 'about', 'which',
+      'when', 'what', 'were', 'would', 'could', 'should', 'must', 'shall',
+      'very', 'just', 'some', 'such', 'each', 'most', 'over', 'work',
+      'team', 'role', 'year', 'years', 'time', 'using', 'used', 'other',
+      'there', 'about', 'above', 'after', 'before', 'under', 'below',
+      'their', 'these', 'those', 'them', 'then', 'than', 'into', 'only',
+      'also', 'here', 'when', 'who', 'whom', 'whose', 'why', 'how',
+      'both', 'each', 'few', 'down', 'once', 'much', 'many', 'same',
+      'some', 'such', 'very', 'just', 'only', 'than', 'then', 'once',
+      'here', 'very', 'just', 'much', 'any', 'own', 'same', 'should',
+      'your', 'mine', 'self', 'the', 'and', 'but', 'nor', 'off', 'out',
+      'hiring', 'hired', 'join', 'joining', 'build', 'building', 'built',
+      'write', 'writing', 'written', 'design', 'designing', 'designed',
+      'create', 'creating', 'created', 'develop', 'developing', 'developed',
+      'developer', 'developers', 'development', 'developments', 'engineer',
+      'engineering', 'engineers', 'role', 'roles', 'job', 'jobs',
+      'work', 'working', 'works', 'team', 'teams', 'member', 'members',
+      'people', 'person', 'candidate', 'candidates', 'client', 'clients',
+      'customer', 'customers', 'business', 'businesses', 'company',
+      'companies', 'project', 'projects', 'product', 'products', 'service',
+      'services', 'system', 'systems', 'platform', 'platforms', 'tool',
+      'tools', 'stack', 'tech', 'technical', 'technology', 'technologies',
+      'internship', 'internships', 'intern', 'junior', 'senior', 'level',
+      'ability', 'action', 'actions', 'active', 'actively', 'activities',
+      'strong', 'practical', 'hands-on', 'hands', 'proven', 'experience',
+      'experiences', 'experienced', 'skills', 'skill', 'professional',
+      'background', 'required', 'requires', 'requirements', 'responsibility',
+      'responsibilities', 'task', 'tasks', 'goal', 'goals', 'deliver',
+      'delivering', 'delivered', 'track', 'tracking', 'report', 'reporting',
+      'optimize', 'optimizing', 'optimized', 'maintain', 'maintaining',
+      'maintained', 'support', 'supporting', 'supported', 'manage', 'managing',
+      'managed', 'management', 'lead', 'leading', 'leads', 'leader',
+      'collaborate', 'collaborating', 'collaboration', 'collaborative',
+      'communicate', 'communicating', 'communication', 'partner', 'partnering',
+      'partnered', 'discover', 'discovering', 'discovered', 'identify',
+      'identifying', 'identified', 'solve', 'solving', 'solved', 'eliminate',
+      'eliminating', 'eliminated', 'improve', 'improving', 'improved',
+      'harden', 'hardening', 'hardened', 'secure', 'securing', 'secured',
+      'ensure', 'ensuring', 'ensured', 'track', 'tracks', 'reporting',
+      'highly', 'deeply', 'clean', 'cleanly', 'clear', 'clearly',
+      'quick', 'quickly', 'fast', 'faster', 'flexible', 'flexibility',
+      'complex', 'simple', 'simply', 'basic', 'basically', 'general',
+      'generally', 'specific', 'specifically', 'appropriate', 'appropriately',
+      'ideal', 'ideally', 'excellent', 'meaningful', 'successful',
+      'successfully', 'measurable', 'consistent', 'consistently',
+      'operational', 'operationally', 'internal', 'internally', 'external',
+      'externally', 'real', 'really', 'different', 'various', 'several',
+      'quarterly', 'prioritized', 'structured', 'unparalleled', 'comprehensive',
+      'patented', 'valley', 'silicon', 'funded', 'startup', 'market',
+      'focus', 'focused', 'focuses', 'focusing', 'harness', 'harnessing'
+    ]);
+
+    const words = result.original_job_description
+      .toLowerCase()
+      .replace(/[^a-z0-9\s\-]/g, ' ')
+      .split(/\s+/)
+      .filter(w => w.length >= 3 && !STOP_WORDS.has(w) && !/^\d+$/.test(w));
+      
+    const uniqueKeywords = [...new Set(words)];
+    const matchedSet = new Set((result.meta?.keywords_matched || []).map(k => k.toLowerCase()));
+    const missing = uniqueKeywords.filter(k => !matchedSet.has(k));
+    const capitalized = missing.map(k => k.charAt(0).toUpperCase() + k.slice(1));
+    return capitalized.length > 0 ? capitalized.slice(0, 6) : ['Scalability', 'Cloud Computing'];
+  };
+
   // DYNAMIC SKILLS INTELLIGENCE DATA
   const skillsIntell = result.skills_intelligence || {
     technical_count: technicalSkills.length || 8,
@@ -688,7 +759,13 @@ ${candidateName}`;
             )}
 
             {activeTab === 'atscheck' && (
-              <AtsCheckTab />
+              <AtsCheckTab 
+                currentScore={currentScore}
+                keywordsMatched={result.meta?.keywords_matched || []}
+                missingKeywords={getMissingKeywords()}
+                screeningIssues={recruiterScan.completely_missed}
+                nextMoves={roadmapData.tasks || []}
+              />
             )}
 
             {activeTab === 'rescore' && (
