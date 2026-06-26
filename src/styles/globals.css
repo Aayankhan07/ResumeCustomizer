@@ -529,4 +529,102 @@ body {
   box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.9), 0 0 40px -10px rgba(99, 102, 241, 0.05) !important;
 }
 
+/* Ensure the landing page IDE preview card always retains its authentic dark theme colors */
+.ide-preview-card,
+.dark .ide-preview-card {
+  background-color: #0f172a !important;
+  color: #f8fafc !important;
+  border-color: #1e293b !important;
+}
 
+.ide-preview-card .bg-slate-900,
+.dark .ide-preview-card .bg-slate-900 {
+  background-color: #0f172a !important;
+}
+
+.ide-preview-card .bg-slate-950,
+.dark .ide-preview-card .bg-slate-955,
+.dark .ide-preview-card .bg-slate-955\/80,
+.dark .ide-preview-card .bg-slate-955\/20,
+.dark .ide-preview-card .bg-slate-950 {
+  background-color: #020617 !important;
+}
+
+.ide-preview-card .bg-slate-800,
+.dark .ide-preview-card .bg-slate-800 {
+  background-color: #1e293b !important;
+}
+
+.ide-preview-card .border-slate-800,
+.dark .ide-preview-card .border-slate-800 {
+  border-color: #1e293b !important;
+}
+
+.ide-preview-card .border-slate-700,
+.dark .ide-preview-card .border-slate-700 {
+  border-color: #334155 !important;
+}
+
+.ide-preview-card .text-slate-500,
+.dark .ide-preview-card .text-slate-500 {
+  color: #64748b !important;
+}
+
+.ide-preview-card .text-slate-400,
+.dark .ide-preview-card .text-slate-400 {
+  color: #94a3b8 !important;
+}
+
+.ide-preview-card .text-slate-700,
+.dark .ide-preview-card .text-slate-700 {
+  color: #334155 !important;
+}
+
+.ide-preview-card .text-slate-300,
+.dark .ide-preview-card .text-slate-300 {
+  color: #cbd5e1 !important;
+}
+
+.ide-preview-card .bg-red-955\/20,
+.dark .ide-preview-card .bg-red-955\/20,
+.ide-preview-card .bg-red-950\/20,
+.dark .ide-preview-card .bg-red-950\/20 {
+  background-color: rgba(69, 10, 10, 0.2) !important;
+}
+
+.ide-preview-card .text-red-400,
+.dark .ide-preview-card .text-red-400 {
+  color: #f87171 !important;
+}
+
+.ide-preview-card .text-red-500,
+.dark .ide-preview-card .text-red-500 {
+  color: #ef4444 !important;
+}
+
+.ide-preview-card .border-red-900\/30,
+.dark .ide-preview-card .border-red-900\/30 {
+  border-color: rgba(127, 29, 29, 0.3) !important;
+}
+
+.ide-preview-card .bg-emerald-955\/20,
+.dark .ide-preview-card .bg-emerald-955\/20,
+.ide-preview-card .bg-emerald-950\/20,
+.dark .ide-preview-card .bg-emerald-950\/20 {
+  background-color: rgba(6, 78, 59, 0.2) !important;
+}
+
+.ide-preview-card .text-emerald-400,
+.dark .ide-preview-card .text-emerald-400 {
+  color: #34d399 !important;
+}
+
+.ide-preview-card .text-emerald-500,
+.dark .ide-preview-card .text-emerald-500 {
+  color: #10b981 !important;
+}
+
+.ide-preview-card .border-emerald-900\/30,
+.dark .ide-preview-card .border-emerald-900\/30 {
+  border-color: rgba(6, 78, 59, 0.3) !important;
+}

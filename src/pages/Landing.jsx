@@ -130,7 +130,7 @@ export default function Landing() {
 
         {/* Morphing Preview Card (IDE Style with Side-by-side comparison) */}
         <div className="w-full max-w-3xl mt-16 px-4 z-10 animate-slide-up" style={{ animationDelay: '80ms' }}>
-          <div className="bg-slate-900 shadow-xl rounded-xl border border-slate-800 overflow-hidden text-left transition-all duration-200">
+          <div className="ide-preview-card bg-slate-900 shadow-xl rounded-xl border border-slate-800 overflow-hidden text-left transition-all duration-200">
             {/* IDE Header */}
             <div className="flex items-center justify-between px-5 py-3 bg-slate-950 border-b border-slate-800 select-none">
               <div className="flex items-center gap-1.5">
