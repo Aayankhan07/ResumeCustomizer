@@ -86,7 +86,7 @@ export default function TransformOutput({ result, plainText, originalText, onRes
   const toolsSkills = result.skills?.tools || [];
   const softSkills = result.skills?.soft || [];
 
-  // 1. DYNAMIC RECRUITER SCAN
+  // DYNAMIC RECRUITER SCAN DATA
   const recruiterScan = result.recruiter_scan || {
     attention_timeline: [
       `First noticed: Strong technical skills in ${technicalSkills.slice(0, 3).join(', ') || 'core languages'}`,
@@ -99,7 +99,7 @@ export default function TransformOutput({ result, plainText, originalText, onRes
     elevator_pitch: `Hi, I'm ${candidateName}. I'm a ${jobTitle} specializing in building high-quality, high-performance systems. In my recent work, I've focused on leveraging ${technicalSkills.slice(0, 3).join(', ')} to build scalable solutions that improve efficiency and user experiences. I take a lot of pride in translating complex requirements into clean, optimized code. I'm very excited about the ${jobTitle} position because my technical stack and engineering philosophy align directly with the problems your team is tackling.`
   };
 
-  // 2. DYNAMIC ROADMAP
+  // DYNAMIC ROADMAP DATA
   const roadmapData = result.roadmap || {
     current_level: currentScore >= 90 ? 'Competitive' : currentScore >= 75 ? 'Developing' : 'Beginner',
     tasks: [
@@ -118,18 +118,7 @@ export default function TransformOutput({ result, plainText, originalText, onRes
     ]
   };
 
-  // Determine horizontal timeline progress based on current level
-  const getLevelProgress = (level) => {
-    switch (level) {
-      case 'Beginner': return '10%';
-      case 'Developing': return '40%';
-      case 'Competitive': return '70%';
-      case 'Top Tier': return '100%';
-      default: return '40%';
-    }
-  };
-
-  // 3. DYNAMIC SKILLS INTELLIGENCE
+  // DYNAMIC SKILLS INTELLIGENCE DATA
   const skillsIntell = result.skills_intelligence || {
     technical_count: technicalSkills.length || 8,
     soft_count: softSkills.length || 3,
@@ -138,20 +127,7 @@ export default function TransformOutput({ result, plainText, originalText, onRes
     skills_to_add: ['System Scalability', 'Cloud Computing']
   };
 
-  // Calculate dynamic bar chart heights based on actual counts
-  const maxCount = Math.max(
-    skillsIntell.technical_count, 
-    skillsIntell.soft_count, 
-    skillsIntell.certs_count, 
-    skillsIntell.missing_count, 
-    1
-  );
-  
-  const getBarHeight = (count) => {
-    return `${Math.max(15, Math.min(100, (count / maxCount) * 100))}%`;
-  };
-
-  // 4. DYNAMIC REWRITES
+  // DYNAMIC REWRITES DATA
   const rewritesList = result.rewrites || [
     {
       section: 'Professional Summary',
@@ -172,7 +148,7 @@ export default function TransformOutput({ result, plainText, originalText, onRes
     }
   ];
 
-  // 5. DYNAMIC INTERVIEW PREP
+  // DYNAMIC INTERVIEW PREP DATA
   const interviewPrep = result.interview_prep || {
     technical: [
       {
@@ -338,7 +314,7 @@ ${candidateName}`;
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <h2 className="font-serif text-2xl text-slate-950 font-bold tracking-tight">ResumeAI Report</h2>
+              <h2 className="font-serif text-2xl text-slate-955 font-bold tracking-tight">ResumeAI Report</h2>
               <span className="bg-emerald-50 text-emerald-700 border border-emerald-100 rounded-full px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider flex items-center gap-1">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
                 Analysis Active
@@ -452,828 +428,96 @@ ${candidateName}`;
           </div>
         </aside>
 
-        {/* Content Area Panel */}
+        {/* Content Area Panel - Renders separated sub-component functions */}
         <main className="flex-1 bg-white border border-slate-200 rounded-xl p-6 sm:p-8 shadow-sm flex flex-col justify-between min-h-[580px] transition-all">
           <div className="w-full">
             
-            {/* 1. Overview Tab */}
             {activeTab === 'overview' && (
-              <div className="animate-fade-in flex flex-col gap-6">
-                <div>
-                  <h3 className="font-serif text-2xl text-slate-955 font-bold tracking-tight">Compatibility Overview</h3>
-                  <p className="text-xs text-slate-500 mt-1 font-medium">Visual summary of how well your tailored profile aligns with the job specification.</p>
-                </div>
-                
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                  <div className="border border-slate-200/80 bg-slate-50/50 rounded-xl p-5 flex flex-col gap-3">
-                    <h4 className="text-xs font-bold uppercase tracking-wider text-slate-500 flex items-center gap-1.5 font-sans">
-                      <Sparkles size={14} className="text-emerald-500" />
-                      Fit Summary
-                    </h4>
-                    <p className="text-sm text-slate-700 leading-relaxed font-medium">
-                      Your resume has been optimized for the <strong>{jobTitle}</strong> position. We integrated critical keywords and framed your achievements using target-role terminology, raising your overall match score to <strong>{currentScore}%</strong>.
-                    </p>
-                  </div>
-                  
-                  <div className="border border-slate-200/80 bg-slate-50/50 rounded-xl p-5 flex flex-col gap-3">
-                    <h4 className="text-xs font-bold uppercase tracking-wider text-slate-500 flex items-center gap-1.5 font-sans">
-                      <ShieldCheck size={14} className="text-blue-500" />
-                      ATS Scan Quality
-                    </h4>
-                    <div className="flex flex-col gap-2.5">
-                      <div className="flex items-center justify-between text-xs font-semibold">
-                        <span className="text-slate-500">Keyword Density</span>
-                        <span className="text-emerald-700 bg-emerald-50 border border-emerald-100 rounded px-1.5 py-0.5 font-bold text-[10px]">OPTIMAL</span>
-                      </div>
-                      <div className="flex items-center justify-between text-xs font-semibold">
-                        <span className="text-slate-500">Section Headings</span>
-                        <span className="text-emerald-700 bg-emerald-50 border border-emerald-100 rounded px-1.5 py-0.5 font-bold text-[10px]">100% STANDARD</span>
-                      </div>
-                      <div className="flex items-center justify-between text-xs font-semibold">
-                        <span className="text-slate-500">Formatting Risk</span>
-                        <span className="text-emerald-700 bg-emerald-50 border border-emerald-100 rounded px-1.5 py-0.5 font-bold text-[10px]">ZERO FLAGS</span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="border border-slate-200/70 rounded-xl p-5 flex flex-col gap-4">
-                  <h4 className="text-xs font-bold uppercase tracking-wider text-slate-500">Tailoring Metadata</h4>
-                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                    <div className="flex flex-col">
-                      <span className="text-[10px] uppercase font-bold text-slate-400">Target Role</span>
-                      <span className="text-xs font-bold text-slate-900 mt-1 truncate">{jobTitle}</span>
-                    </div>
-                    <div className="flex flex-col">
-                      <span className="text-[10px] uppercase font-bold text-slate-400">Company</span>
-                      <span className="text-xs font-bold text-slate-900 mt-1 truncate">{company !== 'Target Company' ? company : 'Not Specified'}</span>
-                    </div>
-                    <div className="flex flex-col">
-                      <span className="text-[10px] uppercase font-bold text-slate-400">Keywords Matched</span>
-                      <span className="text-xs font-bold text-slate-900 mt-1">{result.meta?.keywords_matched?.length || 0} / {result.meta?.keywords_total || 0}</span>
-                    </div>
-                    <div className="flex flex-col">
-                      <span className="text-[10px] uppercase font-bold text-slate-400">Layout Safety</span>
-                      <span className="text-xs font-bold text-emerald-600 mt-1">ATS Compliant</span>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="bg-slate-50 border border-slate-200/60 rounded-lg p-4 flex items-start gap-3">
-                  <Info size={16} className="text-slate-400 shrink-0 mt-0.5" />
-                  <p className="text-xs text-slate-600 leading-relaxed font-medium">
-                    This resume has been restructured utilizing a single-column, standard-heading layout. Avoid introducing tables, custom graphics, text boxes, or icons, as these elements commonly trigger parsing errors in legacy Applicant Tracking Systems.
-                  </p>
-                </div>
-              </div>
+              <OverviewTab 
+                currentScore={currentScore} 
+                jobTitle={jobTitle} 
+                company={company} 
+                keywordsMatchedCount={result.meta?.keywords_matched?.length || 0}
+                keywordsTotalCount={result.meta?.keywords_total || 0}
+              />
             )}
 
-            {/* 2. Roadmap Tab ("Path to Top Tier") */}
             {activeTab === 'roadmap' && (
-              <div className="animate-fade-in flex flex-col gap-6">
-                <div>
-                  <div className="flex items-center gap-1.5 text-xs font-bold text-slate-400 uppercase tracking-wider">
-                    <Milestone size={14} className="text-emerald-500" />
-                    Resume Roadmap
-                  </div>
-                  <h3 className="font-serif text-2xl text-slate-955 font-bold tracking-tight mt-1">Path to Top Tier</h3>
-                  <p className="text-xs text-slate-500 mt-1 font-medium">
-                    To reach the Top Tier level, focus on developing a personal project showcasing expertise in scalability and cloud computing, pursuing additional certifications in AI/ML, and networking with professionals in the field.
-                  </p>
-                </div>
-
-                {/* Horizontal Progress Timeline */}
-                <div className="border border-slate-200/80 bg-slate-50/50 rounded-xl p-6 flex flex-col gap-6">
-                  {/* Step Indicators */}
-                  <div className="flex justify-between items-center relative px-2">
-                    {/* Line Rail */}
-                    <div className="absolute left-6 right-6 top-4 h-1 bg-slate-200 rounded-full z-0">
-                      <div 
-                        className="h-full bg-emerald-500 rounded-full transition-all duration-500" 
-                        style={{ width: getLevelProgress(roadmapData.current_level) }} 
-                      />
-                    </div>
-                    
-                    {/* Steps */}
-                    {[
-                      { label: 'Beginner', val: 'Beginner' },
-                      { label: 'Developing', val: 'Developing' },
-                      { label: 'Competitive', val: 'Competitive' },
-                      { label: 'Top Tier', val: 'Top Tier' }
-                    ].map((step, idx) => {
-                      const levels = ['Beginner', 'Developing', 'Competitive', 'Top Tier'];
-                      const currentIdx = levels.indexOf(roadmapData.current_level);
-                      const stepIdx = levels.indexOf(step.val);
-                      
-                      const isChecked = stepIdx < currentIdx;
-                      const isActive = stepIdx === currentIdx;
-                      
-                      return (
-                        <div key={idx} className="flex flex-col items-center gap-2 relative z-10">
-                          <div className={`w-8 h-8 rounded-full border-2 flex items-center justify-center text-xs font-bold transition-all ${
-                            isChecked 
-                              ? 'bg-emerald-500 border-emerald-500 text-white shadow-sm' 
-                              : isActive
-                              ? 'bg-white border-emerald-500 text-emerald-600 shadow-sm ring-4 ring-emerald-50'
-                              : 'bg-white border-slate-300 text-slate-400'
-                          }`}>
-                            {isChecked ? '✓' : isActive ? '◎' : '●'}
-                          </div>
-                          <span className={`text-[10px] font-bold uppercase tracking-wider ${
-                            isActive ? 'text-emerald-600' : 'text-slate-500'
-                          }`}>{step.label}</span>
-                        </div>
-                      );
-                    })}
-                  </div>
-
-                  {/* High-level scores */}
-                  <div className="grid grid-cols-3 gap-3 border-t border-slate-200/60 pt-4 mt-2">
-                    <div className="text-center flex flex-col">
-                      <span className="text-2xl font-black text-slate-900 tracking-tight">{currentScore}</span>
-                      <span className="text-[9px] font-bold text-slate-400 uppercase mt-0.5">Current Score</span>
-                    </div>
-                    <div className="text-center flex flex-col border-x border-slate-200/60">
-                      <span className="text-2xl font-black text-emerald-600 tracking-tight">
-                        +{Object.entries(completedTasks).reduce((acc, [key, completed]) => {
-                          if (!completed) return acc;
-                          const taskObj = roadmapData.tasks[key];
-                          return acc + (taskObj?.points ?? 0);
-                        }, 0)}
-                      </span>
-                      <span className="text-[9px] font-bold text-slate-400 uppercase mt-0.5">Tracked Gain</span>
-                    </div>
-                    <div className="text-center flex flex-col">
-                      <span className="text-2xl font-black text-slate-900 tracking-tight">
-                        {Object.values(completedTasks).filter(Boolean).length}/{roadmapData.tasks.length}
-                      </span>
-                      <span className="text-[9px] font-bold text-slate-400 uppercase mt-0.5">Tasks Done</span>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Checklist Tasks */}
-                <div className="flex flex-col gap-3">
-                  {roadmapData.tasks.map((taskItem, idx) => {
-                    const isCompleted = !!completedTasks[idx];
-                    return (
-                      <div 
-                        key={idx}
-                        className={`border rounded-xl p-4 flex items-center justify-between gap-4 transition-all shadow-sm ${
-                          isCompleted ? 'bg-slate-50/70 border-slate-200' : 'bg-white border-slate-200/80 hover:border-slate-300'
-                        }`}
-                      >
-                        <div className="flex items-start gap-3 flex-1">
-                          <input 
-                            type="checkbox" 
-                            id={`task-${idx}`}
-                            checked={isCompleted}
-                            onChange={() => toggleTask(idx)}
-                            className="w-4 h-4 rounded text-slate-900 focus:ring-slate-900 border-slate-300 cursor-pointer mt-0.5"
-                          />
-                          <div className="flex flex-col gap-1">
-                            <label htmlFor={`task-${idx}`} className="text-xs font-bold text-slate-850 cursor-pointer leading-relaxed">
-                              {taskItem.task}
-                            </label>
-                            <div className="flex flex-wrap gap-1.5 mt-1">
-                              <span className="bg-slate-100 text-slate-600 rounded px-1.5 py-0.5 text-[9px] font-bold uppercase">{taskItem.type}</span>
-                              <span className={`rounded px-1.5 py-0.5 text-[9px] font-bold uppercase ${
-                                taskItem.impact === 'High Impact' 
-                                  ? 'bg-rose-50 text-rose-700 border border-rose-100' 
-                                  : 'bg-amber-50 text-amber-700 border border-amber-100'
-                              }`}>{taskItem.impact}</span>
-                              <span className="bg-emerald-50 text-emerald-700 border border-emerald-100 rounded px-1.5 py-0.5 text-[9px] font-bold uppercase">+{taskItem.points} pts</span>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-
-                {/* Progress bar */}
-                <div className="w-full bg-slate-50/50 border border-slate-200/60 rounded-xl p-4 flex flex-col gap-2">
-                  <div className="flex justify-between items-center text-[10px] font-bold text-slate-500 uppercase tracking-wider">
-                    <span>Task Progress</span>
-                    <span>
-                      {roadmapData.tasks.length > 0 
-                        ? Math.floor((Object.values(completedTasks).filter(Boolean).length / roadmapData.tasks.length) * 100)
-                        : 0
-                      }%
-                    </span>
-                  </div>
-                  <div className="w-full h-1.5 bg-slate-200 rounded-full overflow-hidden">
-                    <div 
-                      className="h-full bg-emerald-500 transition-all duration-300" 
-                      style={{ 
-                        width: `${roadmapData.tasks.length > 0 
-                          ? (Object.values(completedTasks).filter(Boolean).length / roadmapData.tasks.length) * 100 
-                          : 0}%` 
-                      }}
-                    />
-                  </div>
-                  <p className="text-[11px] text-slate-500 font-medium italic text-center mt-1">
-                    "With dedication and persistence, you can reach the Top Tier level and become a leading expert in the field of machine learning engineering."
-                  </p>
-                </div>
-
-              </div>
+              <RoadmapTab 
+                roadmapData={roadmapData}
+                completedTasks={completedTasks}
+                toggleTask={toggleTask}
+                currentScore={currentScore}
+              />
             )}
 
-            {/* 3. Skills Tab ("Role Match" & "Skills Intelligence") */}
             {activeTab === 'skills' && (
-              <div className="animate-fade-in flex flex-col gap-6">
-                <div>
-                  <div className="flex items-center gap-1.5 text-xs font-bold text-slate-400 uppercase tracking-wider">
-                    <Target size={14} className="text-emerald-500" />
-                    Role Match
-                  </div>
-                  <h3 className="font-serif text-2xl text-slate-955 font-bold tracking-tight mt-1">{jobTitle}</h3>
-                  <p className="text-xs text-slate-500 mt-1 font-medium">Core match analysis comparing your resume credentials against target-role requirements.</p>
-                </div>
-
-                {/* Score & Skills Chips Side-by-Side */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                  {/* Left: Score Card */}
-                  <div className="border border-slate-200/80 bg-white rounded-xl p-5 flex flex-col justify-between shadow-sm">
-                    <div className="flex flex-col gap-1.5">
-                      <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Match Score</span>
-                      <span className="font-serif text-5xl font-black text-emerald-600 leading-none">{currentScore}%</span>
-                    </div>
-                    <div className="w-full h-2 bg-slate-100 rounded-full overflow-hidden my-4">
-                      <div className="h-full bg-emerald-500 rounded-full" style={{ width: `${currentScore}%` }} />
-                    </div>
-                    <p className="text-xs text-slate-600 leading-relaxed font-medium">
-                      Strong candidate with relevant technical skills and experience, but could benefit from more emphasis on {skillsIntell.skills_to_add.join(' and ') || 'scalability and cloud computing'}.
-                    </p>
-                  </div>
-
-                  {/* Right: Matched/Missing Badges */}
-                  <div className="flex flex-col gap-4">
-                    <div className="border border-slate-200/80 bg-slate-50/40 rounded-xl p-4 flex flex-col gap-2.5">
-                      <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-600 flex items-center gap-1">
-                        <Check size={11} className="stroke-[3]" />
-                        Matched Skills
-                      </span>
-                      <div className="flex flex-wrap gap-1.5">
-                        {technicalSkills.slice(0, 8).map((skill, idx) => (
-                          <span key={idx} className="bg-emerald-50 text-emerald-700 border border-emerald-100 rounded px-2.5 py-0.5 text-[10px] font-bold">
-                            {skill}
-                          </span>
-                        ))}
-                      </div>
-                    </div>
-
-                    <div className="border border-slate-200/80 bg-slate-50/40 rounded-xl p-4 flex flex-col gap-2.5">
-                      <span className="text-[10px] font-bold uppercase tracking-wider text-amber-700 flex items-center gap-1.5">
-                        <AlertTriangle size={11} />
-                        Skills To Add
-                      </span>
-                      <div className="flex flex-wrap gap-1.5">
-                        {skillsIntell.skills_to_add.map((skill, idx) => (
-                          <span key={idx} className="bg-amber-50 text-amber-700 border border-amber-100 rounded px-2.5 py-0.5 text-[10px] font-bold">
-                            {skill}
-                          </span>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Custom CSS Bar Chart for "Skills Intelligence" */}
-                <div className="border border-slate-200/80 bg-slate-50/30 rounded-xl p-5 flex flex-col gap-4 shadow-sm">
-                  <div className="flex items-center justify-between">
-                    <div className="flex flex-col">
-                      <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Skills Intelligence</span>
-                      <h4 className="text-sm font-bold text-slate-900 mt-0.5">Skill coverage by category</h4>
-                    </div>
-                    {/* Summary Badges */}
-                    <div className="flex items-center gap-1.5 select-none">
-                      {[
-                        { label: 'Technical', val: skillsIntell.technical_count, color: 'bg-emerald-500' },
-                        { label: 'Soft', val: skillsIntell.soft_count, color: 'bg-blue-400' },
-                        { label: 'Certs', val: skillsIntell.certs_count, color: 'bg-amber-400' },
-                        { label: 'Missing', val: skillsIntell.missing_count, color: 'bg-rose-400' }
-                      ].map((badge, idx) => (
-                        <div key={idx} className="bg-white border border-slate-200 rounded px-2 py-1 flex items-center gap-1.5 text-[10px] font-bold text-slate-700">
-                          <span className="font-extrabold text-slate-950">{badge.val}</span>
-                          <span className="text-slate-400 font-medium">{badge.label}</span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-
-                  <p className="text-[11px] text-slate-500 font-medium leading-relaxed -mt-1">
-                    The skill map separates proven capabilities from missing keywords that could strengthen role alignment.
-                  </p>
-
-                  {/* Chart Visualizer */}
-                  <div className="h-44 border-b border-slate-200 relative flex items-end justify-around pb-1 pt-6 mt-2 bg-[linear-gradient(to_bottom,#f8fafc_1px,transparent_1px)] bg-[size:100%_2rem] select-none">
-                    
-                    {/* 1. Technical */}
-                    <div className="flex flex-col items-center gap-2 w-16 group">
-                      <span className="text-[10px] font-black text-slate-900 group-hover:scale-110 transition-transform">{skillsIntell.technical_count}</span>
-                      <div 
-                        className="w-8 bg-emerald-400 hover:bg-emerald-500 rounded-t-md transition-all duration-500 shadow-sm" 
-                        style={{ height: getBarHeight(skillsIntell.technical_count) }} 
-                      />
-                      <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider mt-1">Technical</span>
-                    </div>
-
-                    {/* 2. Soft */}
-                    <div className="flex flex-col items-center gap-2 w-16 group">
-                      <span className="text-[10px] font-black text-slate-900 group-hover:scale-110 transition-transform">{skillsIntell.soft_count}</span>
-                      <div 
-                        className="w-8 bg-blue-400 hover:bg-blue-500 rounded-t-md transition-all duration-500 shadow-sm" 
-                        style={{ height: getBarHeight(skillsIntell.soft_count) }} 
-                      />
-                      <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider mt-1">Soft</span>
-                    </div>
-
-                    {/* 3. Certs */}
-                    <div className="flex flex-col items-center gap-2 w-16 group">
-                      <span className="text-[10px] font-black text-slate-900 group-hover:scale-110 transition-transform">{skillsIntell.certs_count}</span>
-                      <div 
-                        className="w-8 bg-amber-400 hover:bg-amber-500 rounded-t-md transition-all duration-500 shadow-sm" 
-                        style={{ height: getBarHeight(skillsIntell.certs_count) }} 
-                      />
-                      <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider mt-1">Certs</span>
-                    </div>
-
-                    {/* 4. Missing */}
-                    <div className="flex flex-col items-center gap-2 w-16 group">
-                      <span className="text-[10px] font-black text-slate-900 group-hover:scale-110 transition-transform text-rose-600">{skillsIntell.missing_count}</span>
-                      <div 
-                        className="w-8 bg-rose-400 hover:bg-rose-500 rounded-t-md transition-all duration-500 shadow-sm" 
-                        style={{ height: getBarHeight(skillsIntell.missing_count) }} 
-                      />
-                      <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider mt-1">Missing</span>
-                    </div>
-
-                  </div>
-                </div>
-
-              </div>
+              <SkillsTab 
+                jobTitle={jobTitle}
+                currentScore={currentScore}
+                technicalSkills={technicalSkills}
+                skillsIntell={skillsIntell}
+                maxCount={maxCount}
+              />
             )}
 
-            {/* 4. Recruiter Tab ("Attention Timeline") */}
             {activeTab === 'recruiter' && (
-              <div className="animate-fade-in flex flex-col gap-6 font-sans">
-                <div>
-                  <div className="flex items-center gap-1.5 text-xs font-bold text-slate-400 uppercase tracking-wider">
-                    <Clock size={14} className="text-emerald-500" />
-                    Recruiter Scan
-                  </div>
-                  <h3 className="font-serif text-2xl text-slate-955 font-bold tracking-tight mt-1">Six-second resume read</h3>
-                  <p className="text-xs text-slate-500 mt-1 font-medium">The first impression, the risk, and the single fix with the highest leverage.</p>
-                </div>
-
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
-                  
-                  {/* Left Column: Attention Timeline */}
-                  <div className="flex flex-col gap-3">
-                    <h4 className="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
-                      <UserCheck size={14} className="text-slate-800" />
-                      Attention Timeline
-                    </h4>
-                    
-                    <div className="flex flex-col gap-3">
-                      {recruiterScan.attention_timeline.map((timelineStep, idx) => (
-                        <div key={idx} className="border border-slate-200/80 bg-white rounded-xl p-4 flex gap-3.5 items-center shadow-sm">
-                          <div className="w-6 h-6 rounded bg-slate-900 text-white flex items-center justify-center text-xs font-bold shrink-0">
-                            {idx + 1}
-                          </div>
-                          <div className="flex flex-col gap-0.5">
-                            <span className="text-[10px] font-bold uppercase text-slate-400">
-                              {idx === 0 ? 'First noticed' : idx === 1 ? 'Second noticed' : 'Third noticed'}
-                            </span>
-                            <span className="text-xs font-bold text-slate-850">{timelineStep.replace(/^(First noticed:|Second noticed:|Third noticed:)\s*/i, '')}</span>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* Right Column: Pile Categorization & Best Fix */}
-                  <div className="flex flex-col gap-3.5">
-                    
-                    {/* Strong Yes Card */}
-                    <div className="border border-emerald-200 bg-emerald-50/30 rounded-xl p-4 flex flex-col gap-2 shadow-sm">
-                      <div className="flex items-center justify-between">
-                        <span className="text-[10px] font-black uppercase text-emerald-700 flex items-center gap-1">
-                          ✓ Strong Yes
-                        </span>
-                        <span className="text-[9px] font-bold text-slate-400 uppercase">Hiring pile</span>
-                      </div>
-                      <p className="text-xs text-slate-700 leading-relaxed font-medium">
-                        {recruiterScan.strong_yes}
-                      </p>
-                    </div>
-
-                    {/* Completely Missed Card */}
-                    <div className="border border-rose-200 bg-rose-50/30 rounded-xl p-4 flex flex-col gap-2 shadow-sm">
-                      <span className="text-[10px] font-black uppercase text-rose-700 flex items-center gap-1">
-                        ✕ Completely Missed
-                      </span>
-                      <p className="text-xs text-slate-700 leading-relaxed font-medium">
-                        {recruiterScan.completely_missed}
-                      </p>
-                    </div>
-
-                    {/* Best Fix Card */}
-                    <div className="border border-sky-200 bg-sky-50/25 rounded-xl p-4 flex flex-col gap-2 shadow-sm">
-                      <span className="text-[10px] font-black uppercase text-sky-700 flex items-center gap-1">
-                        ✦ Best Fix
-                      </span>
-                      <p className="text-xs text-slate-700 leading-relaxed font-medium">
-                        {recruiterScan.best_fix}
-                      </p>
-                    </div>
-
-                  </div>
-                </div>
-
-                {/* Elevator Pitch Quotes */}
-                <div className="border border-slate-200/80 rounded-xl p-5 flex flex-col gap-3 mt-2 shadow-sm bg-slate-50/40">
-                  <div className="flex items-center justify-between">
-                    <h4 className="text-xs font-bold uppercase tracking-wider text-slate-500 flex items-center gap-1.5">
-                      Your 30-Second Elevator Pitch
-                    </h4>
-                    <button
-                      onClick={() => handleCopyElevatorPitch(recruiterScan.elevator_pitch)}
-                      className="text-xs text-slate-500 hover:text-slate-900 flex items-center gap-1 font-bold transition-all"
-                    >
-                      <Copy size={12} />
-                      {copiedPitch ? 'Copied' : 'Copy Pitch'}
-                    </button>
-                  </div>
-                  <p className="text-xs text-slate-750 leading-relaxed font-medium italic bg-white border border-slate-200/65 rounded-lg p-4">
-                    "{recruiterScan.elevator_pitch}"
-                  </p>
-                </div>
-
-              </div>
+              <RecruiterTab 
+                jobTitle={jobTitle}
+                recruiterScan={recruiterScan}
+                copiedPitch={copiedPitch}
+                handleCopyElevatorPitch={handleCopyElevatorPitch}
+              />
             )}
 
-            {/* 5. AI Rewrites Tab */}
             {activeTab === 'rewrites' && (
-              <div className="animate-fade-in flex flex-col gap-6 font-sans">
-                <div>
-                  <div className="flex items-center gap-1.5 text-xs font-bold text-slate-400 uppercase tracking-wider">
-                    <Diff size={14} className="text-emerald-500" />
-                    AI Rewrites
-                  </div>
-                  <h3 className="font-serif text-2xl text-slate-955 font-bold tracking-tight mt-1">Before and after improvements</h3>
-                  <p className="text-xs text-slate-500 mt-1 font-medium">Stronger language, clearer evidence, and better keyword alignment.</p>
-                </div>
-
-                {/* Rewrite Sections */}
-                <div className="flex flex-col gap-5">
-                  {rewritesList.map((rewrite, idx) => (
-                    <div key={idx} className="border border-slate-200 rounded-xl p-5 bg-white shadow-sm flex flex-col gap-4">
-                      <div className="flex justify-between items-center">
-                        <h4 className="text-xs font-bold uppercase tracking-wider text-slate-800">{rewrite.section}</h4>
-                        <span className="bg-slate-100 text-slate-700 text-[9px] font-bold uppercase rounded px-2 py-0.5">Rewrite {idx + 1}</span>
-                      </div>
-
-                      <div className="grid grid-cols-1 lg:grid-cols-[1fr_24px_1fr] gap-4 items-center">
-                        {/* Before */}
-                        <div className="border border-rose-200/80 bg-rose-50/20 rounded-xl p-4 min-h-[100px] flex flex-col gap-1.5">
-                          <span className="text-[10px] font-bold uppercase text-rose-700 flex items-center gap-1">✕ Before</span>
-                          <p className="text-xs text-rose-900/85 leading-relaxed font-medium">
-                            {rewrite.before}
-                          </p>
-                        </div>
-
-                        {/* Arrow */}
-                        <div className="flex justify-center text-slate-350">
-                          <ArrowRight size={18} className="rotate-90 lg:rotate-0" />
-                        </div>
-
-                        {/* After */}
-                        <div className="border border-emerald-200/80 bg-emerald-50/20 rounded-xl p-4 min-h-[100px] flex flex-col gap-1.5">
-                          <span className="text-[10px] font-bold uppercase text-emerald-700 flex items-center gap-1">✓ After</span>
-                          <p className="text-xs text-emerald-900/85 leading-relaxed font-medium">
-                            {rewrite.after}
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
+              <RewritesTab 
+                rewritesList={rewritesList}
+                originalText={originalText}
+                setActiveTab={setActiveTab}
+              />
             )}
 
-            {/* 6. Interview Prep Tab */}
             {activeTab === 'interview' && (
-              <div className="animate-fade-in flex flex-col gap-6 font-sans">
-                <div>
-                  <div className="flex items-center gap-1.5 text-xs font-bold text-slate-400 uppercase tracking-wider">
-                    <Mic size={14} className="text-emerald-500" />
-                    Interview Prep
-                  </div>
-                  <h3 className="font-serif text-2xl text-slate-955 font-bold tracking-tight mt-1">Questions from resume evidence</h3>
-                  <p className="text-xs text-slate-500 mt-1 font-medium">Practice prompts generated from the candidate's actual experience and skill profile.</p>
-                </div>
-
-                {/* Sub Navigation (Technical, Behavioral, Curveball) */}
-                <div className="flex items-center gap-2 border-b border-slate-200/60 pb-3">
-                  {[
-                    { id: 'technical', label: 'Technical', count: interviewPrep.technical.length, icon: Target },
-                    { id: 'behavioral', label: 'Behavioral', count: interviewPrep.behavioral.length, icon: UserCheck },
-                    { id: 'curveball', label: 'Curveball', count: interviewPrep.curveball.length, icon: AlertTriangle }
-                  ].map((subTab) => {
-                    const isActive = interviewSubTab === subTab.id;
-                    return (
-                      <button
-                        key={subTab.id}
-                        onClick={() => {
-                          setInterviewSubTab(subTab.id);
-                          setExpandedExpectation(null);
-                        }}
-                        className={`px-4 py-2 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer ${
-                          isActive 
-                            ? 'bg-slate-900 text-white shadow-sm' 
-                            : 'bg-slate-50 border border-slate-200 text-slate-600 hover:text-slate-900'
-                        }`}
-                      >
-                        <subTab.icon size={13} />
-                        {subTab.label}
-                        <span className={`rounded-full px-1.5 py-0.2 text-[9px] font-black ${
-                          isActive ? 'bg-emerald-500 text-white' : 'bg-slate-200 text-slate-800'
-                        }`}>{subTab.count}</span>
-                      </button>
-                    );
-                  })}
-                </div>
-
-                {/* Questions Grid based on active Sub-tab */}
-                <div className="flex flex-col gap-4">
-                  {interviewPrep[interviewSubTab]?.map((qItem, idx) => {
-                    const uniqueId = `${interviewSubTab}-${idx}`;
-                    const isExpanded = expandedExpectation === uniqueId;
-                    return (
-                      <div key={idx} className="border border-slate-200 rounded-xl p-5 bg-white shadow-sm flex flex-col gap-4">
-                        <div className="flex justify-between items-start">
-                          <div className="flex gap-3 items-center">
-                            <span className="w-6 h-6 rounded bg-slate-900 text-white flex items-center justify-center text-xs font-bold shrink-0">{idx + 1}</span>
-                            <h4 className="text-xs font-bold text-slate-900">{qItem.question}</h4>
-                          </div>
-                          <span className={`rounded px-2 py-0.5 text-[9px] font-black uppercase tracking-wider shrink-0 ${
-                            qItem.difficulty === 'Hard'
-                              ? 'bg-rose-50 border border-rose-200 text-rose-700'
-                              : 'bg-amber-50 border border-amber-200 text-amber-700'
-                          }`}>{qItem.difficulty}</span>
-                        </div>
-                        
-                        <div className="border-t border-slate-100 pt-3">
-                          <button
-                            onClick={() => setExpandedExpectation(isExpanded ? null : uniqueId)}
-                            className="flex items-center gap-1 text-slate-500 hover:text-slate-900 text-xs font-bold"
-                          >
-                            {isExpanded ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
-                            Interviewer Expectation
-                          </button>
-                          {isExpanded && (
-                            <div className="mt-2.5 bg-slate-50 border border-slate-200/60 rounded-lg p-4 text-xs flex flex-col gap-2 animate-fade-in">
-                              <span className="font-bold text-slate-900 uppercase tracking-wider text-[10px]">What they want to hear:</span>
-                              <p className="text-slate-600 leading-relaxed font-medium">
-                                {qItem.expectation}
-                              </p>
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-
-              </div>
+              <InterviewTab 
+                interviewPrep={interviewPrep}
+                interviewSubTab={interviewSubTab}
+                setInterviewSubTab={setInterviewSubTab}
+                expandedExpectation={expandedExpectation}
+                setExpandedExpectation={setExpandedExpectation}
+              />
             )}
 
-            {/* 7. Cover Letter Tab */}
             {activeTab === 'coverletter' && (
-              <div className="animate-fade-in flex flex-col gap-6">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                  <div>
-                    <h3 className="font-serif text-2xl text-slate-950 font-bold tracking-tight">Cover Letter</h3>
-                    <p className="text-xs text-slate-500 mt-1 font-medium">Professionally formatted narrative matching your new tailored resume.</p>
-                  </div>
-                  <div className="flex items-center gap-2 shrink-0">
-                    <button
-                      onClick={() => handleCopyCoverLetter(generatedCoverLetter)}
-                      className="border border-slate-200 hover:bg-slate-50 text-slate-750 rounded-lg px-3 py-1.5 text-xs font-bold flex items-center gap-1.5 transition-colors"
-                    >
-                      <Copy size={13} />
-                      {copiedLetter ? 'Copied' : 'Copy'}
-                    </button>
-                    <button
-                      onClick={() => handleDownloadCoverLetter(generatedCoverLetter)}
-                      className="bg-slate-900 hover:bg-slate-800 text-white rounded-lg px-3 py-1.5 text-xs font-bold flex items-center gap-1.5 transition-colors"
-                    >
-                      <Download size={13} />
-                      Download
-                    </button>
-                  </div>
-                </div>
-
-                <div className="border border-slate-200 bg-slate-50/40 rounded-xl p-6 shadow-inner font-mono text-[11px] text-slate-700 leading-relaxed whitespace-pre-wrap select-all max-h-[450px] overflow-y-auto">
-                  {generatedCoverLetter}
-                </div>
-              </div>
+              <CoverLetterTab 
+                generatedCoverLetter={generatedCoverLetter}
+                copiedLetter={copiedLetter}
+                handleCopyCoverLetter={handleCopyCoverLetter}
+                handleDownloadCoverLetter={handleDownloadCoverLetter}
+              />
             )}
 
-            {/* 8. ATS Check Tab */}
             {activeTab === 'atscheck' && (
-              <div className="animate-fade-in flex flex-col gap-6">
-                <div>
-                  <h3 className="font-serif text-2xl text-slate-955 font-bold tracking-tight">ATS Audit Results</h3>
-                  <p className="text-xs text-slate-500 mt-1 font-medium">Automated quality assurance checks matching standard ATS parser rules.</p>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  
-                  {/* Check 1 */}
-                  <div className="border border-slate-200/80 bg-slate-50/40 rounded-xl p-4 flex gap-3 items-start">
-                    <div className="w-5 h-5 rounded-full bg-emerald-500 text-white flex items-center justify-center shrink-0 mt-0.5">
-                      <Check size={12} className="stroke-[3]" />
-                    </div>
-                    <div>
-                      <h4 className="text-xs font-bold text-slate-900">File Format Compatibility</h4>
-                      <p className="text-[11px] text-slate-500 leading-relaxed mt-1 font-medium">Standard PDF format generated matches parsing standards. Rich in text, zero vectors or image masks.</p>
-                    </div>
-                  </div>
-
-                  {/* Check 2 */}
-                  <div className="border border-slate-200/80 bg-slate-50/40 rounded-xl p-4 flex gap-3 items-start">
-                    <div className="w-5 h-5 rounded-full bg-emerald-500 text-white flex items-center justify-center shrink-0 mt-0.5">
-                      <Check size={12} className="stroke-[3]" />
-                    </div>
-                    <div>
-                      <h4 className="text-xs font-bold text-slate-900">ATS-Safe Section Headings</h4>
-                      <p className="text-[11px] text-slate-500 leading-relaxed mt-1 font-medium">All headings match standard naming conventions: "Experience", "Education", "Skills", "Projects".</p>
-                    </div>
-                  </div>
-
-                  {/* Check 3 */}
-                  <div className="border border-slate-200/80 bg-slate-50/40 rounded-xl p-4 flex gap-3 items-start">
-                    <div className="w-5 h-5 rounded-full bg-emerald-500 text-white flex items-center justify-center shrink-0 mt-0.5">
-                      <Check size={12} className="stroke-[3]" />
-                    </div>
-                    <div>
-                      <h4 className="text-xs font-bold text-slate-900">Contact Details Integrity</h4>
-                      <p className="text-[11px] text-slate-500 leading-relaxed mt-1 font-medium">Your email, phone number, and location are parsed and correctly placed at the top of the document.</p>
-                    </div>
-                  </div>
-
-                  {/* Check 4 */}
-                  <div className="border border-slate-200/80 bg-slate-50/40 rounded-xl p-4 flex gap-3 items-start">
-                    <div className="w-5 h-5 rounded-full bg-amber-500 text-white flex items-center justify-center shrink-0 mt-0.5">
-                      <AlertTriangle size={12} className="stroke-[3]" />
-                    </div>
-                    <div>
-                      <h4 className="text-xs font-bold text-slate-900">Metrics & Quantifiable Impact</h4>
-                      <p className="text-[11px] text-slate-500 leading-relaxed mt-1 font-medium">Some experience points contain `[X%]` or `[N]` placeholders. Review these and insert real numbers before applying.</p>
-                    </div>
-                  </div>
-
-                </div>
-              </div>
+              <AtsCheckTab />
             )}
 
-            {/* 9. Re-Score Tab */}
             {activeTab === 'rescore' && (
-              <div className="animate-fade-in flex flex-col gap-6">
-                <div>
-                  <h3 className="font-serif text-2xl text-slate-955 font-bold tracking-tight">Refine Parameters</h3>
-                  <p className="text-xs text-slate-500 mt-1 font-medium">Fine-tune optimization guidelines and adjust the compatibility scoring.</p>
-                </div>
-
-                <div className="flex flex-col gap-5 border border-slate-200/80 rounded-xl p-5">
-                  <div className="flex flex-col gap-2">
-                    <div className="flex justify-between text-xs font-bold text-slate-700">
-                      <span>Technical Depth vs. Leadership</span>
-                      <span>{sliders.techDepth}% / {100 - sliders.techDepth}%</span>
-                    </div>
-                    <input 
-                      type="range" 
-                      min="10" 
-                      max="90" 
-                      value={sliders.techDepth} 
-                      onChange={(e) => setSliders(prev => ({ ...prev, techDepth: parseInt(e.target.value) }))}
-                      className="w-full h-1.5 bg-slate-100 rounded-lg appearance-none cursor-pointer accent-slate-900"
-                    />
-                    <div className="flex justify-between text-[10px] text-slate-400 font-semibold">
-                      <span>More Technical Keywords</span>
-                      <span>More Team/Strategy</span>
-                    </div>
-                  </div>
-
-                  <div className="flex flex-col gap-2">
-                    <div className="flex justify-between text-xs font-bold text-slate-700">
-                      <span>Conciseness vs. Details</span>
-                      <span>{sliders.conciseness}% / {100 - sliders.conciseness}%</span>
-                    </div>
-                    <input 
-                      type="range" 
-                      min="10" 
-                      max="90" 
-                      value={sliders.conciseness} 
-                      onChange={(e) => setSliders(prev => ({ ...prev, conciseness: parseInt(e.target.value) }))}
-                      className="w-full h-1.5 bg-slate-100 rounded-lg appearance-none cursor-pointer accent-slate-900"
-                    />
-                    <div className="flex justify-between text-[10px] text-slate-400 font-semibold">
-                      <span>Short & Sweet (1-Page)</span>
-                      <span>Comprehensive (2-Page)</span>
-                    </div>
-                  </div>
-
-                  <div className="flex flex-col gap-2">
-                    <div className="flex justify-between text-xs font-bold text-slate-700">
-                      <span>Industry Specificity Focus</span>
-                      <span>{sliders.industryFocus}%</span>
-                    </div>
-                    <input 
-                      type="range" 
-                      min="40" 
-                      max="100" 
-                      value={sliders.industryFocus} 
-                      onChange={(e) => setSliders(prev => ({ ...prev, industryFocus: parseInt(e.target.value) }))}
-                      className="w-full h-1.5 bg-slate-100 rounded-lg appearance-none cursor-pointer accent-slate-900"
-                    />
-                    <div className="flex justify-between text-[10px] text-slate-400 font-semibold">
-                      <span>General Capabilities</span>
-                      <span>Exact Niche Stack Match</span>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="flex justify-end">
-                  <Button 
-                    variant="primary" 
-                    onClick={handleApplyAdjustments}
-                    disabled={isReScoring}
-                    className="flex items-center gap-2 bg-slate-900 text-white rounded-lg px-5 py-2.5 hover:bg-slate-800 transition-colors text-xs font-bold"
-                  >
-                    {isReScoring ? (
-                      <>
-                        <RefreshCw size={13} className="animate-spin" />
-                        Re-calculating compatibility...
-                      </>
-                    ) : (
-                      <>
-                        <Sliders size={13} />
-                        Apply & Re-Score
-                      </>
-                    )}
-                  </Button>
-                </div>
-              </div>
+              <RescoreTab 
+                sliders={sliders}
+                setSliders={setSliders}
+                isReScoring={isReScoring}
+                handleApplyAdjustments={handleApplyAdjustments}
+              />
             )}
 
-            {/* 10. JD Match Tab */}
             {activeTab === 'jdmatch' && (
-              <div className="animate-fade-in flex flex-col gap-6">
-                <div>
-                  <h3 className="font-serif text-2xl text-slate-955 font-bold tracking-tight font-serif">Requirement Alignment</h3>
-                  <p className="text-xs text-slate-500 mt-1 font-medium">Checklist verifying how your resume meets the core requirements of the job description.</p>
-                </div>
-
-                <div className="flex flex-col gap-3">
-                  <div className="border border-slate-200/80 rounded-xl p-4 flex items-center justify-between gap-4 bg-slate-50/40">
-                    <div className="flex flex-col gap-0.5">
-                      <span className="text-xs font-bold text-slate-955">Engineering Scope & Role Title</span>
-                      <span className="text-[10px] text-slate-500 font-medium">Target title matched: {jobTitle}</span>
-                    </div>
-                    <span className="bg-emerald-50 text-emerald-700 border border-emerald-100 rounded px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider shrink-0">
-                      Met
-                    </span>
-                  </div>
-
-                  <div className="border border-slate-200/80 rounded-xl p-4 flex items-center justify-between gap-4 bg-slate-50/40">
-                    <div className="flex flex-col gap-0.5">
-                      <span className="text-xs font-bold text-slate-955">Technical Stack Mastery</span>
-                      <span className="text-[10px] text-slate-500 font-medium">Matched technologies: {technicalSkills.slice(0, 4).join(', ')}</span>
-                    </div>
-                    <span className="bg-emerald-50 text-emerald-700 border border-emerald-100 rounded px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider shrink-0">
-                      Met
-                    </span>
-                  </div>
-
-                  <div className="border border-slate-200/80 rounded-xl p-4 flex items-center justify-between gap-4 bg-slate-50/40">
-                    <div className="flex flex-col gap-0.5">
-                      <span className="text-xs font-bold text-slate-955">Quantifiable Achievement Focus</span>
-                      <span className="text-[10px] text-slate-500 font-medium">All experience bullets include measurable performance outcomes</span>
-                    </div>
-                    <span className="bg-emerald-50 text-emerald-700 border border-emerald-100 rounded px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider shrink-0">
-                      Met
-                    </span>
-                  </div>
-                </div>
-              </div>
+              <JdMatchTab 
+                jobTitle={jobTitle}
+                technicalSkills={technicalSkills}
+              />
             )}
 
-            {/* Document Preview Panels (Standard Tabs fallback at the bottom) */}
+            {/* Fallbacks / Document Previews */}
             {activeTab === 'preview' && (
               <div className="animate-fade-in bg-mist/20 py-4 rounded-xl border border-boundary">
                 <ResumePreview data={result} />
@@ -1354,6 +598,859 @@ ${candidateName}`;
             </span>
           </div>
         </main>
+      </div>
+    </div>
+  );
+}
+
+// ============================================================================
+// SEPARATED SUB-COMPONENT FUNCTIONS (PORTABLE & HIGHLY CLEAN)
+// ============================================================================
+
+// 1. OVERVIEW TAB
+function OverviewTab({ currentScore, jobTitle, company, keywordsMatchedCount, keywordsTotalCount }) {
+  return (
+    <div className="animate-fade-in flex flex-col gap-6">
+      <div>
+        <h3 className="font-serif text-2xl text-slate-955 font-bold tracking-tight">Compatibility Overview</h3>
+        <p className="text-xs text-slate-500 mt-1 font-medium">Visual summary of how well your tailored profile aligns with the job specification.</p>
+      </div>
+      
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+        <div className="border border-slate-200/80 bg-slate-50/50 rounded-xl p-5 flex flex-col gap-3">
+          <h4 className="text-xs font-bold uppercase tracking-wider text-slate-500 flex items-center gap-1.5 font-sans">
+            <Sparkles size={14} className="text-emerald-500" />
+            Fit Summary
+          </h4>
+          <p className="text-sm text-slate-700 leading-relaxed font-medium">
+            Your resume has been optimized for the <strong>{jobTitle}</strong> position. We integrated critical keywords and framed your achievements using target-role terminology, raising your overall match score to <strong>{currentScore}%</strong>.
+          </p>
+        </div>
+        
+        <div className="border border-slate-200/80 bg-slate-50/50 rounded-xl p-5 flex flex-col gap-3">
+          <h4 className="text-xs font-bold uppercase tracking-wider text-slate-500 flex items-center gap-1.5 font-sans">
+            <ShieldCheck size={14} className="text-blue-500" />
+            ATS Scan Quality
+          </h4>
+          <div className="flex flex-col gap-2.5">
+            <div className="flex items-center justify-between text-xs font-semibold">
+              <span className="text-slate-500">Keyword Density</span>
+              <span className="text-emerald-700 bg-emerald-50 border border-emerald-100 rounded px-1.5 py-0.5 font-bold text-[10px]">OPTIMAL</span>
+            </div>
+            <div className="flex items-center justify-between text-xs font-semibold">
+              <span className="text-slate-500">Section Headings</span>
+              <span className="text-emerald-700 bg-emerald-50 border border-emerald-100 rounded px-1.5 py-0.5 font-bold text-[10px]">100% STANDARD</span>
+            </div>
+            <div className="flex items-center justify-between text-xs font-semibold">
+              <span className="text-slate-500">Formatting Risk</span>
+              <span className="text-emerald-700 bg-emerald-50 border border-emerald-100 rounded px-1.5 py-0.5 font-bold text-[10px]">ZERO FLAGS</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="border border-slate-200/70 rounded-xl p-5 flex flex-col gap-4">
+        <h4 className="text-xs font-bold uppercase tracking-wider text-slate-500">Tailoring Metadata</h4>
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+          <div className="flex flex-col">
+            <span className="text-[10px] uppercase font-bold text-slate-400">Target Role</span>
+            <span className="text-xs font-bold text-slate-900 mt-1 truncate">{jobTitle}</span>
+          </div>
+          <div className="flex flex-col">
+            <span className="text-[10px] uppercase font-bold text-slate-400">Company</span>
+            <span className="text-xs font-bold text-slate-900 mt-1 truncate">{company !== 'Target Company' ? company : 'Not Specified'}</span>
+          </div>
+          <div className="flex flex-col">
+            <span className="text-[10px] uppercase font-bold text-slate-400">Keywords Matched</span>
+            <span className="text-xs font-bold text-slate-900 mt-1">{keywordsMatchedCount} / {keywordsTotalCount}</span>
+          </div>
+          <div className="flex flex-col">
+            <span className="text-[10px] uppercase font-bold text-slate-400">Layout Safety</span>
+            <span className="text-xs font-bold text-emerald-600 mt-1">ATS Compliant</span>
+          </div>
+        </div>
+      </div>
+
+      <div className="bg-slate-50 border border-slate-200/60 rounded-lg p-4 flex items-start gap-3">
+        <Info size={16} className="text-slate-400 shrink-0 mt-0.5" />
+        <p className="text-xs text-slate-600 leading-relaxed font-medium">
+          This resume has been restructured utilizing a single-column, standard-heading layout. Avoid introducing tables, custom graphics, text boxes, or icons, as these elements commonly trigger parsing errors in legacy Applicant Tracking Systems.
+        </p>
+      </div>
+    </div>
+  );
+}
+
+// 2. ROADMAP TAB
+function RoadmapTab({ roadmapData, completedTasks, toggleTask, currentScore }) {
+  const getLevelProgress = (level) => {
+    switch (level) {
+      case 'Beginner': return '10%';
+      case 'Developing': return '40%';
+      case 'Competitive': return '70%';
+      case 'Top Tier': return '100%';
+      default: return '40%';
+    }
+  };
+
+  const completedCount = Object.values(completedTasks).filter(Boolean).length;
+  const progressPercent = roadmapData.tasks.length > 0 
+    ? Math.floor((completedCount / roadmapData.tasks.length) * 100)
+    : 0;
+
+  const currentGain = Object.entries(completedTasks).reduce((acc, [key, completed]) => {
+    if (!completed) return acc;
+    const taskObj = roadmapData.tasks[key];
+    return acc + (taskObj?.points ?? 0);
+  }, 0);
+
+  return (
+    <div className="animate-fade-in flex flex-col gap-6">
+      <div>
+        <div className="flex items-center gap-1.5 text-xs font-bold text-slate-400 uppercase tracking-wider">
+          <Milestone size={14} className="text-emerald-500" />
+          Resume Roadmap
+        </div>
+        <h3 className="font-serif text-2xl text-slate-955 font-bold tracking-tight mt-1">Path to Top Tier</h3>
+        <p className="text-xs text-slate-500 mt-1 font-medium">
+          Follow these high-leverage steps to raise your profile competitiveness and secure target interviews.
+        </p>
+      </div>
+
+      {/* Horizontal Progress Timeline */}
+      <div className="border border-slate-200/80 bg-slate-50/50 rounded-xl p-6 flex flex-col gap-6">
+        {/* Step Indicators */}
+        <div className="flex justify-between items-center relative px-2">
+          {/* Line Rail */}
+          <div className="absolute left-6 right-6 top-4 h-1 bg-slate-200 rounded-full z-0">
+            <div 
+              className="h-full bg-emerald-500 rounded-full transition-all duration-500" 
+              style={{ width: getLevelProgress(roadmapData.current_level) }} 
+            />
+          </div>
+          
+          {/* Steps */}
+          {[
+            { label: 'Beginner', val: 'Beginner' },
+            { label: 'Developing', val: 'Developing' },
+            { label: 'Competitive', val: 'Competitive' },
+            { label: 'Top Tier', val: 'Top Tier' }
+          ].map((step, idx) => {
+            const levels = ['Beginner', 'Developing', 'Competitive', 'Top Tier'];
+            const currentIdx = levels.indexOf(roadmapData.current_level);
+            const stepIdx = levels.indexOf(step.val);
+            
+            const isChecked = stepIdx < currentIdx;
+            const isActive = stepIdx === currentIdx;
+            
+            return (
+              <div key={idx} className="flex flex-col items-center gap-2 relative z-10">
+                <div className={`w-8 h-8 rounded-full border-2 flex items-center justify-center text-xs font-bold transition-all ${
+                  isChecked 
+                    ? 'bg-emerald-50 border-emerald-500 text-white shadow-sm' 
+                    : isActive
+                    ? 'bg-white border-emerald-500 text-emerald-600 shadow-sm ring-4 ring-emerald-50'
+                    : 'bg-white border-slate-300 text-slate-400'
+                }`}>
+                  {isChecked ? '✓' : isActive ? '◎' : '●'}
+                </div>
+                <span className={`text-[10px] font-bold uppercase tracking-wider ${
+                  isActive ? 'text-emerald-600' : 'text-slate-505'
+                }`}>{step.label}</span>
+              </div>
+            );
+          })}
+        </div>
+
+        {/* High-level scores */}
+        <div className="grid grid-cols-3 gap-3 border-t border-slate-200/60 pt-4 mt-2">
+          <div className="text-center flex flex-col">
+            <span className="text-2xl font-black text-slate-900 tracking-tight">{currentScore}</span>
+            <span className="text-[9px] font-bold text-slate-400 uppercase mt-0.5">Current Score</span>
+          </div>
+          <div className="text-center flex flex-col border-x border-slate-200/60">
+            <span className="text-2xl font-black text-emerald-600 tracking-tight">+{currentGain}</span>
+            <span className="text-[9px] font-bold text-slate-400 uppercase mt-0.5">Tracked Gain</span>
+          </div>
+          <div className="text-center flex flex-col">
+            <span className="text-2xl font-black text-slate-900 tracking-tight">{completedCount}/{roadmapData.tasks.length}</span>
+            <span className="text-[9px] font-bold text-slate-400 uppercase mt-0.5">Tasks Done</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Checklist Tasks */}
+      <div className="flex flex-col gap-3">
+        {roadmapData.tasks.map((taskItem, idx) => {
+          const isCompleted = !!completedTasks[idx];
+          return (
+            <div 
+              key={idx}
+              className={`border rounded-xl p-4 flex items-center justify-between gap-4 transition-all shadow-sm ${
+                isCompleted ? 'bg-slate-50/70 border-slate-200' : 'bg-white border-slate-200/80 hover:border-slate-300'
+              }`}
+            >
+              <div className="flex items-start gap-3 flex-1">
+                <input 
+                  type="checkbox" 
+                  id={`task-${idx}`}
+                  checked={isCompleted}
+                  onChange={() => toggleTask(idx)}
+                  className="w-4 h-4 rounded text-slate-900 focus:ring-slate-900 border-slate-300 cursor-pointer mt-0.5"
+                />
+                <div className="flex flex-col gap-1">
+                  <label htmlFor={`task-${idx}`} className="text-xs font-bold text-slate-800 cursor-pointer leading-relaxed">
+                    {taskItem.task}
+                  </label>
+                  <div className="flex flex-wrap gap-1.5 mt-1">
+                    <span className="bg-slate-100 text-slate-600 rounded px-1.5 py-0.5 text-[9px] font-bold uppercase">{taskItem.type}</span>
+                    <span className={`rounded px-1.5 py-0.5 text-[9px] font-bold uppercase ${
+                      taskItem.impact === 'High Impact' 
+                        ? 'bg-rose-50 text-rose-700 border border-rose-100' 
+                        : 'bg-amber-50 text-amber-700 border border-amber-100'
+                    }`}>{taskItem.impact}</span>
+                    <span className="bg-emerald-50 text-emerald-700 border border-emerald-100 rounded px-1.5 py-0.5 text-[9px] font-bold uppercase">+{taskItem.points} pts</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Progress Bar */}
+      <div className="w-full bg-slate-50/50 border border-slate-200/60 rounded-xl p-4 flex flex-col gap-2">
+        <div className="flex justify-between items-center text-[10px] font-bold text-slate-500 uppercase tracking-wider">
+          <span>Task Progress</span>
+          <span>{progressPercent}%</span>
+        </div>
+        <div className="w-full h-1.5 bg-slate-200 rounded-full overflow-hidden">
+          <div 
+            className="h-full bg-emerald-500 transition-all duration-300" 
+            style={{ width: `${progressPercent}%` }}
+          />
+        </div>
+        <p className="text-[11px] text-slate-500 font-medium italic text-center mt-1">
+          "With dedication and persistence, you can reach the Top Tier level and become a leading expert in the field of machine learning engineering."
+        </p>
+      </div>
+    </div>
+  );
+}
+
+// 3. SKILLS TAB
+function SkillsTab({ jobTitle, currentScore, technicalSkills, skillsIntell, maxCount }) {
+  const getBarHeight = (count) => {
+    return `${Math.max(15, Math.min(100, (count / maxCount) * 100))}%`;
+  };
+
+  return (
+    <div className="animate-fade-in flex flex-col gap-6">
+      <div>
+        <div className="flex items-center gap-1.5 text-xs font-bold text-slate-400 uppercase tracking-wider">
+          <Target size={14} className="text-emerald-500" />
+          Role Match
+        </div>
+        <h3 className="font-serif text-2xl text-slate-955 font-bold tracking-tight mt-1">{jobTitle}</h3>
+        <p className="text-xs text-slate-500 mt-1 font-medium">Core match analysis comparing your resume credentials against target-role requirements.</p>
+      </div>
+
+      {/* Score & Skills Chips Side-by-Side */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+        {/* Left: Score Card */}
+        <div className="border border-slate-200/80 bg-white rounded-xl p-5 flex flex-col justify-between shadow-sm">
+          <div className="flex flex-col gap-1.5">
+            <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Match Score</span>
+            <span className="font-serif text-5xl font-black text-emerald-600 leading-none">{currentScore}%</span>
+          </div>
+          <div className="w-full h-2 bg-slate-100 rounded-full overflow-hidden my-4">
+            <div className="h-full bg-emerald-500 rounded-full" style={{ width: `${currentScore}%` }} />
+          </div>
+          <p className="text-xs text-slate-600 leading-relaxed font-medium">
+            Strong candidate with relevant technical skills and experience, but could benefit from more emphasis on {skillsIntell.skills_to_add.join(' and ') || 'scalability and cloud computing'}.
+          </p>
+        </div>
+
+        {/* Right: Matched/Missing Badges */}
+        <div className="flex flex-col gap-4">
+          <div className="border border-slate-200/80 bg-slate-50/40 rounded-xl p-4 flex flex-col gap-2.5">
+            <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-600 flex items-center gap-1">
+              <Check size={11} className="stroke-[3]" />
+              Matched Skills
+            </span>
+            <div className="flex flex-wrap gap-1.5">
+              {technicalSkills.slice(0, 8).map((skill, idx) => (
+                <span key={idx} className="bg-emerald-50 text-emerald-700 border border-emerald-100 rounded px-2.5 py-0.5 text-[10px] font-bold">
+                  {skill}
+                </span>
+              ))}
+            </div>
+          </div>
+
+          <div className="border border-slate-200/80 bg-slate-50/40 rounded-xl p-4 flex flex-col gap-2.5">
+            <span className="text-[10px] font-bold uppercase tracking-wider text-amber-700 flex items-center gap-1.5">
+              <AlertTriangle size={11} />
+              Skills To Add
+            </span>
+            <div className="flex flex-wrap gap-1.5">
+              {skillsIntell.skills_to_add.map((skill, idx) => (
+                <span key={idx} className="bg-amber-50 text-amber-700 border border-amber-100 rounded px-2.5 py-0.5 text-[10px] font-bold">
+                  {skill}
+                </span>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Custom CSS Bar Chart for "Skills Intelligence" */}
+      <div className="border border-slate-200/80 bg-slate-50/30 rounded-xl p-5 flex flex-col gap-4 shadow-sm">
+        <div className="flex items-center justify-between">
+          <div className="flex flex-col">
+            <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Skills Intelligence</span>
+            <h4 className="text-sm font-bold text-slate-900 mt-0.5">Skill coverage by category</h4>
+          </div>
+          {/* Summary Badges */}
+          <div className="flex items-center gap-1.5 select-none">
+            {[
+              { label: 'Technical', val: skillsIntell.technical_count },
+              { label: 'Soft', val: skillsIntell.soft_count },
+              { label: 'Certs', val: skillsIntell.certs_count },
+              { label: 'Missing', val: skillsIntell.missing_count }
+            ].map((badge, idx) => (
+              <div key={idx} className="bg-white border border-slate-200 rounded px-2.5 py-1 flex items-center gap-1.5 text-[10px] font-bold text-slate-700">
+                <span className="font-extrabold text-slate-955">{badge.val}</span>
+                <span className="text-slate-400 font-medium">{badge.label}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <p className="text-[11px] text-slate-500 font-medium leading-relaxed -mt-1">
+          The skill map separates proven capabilities from missing keywords that could strengthen role alignment.
+        </p>
+
+        {/* Chart Visualizer */}
+        <div className="h-44 border-b border-slate-200 relative flex items-end justify-around pb-1 pt-6 mt-2 bg-[linear-gradient(to_bottom,#f8fafc_1px,transparent_1px)] bg-[size:100%_2rem] select-none">
+          {/* Technical */}
+          <div className="flex flex-col items-center gap-2 w-16 group">
+            <span className="text-[10px] font-black text-slate-900 group-hover:scale-110 transition-transform">{skillsIntell.technical_count}</span>
+            <div 
+              className="w-8 bg-emerald-400 hover:bg-emerald-500 rounded-t-md transition-all duration-500 shadow-sm" 
+              style={{ height: getBarHeight(skillsIntell.technical_count) }} 
+            />
+            <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider mt-1">Technical</span>
+          </div>
+
+          {/* Soft */}
+          <div className="flex flex-col items-center gap-2 w-16 group">
+            <span className="text-[10px] font-black text-slate-900 group-hover:scale-110 transition-transform">{skillsIntell.soft_count}</span>
+            <div 
+              className="w-8 bg-blue-400 hover:bg-blue-500 rounded-t-md transition-all duration-500 shadow-sm" 
+              style={{ height: getBarHeight(skillsIntell.soft_count) }} 
+            />
+            <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider mt-1">Soft</span>
+          </div>
+
+          {/* Certs */}
+          <div className="flex flex-col items-center gap-2 w-16 group">
+            <span className="text-[10px] font-black text-slate-900 group-hover:scale-110 transition-transform">{skillsIntell.certs_count}</span>
+            <div 
+              className="w-8 bg-amber-400 hover:bg-amber-500 rounded-t-md transition-all duration-500 shadow-sm" 
+              style={{ height: getBarHeight(skillsIntell.certs_count) }} 
+            />
+            <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider mt-1">Certs</span>
+          </div>
+
+          {/* Missing */}
+          <div className="flex flex-col items-center gap-2 w-16 group">
+            <span className="text-[10px] font-black text-slate-900 group-hover:scale-110 transition-transform text-rose-600">{skillsIntell.missing_count}</span>
+            <div 
+              className="w-8 bg-rose-400 hover:bg-rose-500 rounded-t-md transition-all duration-500 shadow-sm" 
+              style={{ height: getBarHeight(skillsIntell.missing_count) }} 
+            />
+            <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider mt-1">Missing</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// 4. RECRUITER TAB
+function RecruiterTab({ jobTitle, recruiterScan, copiedPitch, handleCopyElevatorPitch }) {
+  return (
+    <div className="animate-fade-in flex flex-col gap-6 font-sans">
+      <div>
+        <div className="flex items-center gap-1.5 text-xs font-bold text-slate-400 uppercase tracking-wider">
+          <Clock size={14} className="text-emerald-500" />
+          Recruiter Scan
+        </div>
+        <h3 className="font-serif text-2xl text-slate-955 font-bold tracking-tight mt-1">Six-second resume read</h3>
+        <p className="text-xs text-slate-500 mt-1 font-medium">The first impression, the risk, and the single fix with the highest leverage.</p>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
+        {/* Left Column: Attention Timeline */}
+        <div className="flex flex-col gap-3">
+          <h4 className="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
+            <UserCheck size={14} className="text-slate-800" />
+            Attention Timeline
+          </h4>
+          
+          <div className="flex flex-col gap-3">
+            {recruiterScan.attention_timeline.map((timelineStep, idx) => (
+              <div key={idx} className="border border-slate-200/80 bg-white rounded-xl p-4 flex gap-3.5 items-center shadow-sm">
+                <div className="w-6 h-6 rounded bg-slate-900 text-white flex items-center justify-center text-xs font-bold shrink-0">
+                  {idx + 1}
+                </div>
+                <div className="flex flex-col gap-0.5">
+                  <span className="text-[10px] font-bold uppercase text-slate-400">
+                    {idx === 0 ? 'First noticed' : idx === 1 ? 'Second noticed' : 'Third noticed'}
+                  </span>
+                  <span className="text-xs font-bold text-slate-850">{timelineStep.replace(/^(First noticed:|Second noticed:|Third noticed:)\s*/i, '')}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Right Column: Pile Categorization & Best Fix */}
+        <div className="flex flex-col gap-3.5">
+          {/* Strong Yes Card */}
+          <div className="border border-emerald-200 bg-emerald-50/30 rounded-xl p-4 flex flex-col gap-2 shadow-sm">
+            <div className="flex items-center justify-between">
+              <span className="text-[10px] font-black uppercase text-emerald-700 flex items-center gap-1">
+                ✓ Strong Yes
+              </span>
+              <span className="text-[9px] font-bold text-slate-400 uppercase">Hiring pile</span>
+            </div>
+            <p className="text-xs text-slate-700 leading-relaxed font-medium">
+              {recruiterScan.strong_yes}
+            </p>
+          </div>
+
+          {/* Completely Missed Card */}
+          <div className="border border-rose-200 bg-rose-50/30 rounded-xl p-4 flex flex-col gap-2 shadow-sm">
+            <span className="text-[10px] font-black uppercase text-rose-700 flex items-center gap-1">
+              ✕ Completely Missed
+            </span>
+            <p className="text-xs text-slate-700 leading-relaxed font-medium">
+              {recruiterScan.completely_missed}
+            </p>
+          </div>
+
+          {/* Best Fix Card */}
+          <div className="border border-sky-200 bg-sky-50/25 rounded-xl p-4 flex flex-col gap-2 shadow-sm">
+            <span className="text-[10px] font-black uppercase text-sky-700 flex items-center gap-1">
+              ✦ Best Fix
+            </span>
+            <p className="text-xs text-slate-700 leading-relaxed font-medium">
+              {recruiterScan.best_fix}
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* Elevator Pitch */}
+      <div className="border border-slate-200/80 rounded-xl p-5 flex flex-col gap-3 mt-2 shadow-sm bg-slate-50/40">
+        <div className="flex items-center justify-between">
+          <h4 className="text-xs font-bold uppercase tracking-wider text-slate-500 flex items-center gap-1.5">
+            Your 30-Second Elevator Pitch
+          </h4>
+          <button
+            onClick={() => handleCopyElevatorPitch(recruiterScan.elevator_pitch)}
+            className="text-xs text-slate-500 hover:text-slate-900 flex items-center gap-1 font-bold transition-all"
+          >
+            <Copy size={12} />
+            {copiedPitch ? 'Copied' : 'Copy Pitch'}
+          </button>
+        </div>
+        <p className="text-xs text-slate-750 leading-relaxed font-medium italic bg-white border border-slate-200/65 rounded-lg p-4">
+          "{recruiterScan.elevator_pitch}"
+        </p>
+      </div>
+    </div>
+  );
+}
+
+// 5. REWRITES TAB
+function RewritesTab({ rewritesList, originalText, setActiveTab }) {
+  return (
+    <div className="animate-fade-in flex flex-col gap-6 font-sans">
+      <div>
+        <div className="flex items-center gap-1.5 text-xs font-bold text-slate-400 uppercase tracking-wider">
+          <Diff size={14} className="text-emerald-500" />
+          AI Rewrites
+        </div>
+        <h3 className="font-serif text-2xl text-slate-955 font-bold tracking-tight mt-1">Before and after improvements</h3>
+        <p className="text-xs text-slate-500 mt-1 font-medium">Stronger language, clearer evidence, and better keyword alignment.</p>
+      </div>
+
+      {/* Rewrite Sections */}
+      <div className="flex flex-col gap-5">
+        {rewritesList.map((rewrite, idx) => (
+          <div key={idx} className="border border-slate-200 rounded-xl p-5 bg-white shadow-sm flex flex-col gap-4">
+            <div className="flex justify-between items-center">
+              <h4 className="text-xs font-bold uppercase tracking-wider text-slate-800">{rewrite.section}</h4>
+              <span className="bg-slate-100 text-slate-700 text-[9px] font-bold uppercase rounded px-2 py-0.5">Rewrite {idx + 1}</span>
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-[1fr_24px_1fr] gap-4 items-center">
+              {/* Before */}
+              <div className="border border-rose-200/80 bg-rose-50/20 rounded-xl p-4 min-h-[100px] flex flex-col gap-1.5">
+                <span className="text-[10px] font-bold uppercase text-rose-700 flex items-center gap-1">✕ Before</span>
+                <p className="text-xs text-rose-900/85 leading-relaxed font-medium">
+                  {rewrite.before}
+                </p>
+              </div>
+
+              {/* Arrow */}
+              <div className="flex justify-center text-slate-350">
+                <ArrowRight size={18} className="rotate-90 lg:rotate-0" />
+              </div>
+
+              {/* After */}
+              <div className="border border-emerald-200/80 bg-emerald-50/20 rounded-xl p-4 min-h-[100px] flex flex-col gap-1.5">
+                <span className="text-[10px] font-bold uppercase text-emerald-700 flex items-center gap-1">✓ After</span>
+                <p className="text-xs text-emerald-900/85 leading-relaxed font-medium">
+                  {rewrite.after}
+                </p>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {originalText && (
+        <div className="mt-2 text-center">
+          <button 
+            className="inline-flex items-center gap-1.5 text-xs font-bold text-slate-900 hover:underline cursor-pointer"
+            onClick={(e) => {
+              e.preventDefault();
+              setActiveTab('compare');
+            }}
+          >
+            View Original vs. Optimized Side-by-Side Comparison
+            <ArrowRight size={12} />
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// 6. INTERVIEW PREP TAB
+function InterviewTab({ interviewPrep, interviewSubTab, setInterviewSubTab, expandedExpectation, setExpandedExpectation }) {
+  return (
+    <div className="animate-fade-in flex flex-col gap-6 font-sans">
+      <div>
+        <div className="flex items-center gap-1.5 text-xs font-bold text-slate-400 uppercase tracking-wider">
+          <Mic size={14} className="text-emerald-500" />
+          Interview Prep
+        </div>
+        <h3 className="font-serif text-2xl text-slate-955 font-bold tracking-tight mt-1">Questions from resume evidence</h3>
+        <p className="text-xs text-slate-500 mt-1 font-medium">Practice prompts generated from the candidate's actual experience and skill profile.</p>
+      </div>
+
+      {/* Sub Navigation (Technical, Behavioral, Curveball) */}
+      <div className="flex items-center gap-2 border-b border-slate-200/60 pb-3">
+        {[
+          { id: 'technical', label: 'Technical', count: interviewPrep.technical.length, icon: Target },
+          { id: 'behavioral', label: 'Behavioral', count: interviewPrep.behavioral.length, icon: UserCheck },
+          { id: 'curveball', label: 'Curveball', count: interviewPrep.curveball.length, icon: AlertTriangle }
+        ].map((subTab) => {
+          const isActive = interviewSubTab === subTab.id;
+          return (
+            <button
+              key={subTab.id}
+              onClick={() => {
+                setInterviewSubTab(subTab.id);
+                setExpandedExpectation(null);
+              }}
+              className={`px-4 py-2 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer ${
+                isActive 
+                  ? 'bg-slate-900 text-white shadow-sm' 
+                  : 'bg-slate-50 border border-slate-200 text-slate-600 hover:text-slate-900'
+              }`}
+            >
+              <subTab.icon size={13} />
+              {subTab.label}
+              <span className={`rounded-full px-1.5 py-0.2 text-[9px] font-black ${
+                isActive ? 'bg-emerald-500 text-white' : 'bg-slate-200 text-slate-800'
+              }`}>{subTab.count}</span>
+            </button>
+          );
+        })}
+      </div>
+
+      {/* Questions Grid based on active Sub-tab */}
+      <div className="flex flex-col gap-4">
+        {interviewPrep[interviewSubTab]?.map((qItem, idx) => {
+          const uniqueId = `${interviewSubTab}-${idx}`;
+          const isExpanded = expandedExpectation === uniqueId;
+          return (
+            <div key={idx} className="border border-slate-200 rounded-xl p-5 bg-white shadow-sm flex flex-col gap-4">
+              <div className="flex justify-between items-start">
+                <div className="flex gap-3 items-center">
+                  <span className="w-6 h-6 rounded bg-slate-900 text-white flex items-center justify-center text-xs font-bold shrink-0">{idx + 1}</span>
+                  <h4 className="text-xs font-bold text-slate-900">{qItem.question}</h4>
+                </div>
+                <span className={`rounded px-2 py-0.5 text-[9px] font-black uppercase tracking-wider shrink-0 ${
+                  qItem.difficulty === 'Hard'
+                    ? 'bg-rose-50 border border-rose-200 text-rose-700'
+                    : 'bg-amber-50 border border-amber-200 text-amber-700'
+                }`}>{qItem.difficulty}</span>
+              </div>
+              
+              <div className="border-t border-slate-100 pt-3">
+                <button
+                  onClick={() => setExpandedExpectation(isExpanded ? null : uniqueId)}
+                  className="flex items-center gap-1 text-slate-500 hover:text-slate-900 text-xs font-bold cursor-pointer"
+                >
+                  {isExpanded ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+                  Interviewer Expectation
+                </button>
+                {isExpanded && (
+                  <div className="mt-2.5 bg-slate-50 border border-slate-200/60 rounded-lg p-4 text-xs flex flex-col gap-2 animate-fade-in">
+                    <span className="font-bold text-slate-900 uppercase tracking-wider text-[10px]">What they want to hear:</span>
+                    <p className="text-slate-600 leading-relaxed font-medium">
+                      {qItem.expectation}
+                    </p>
+                  </div>
+                )}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+// 7. COVER LETTER TAB
+function CoverLetterTab({ generatedCoverLetter, copiedLetter, handleCopyCoverLetter, handleDownloadCoverLetter }) {
+  return (
+    <div className="animate-fade-in flex flex-col gap-6">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h3 className="font-serif text-2xl text-slate-955 font-bold tracking-tight">Cover Letter</h3>
+          <p className="text-xs text-slate-500 mt-1 font-medium">Professionally formatted narrative matching your new tailored resume.</p>
+        </div>
+        <div className="flex items-center gap-2 shrink-0 select-none">
+          <button
+            onClick={() => handleCopyCoverLetter(generatedCoverLetter)}
+            className="border border-slate-200 hover:bg-slate-50 text-slate-750 rounded-lg px-3 py-1.5 text-xs font-bold flex items-center gap-1.5 transition-colors cursor-pointer"
+          >
+            <Copy size={13} />
+            {copiedLetter ? 'Copied' : 'Copy'}
+          </button>
+          <button
+            onClick={() => handleDownloadCoverLetter(generatedCoverLetter)}
+            className="bg-slate-900 hover:bg-slate-800 text-white rounded-lg px-3 py-1.5 text-xs font-bold flex items-center gap-1.5 transition-colors cursor-pointer"
+          >
+            <Download size={13} />
+            Download
+          </button>
+        </div>
+      </div>
+
+      <div className="border border-slate-200 bg-slate-50/40 rounded-xl p-6 shadow-inner font-mono text-[11px] text-slate-700 leading-relaxed whitespace-pre-wrap select-all max-h-[450px] overflow-y-auto">
+        {generatedCoverLetter}
+      </div>
+    </div>
+  );
+}
+
+// 8. ATS CHECK TAB
+function AtsCheckTab() {
+  return (
+    <div className="animate-fade-in flex flex-col gap-6">
+      <div>
+        <h3 className="font-serif text-2xl text-slate-955 font-bold tracking-tight">ATS Audit Results</h3>
+        <p className="text-xs text-slate-500 mt-1 font-medium">Automated quality assurance checks matching standard ATS parser rules.</p>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {/* Check 1 */}
+        <div className="border border-slate-200/80 bg-slate-50/40 rounded-xl p-4 flex gap-3 items-start">
+          <div className="w-5 h-5 rounded-full bg-emerald-500 text-white flex items-center justify-center shrink-0 mt-0.5">
+            <Check size={12} className="stroke-[3]" />
+          </div>
+          <div>
+            <h4 className="text-xs font-bold text-slate-900">File Format Compatibility</h4>
+            <p className="text-[11px] text-slate-500 leading-relaxed mt-1 font-medium">Standard PDF format generated matches parsing standards. Rich in text, zero vectors or image masks.</p>
+          </div>
+        </div>
+
+        {/* Check 2 */}
+        <div className="border border-slate-200/80 bg-slate-50/40 rounded-xl p-4 flex gap-3 items-start">
+          <div className="w-5 h-5 rounded-full bg-emerald-500 text-white flex items-center justify-center shrink-0 mt-0.5">
+            <Check size={12} className="stroke-[3]" />
+          </div>
+          <div>
+            <h4 className="text-xs font-bold text-slate-900">ATS-Safe Section Headings</h4>
+            <p className="text-[11px] text-slate-500 leading-relaxed mt-1 font-medium">All headings match standard naming conventions: "Experience", "Education", "Skills", "Projects".</p>
+          </div>
+        </div>
+
+        {/* Check 3 */}
+        <div className="border border-slate-200/80 bg-slate-50/40 rounded-xl p-4 flex gap-3 items-start">
+          <div className="w-5 h-5 rounded-full bg-emerald-500 text-white flex items-center justify-center shrink-0 mt-0.5">
+            <Check size={12} className="stroke-[3]" />
+          </div>
+          <div>
+            <h4 className="text-xs font-bold text-slate-900">Contact Details Integrity</h4>
+            <p className="text-[11px] text-slate-500 leading-relaxed mt-1 font-medium">Your email, phone number, and location are parsed and correctly placed at the top of the document.</p>
+          </div>
+        </div>
+
+        {/* Check 4 */}
+        <div className="border border-slate-200/80 bg-slate-50/40 rounded-xl p-4 flex gap-3 items-start">
+          <div className="w-5 h-5 rounded-full bg-amber-500 text-white flex items-center justify-center shrink-0 mt-0.5">
+            <AlertTriangle size={12} className="stroke-[3]" />
+          </div>
+          <div>
+            <h4 className="text-xs font-bold text-slate-900">Metrics & Quantifiable Impact</h4>
+            <p className="text-[11px] text-slate-500 leading-relaxed mt-1 font-medium">Some experience points contain `[X%]` or `[N]` placeholders. Review these and insert real numbers before applying.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// 9. RE-SCORE TAB
+function RescoreTab({ sliders, setSliders, isReScoring, handleApplyAdjustments }) {
+  return (
+    <div className="animate-fade-in flex flex-col gap-6">
+      <div>
+        <h3 className="font-serif text-2xl text-slate-955 font-bold tracking-tight">Refine Parameters</h3>
+        <p className="text-xs text-slate-500 mt-1 font-medium">Fine-tune optimization guidelines and adjust the compatibility scoring.</p>
+      </div>
+
+      <div className="flex flex-col gap-5 border border-slate-200/80 rounded-xl p-5">
+        <div className="flex flex-col gap-2">
+          <div className="flex justify-between text-xs font-bold text-slate-700">
+            <span>Technical Depth vs. Leadership</span>
+            <span>{sliders.techDepth}% / {100 - sliders.techDepth}%</span>
+          </div>
+          <input 
+            type="range" 
+            min="10" 
+            max="90" 
+            value={sliders.techDepth} 
+            onChange={(e) => setSliders(prev => ({ ...prev, techDepth: parseInt(e.target.value) }))}
+            className="w-full h-1.5 bg-slate-100 rounded-lg appearance-none cursor-pointer accent-slate-900"
+          />
+          <div className="flex justify-between text-[10px] text-slate-400 font-semibold">
+            <span>More Technical Keywords</span>
+            <span>More Team/Strategy</span>
+          </div>
+        </div>
+
+        <div className="flex flex-col gap-2">
+          <div className="flex justify-between text-xs font-bold text-slate-700">
+            <span>Conciseness vs. Details</span>
+            <span>{sliders.conciseness}% / {100 - sliders.conciseness}%</span>
+          </div>
+          <input 
+            type="range" 
+            min="10" 
+            max="90" 
+            value={sliders.conciseness} 
+            onChange={(e) => setSliders(prev => ({ ...prev, conciseness: parseInt(e.target.value) }))}
+            className="w-full h-1.5 bg-slate-100 rounded-lg appearance-none cursor-pointer accent-slate-900"
+          />
+          <div className="flex justify-between text-[10px] text-slate-400 font-semibold">
+            <span>Short & Sweet (1-Page)</span>
+            <span>Comprehensive (2-Page)</span>
+          </div>
+        </div>
+
+        <div className="flex flex-col gap-2">
+          <div className="flex justify-between text-xs font-bold text-slate-700">
+            <span>Industry Specificity Focus</span>
+            <span>{sliders.industryFocus}%</span>
+          </div>
+          <input 
+            type="range" 
+            min="40" 
+            max="100" 
+            value={sliders.industryFocus} 
+            onChange={(e) => setSliders(prev => ({ ...prev, industryFocus: parseInt(e.target.value) }))}
+            className="w-full h-1.5 bg-slate-100 rounded-lg appearance-none cursor-pointer accent-slate-900"
+          />
+          <div className="flex justify-between text-[10px] text-slate-400 font-semibold">
+            <span>General Capabilities</span>
+            <span>Exact Niche Stack Match</span>
+          </div>
+        </div>
+      </div>
+
+      <div className="flex justify-end select-none">
+        <Button 
+          variant="primary" 
+          onClick={handleApplyAdjustments}
+          disabled={isReScoring}
+          className="flex items-center gap-2 bg-slate-900 text-white rounded-lg px-5 py-2.5 hover:bg-slate-800 transition-colors text-xs font-bold cursor-pointer"
+        >
+          {isReScoring ? (
+            <>
+              <RefreshCw size={13} className="animate-spin" />
+              Re-calculating compatibility...
+            </>
+          ) : (
+            <>
+              <Sliders size={13} />
+              Apply & Re-Score
+            </>
+          )}
+        </Button>
+      </div>
+    </div>
+  );
+}
+
+// 10. JD MATCH TAB
+function JdMatchTab({ jobTitle, technicalSkills }) {
+  return (
+    <div className="animate-fade-in flex flex-col gap-6 font-sans">
+      <div>
+        <h3 className="font-serif text-2xl text-slate-955 font-bold tracking-tight font-serif">Requirement Alignment</h3>
+        <p className="text-xs text-slate-500 mt-1 font-medium">Checklist verifying how your resume meets the core requirements of the job description.</p>
+      </div>
+
+      <div className="flex flex-col gap-3">
+        <div className="border border-slate-200/80 rounded-xl p-4 flex items-center justify-between gap-4 bg-slate-50/40">
+          <div className="flex flex-col gap-0.5">
+            <span className="text-xs font-bold text-slate-955">Engineering Scope & Role Title</span>
+            <span className="text-[10px] text-slate-500 font-medium">Target title matched: {jobTitle}</span>
+          </div>
+          <span className="bg-emerald-50 text-emerald-700 border border-emerald-100 rounded px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider shrink-0">
+            Met
+          </span>
+        </div>
+
+        <div className="border border-slate-200/80 rounded-xl p-4 flex items-center justify-between gap-4 bg-slate-50/40">
+          <div className="flex flex-col gap-0.5">
+            <span className="text-xs font-bold text-slate-955">Technical Stack Mastery</span>
+            <span className="text-[10px] text-slate-500 font-medium">Matched technologies: {technicalSkills.slice(0, 4).join(', ')}</span>
+          </div>
+          <span className="bg-emerald-50 text-emerald-700 border border-emerald-100 rounded px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider shrink-0">
+            Met
+          </span>
+        </div>
+
+        <div className="border border-slate-200/80 rounded-xl p-4 flex items-center justify-between gap-4 bg-slate-50/40">
+          <div className="flex flex-col gap-0.5">
+            <span className="text-xs font-bold text-slate-955">Quantifiable Achievement Focus</span>
+            <span className="text-[10px] text-slate-500 font-medium">All experience bullets include measurable performance outcomes</span>
+          </div>
+          <span className="bg-emerald-50 text-emerald-700 border border-emerald-100 rounded px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider shrink-0">
+            Met
+          </span>
+        </div>
       </div>
     </div>
   );
