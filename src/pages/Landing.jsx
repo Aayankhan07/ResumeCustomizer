@@ -92,7 +92,7 @@ export default function Landing() {
       {/* Hero Section */}
       <section className="relative bg-slate-50/50 py-24 lg:py-32 flex flex-col items-center justify-center text-center px-6 border-b border-slate-200">
         {/* Subtle Background Grid Pattern */}
-        <div className="absolute inset-0 bg-[linear-gradient(to_right,#f1f5f9_1px,transparent_1px),linear-gradient(to_bottom,#f1f5f9_1px,transparent_1px)] bg-[size:3rem_3rem] opacity-70 z-0" />
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,var(--color-slate-200)_1px,transparent_1px),linear-gradient(to_bottom,var(--color-slate-200)_1px,transparent_1px)] bg-[size:3rem_3rem] opacity-25 z-0" />
 
         <div className="max-w-4xl mx-auto flex flex-col items-center z-10 stagger-children">
           {/* Eyebrow badge */}

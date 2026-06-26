@@ -261,6 +261,27 @@ body {
 
 /* Sleek Obsidian Dark/Black Theme Overrides */
 .dark {
+  /* Redefine Tailwind v4 theme variables for dark mode */
+  --color-white: #0B0F19;
+  --color-mist: #030712;
+  
+  --color-slate-50: #0E1322;
+  --color-slate-100: #161B2B;
+  --color-slate-200: #1F2937;
+  --color-slate-300: #374151;
+  --color-slate-400: #9CA3AF;
+  --color-slate-500: #9CA3AF;
+  --color-slate-600: #D1D5DB;
+  --color-slate-700: #E5E7EB;
+  --color-slate-800: #F3F4F6;
+  --color-slate-900: #F9FAFB;
+  --color-slate-950: #030712;
+  
+  --color-ink: #F9FAFB;
+  --color-slate: #E5E7EB;
+  --color-boundary: #1F2937;
+  --color-graphite: #9CA3AF;
+
   background-color: #030712 !important;
   color: #F9FAFB !important;
 
@@ -336,6 +357,7 @@ body {
     color: #F3F4F6 !important;
   }
 
+  & .text-slate-550,
   & .text-slate-500,
   & .text-slate-400,
   & .text-graphite {
@@ -384,6 +406,15 @@ body {
   
   /* Resume preview within the black app theme must keep its clean, authentic white paper background */
   & .resume-document {
+    --color-white: #FFFFFF !important;
+    --color-slate-900: #0F172A !important;
+    --color-slate-800: #1E293B !important;
+    --color-slate-700: #334155 !important;
+    --color-slate-650: #475569 !important;
+    --color-slate-600: #475569 !important;
+    --color-slate-500: #64748B !important;
+    --color-slate-400: #94A3B8 !important;
+    
     background-color: #FFFFFF !important;
     color: #111111 !important;
     box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6) !important;
