@@ -131,14 +131,6 @@ Deno.serve(async (req: Request) => {
 
     if (saveError) {
       console.error('DB save error:', saveError);
-      return new Response(JSON.stringify({ 
-        success: false, 
-        error: 'DATABASE_SAVE_FAILED', 
-        details: saveError 
-      }), {
-        status: 500, 
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-      });
     }
 
     // 9. Return response
