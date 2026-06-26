@@ -1,5 +1,8 @@
 @import "tailwindcss";
 
+/* Enforce selector-based dark mode strategy for manual theme toggling */
+@custom-variant dark (&:where(.dark, .dark *));
+
 @theme {
   --color-ink: #0F172A;
   --color-slate: #1E293B;
