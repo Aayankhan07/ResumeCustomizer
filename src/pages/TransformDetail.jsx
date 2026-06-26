@@ -49,7 +49,7 @@ export default function TransformDetail() {
     <div className="min-h-screen bg-mist flex flex-col font-sans">
       <Navbar />
 
-      <main className="flex-1 max-w-4xl w-full mx-auto px-4 py-12 flex flex-col justify-start">
+      <main className={`flex-1 ${loading ? 'max-w-4xl' : 'max-w-6xl'} w-full mx-auto px-4 py-12 flex flex-col justify-start transition-all duration-300`}>
         {loading ? (
           <div className="flex justify-center items-center py-24 my-auto">
             <div className="w-8 h-8 border-2 border-cobalt border-t-transparent rounded-full animate-spin" />

@@ -47,7 +47,7 @@ export default function Transform() {
     <div className="min-h-screen bg-mist flex flex-col font-sans">
       <Navbar />
 
-      <main className="flex-1 max-w-4xl w-full mx-auto px-4 py-12 flex flex-col justify-start">
+      <main className={`flex-1 ${status === 'success' ? 'max-w-6xl' : 'max-w-4xl'} w-full mx-auto px-4 py-12 flex flex-col justify-start transition-all duration-300`}>
         {status === 'loading' && (
           <div className="my-auto">
             <TransformLoading />
