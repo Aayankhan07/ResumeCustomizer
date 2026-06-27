@@ -256,10 +256,16 @@ export interface TransformResult {
   };
 }
 
-export async function callGroq(
+const MODELS = [
+  'llama-3.3-70b-versatile',
+  'llama-3.1-8b-instant',
+  'mixtral-8x7b-32768',
+];
+
+export async function callGroqWithFallback(
   resumeText: string,
   jobDescText: string
-): Promise<TransformResult> {
+): Promise<{ data: TransformResult; model_used: string }> {
   const apiKey = Deno.env.get('GROQ_API_KEY');
   if (!apiKey) throw new Error('GROQ_API_KEY not configured');
 
@@ -275,40 +281,60 @@ ${jobDescText}
 
 Transform the resume according to the job description. Output only valid JSON.`;
 
-  const response = await fetch(GROQ_URL, {
-    method: 'POST',
-    headers: {
-      'Authorization': `Bearer ${apiKey}`,
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      model: 'llama-3.3-70b-versatile',
-      messages: [
-        { role: 'system', content: SYSTEM_PROMPT },
-        { role: 'user', content: prompt }
-      ],
-      temperature: 0.2,
-      response_format: { type: 'json_object' }
-    }),
-    signal: AbortSignal.timeout(28000), // 28 second timeout
-  });
+  for (const model of MODELS) {
+    try {
+      console.log(`Attempting Groq call with model: ${model}`);
+      
+      const response = await fetch(GROQ_URL, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${apiKey}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          model,
+          messages: [
+            { role: 'system', content: SYSTEM_PROMPT },
+            { role: 'user', content: prompt }
+          ],
+          temperature: 0.2,
+          response_format: { type: 'json_object' }
+        }),
+        signal: AbortSignal.timeout(25000), // 25 second timeout
+      });
 
-  if (!response.ok) {
-    const err = await response.text();
-    console.error('Groq API error:', err);
-    throw new Error(`GROQ_ERROR:${response.status}`);
+      if (response.status === 429) {
+        console.warn(`Groq model ${model} rate limited (429). Trying next fallback...`);
+        continue;
+      }
+
+      if (!response.ok) {
+        const err = await response.text();
+        throw new Error(`GROQ_ERROR:${response.status} Details: ${err}`);
+      }
+
+      const data = await response.json();
+      const rawText = data.choices?.[0]?.message?.content;
+      if (!rawText) throw new Error('GROQ_EMPTY_RESPONSE');
+
+      const cleaned = rawText.trim();
+      const parsed = JSON.parse(cleaned) as TransformResult;
+
+      return { data: parsed, model_used: model };
+    } catch (err: any) {
+      console.error(`Error with model ${model}:`, err.message);
+      if (model === MODELS[MODELS.length - 1]) {
+        throw err;
+      }
+    }
   }
+  throw new Error('All Groq models exhausted');
+}
 
-  const data = await response.json();
-  const rawText = data.choices?.[0]?.message?.content;
-  if (!rawText) throw new Error('GROQ_EMPTY_RESPONSE');
-
-  const cleaned = rawText.trim();
-
-  try {
-    return JSON.parse(cleaned) as TransformResult;
-  } catch {
-    console.error('Failed to parse Groq output:', cleaned.substring(0, 500));
-    throw new Error('GROQ_INVALID_JSON');
-  }
+export async function callGroq(
+  resumeText: string,
+  jobDescText: string
+): Promise<TransformResult> {
+  const res = await callGroqWithFallback(resumeText, jobDescText);
+  return res.data;
 }

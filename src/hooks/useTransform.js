@@ -1,6 +1,5 @@
 import { useState, useCallback } from 'react';
-import { transformResume, updateTransformationScore } from '../lib/api';
-import { computeMatchScore } from '../utils/matchScore';
+import { transformResume } from '../lib/api';
 import { toast } from 'sonner';
 
 const RETRY_ERRORS = ['AI_TIMEOUT', 'INTERNAL_SERVER_ERROR'];
@@ -22,17 +21,6 @@ export function useTransform() {
     const attemptTransform = async (attempt = 1) => {
       try {
         const data = await transformResume({ resumeText, jobDescriptionText });
-        
-        // Compute highly accurate match score on the client side
-        const { score: localScore } = computeMatchScore(jobDescriptionText, data.data);
-        
-        // In background, heal the database row if there is a mismatch
-        if (data.data && data.transformation_id && data.data.meta?.match_score !== localScore) {
-          updateTransformationScore(data.transformation_id, localScore).catch(console.error);
-          if (data.data.meta) {
-            data.data.meta.match_score = localScore;
-          }
-        }
 
         setState({
           status: 'success',
@@ -53,9 +41,9 @@ export function useTransform() {
           status: 'error',
           error: err.code ?? 'UNKNOWN_ERROR',
           errorDetails: err.details ?? null,
-          rateLimit: err.code === 'RATE_LIMIT_EXCEEDED' ? { resetAt: err.resetAt } : s.rateLimit,
+          rateLimit: (err.code === 'RATE_LIMIT_EXCEEDED' || err.code === 'RATE_LIMITED') ? { resetAt: err.resetAt } : s.rateLimit,
         }));
-        if (err.code !== 'RATE_LIMIT_EXCEEDED' && err.code !== 'DATABASE_SAVE_FAILED') {
+        if (err.code !== 'RATE_LIMIT_EXCEEDED' && err.code !== 'RATE_LIMITED' && err.code !== 'DATABASE_SAVE_FAILED') {
           toast.error('Transform failed. Please try again.');
         }
       }

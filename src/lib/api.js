@@ -1,6 +1,9 @@
-import { supabase } from './supabase';
+import { createClient } from './supabase/client';
+const supabase = createClient();
 
-const FUNCTIONS_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1`;
+const FUNCTIONS_URL = typeof window !== 'undefined'
+  ? '/api'
+  : `${process.env.NEXT_PUBLIC_SUPABASE_URL || ''}/api`;
 
 async function getAuthHeaders() {
   const { data: { session } } = await supabase.auth.getSession();
@@ -13,6 +16,15 @@ async function getAuthHeaders() {
 
 export async function transformResume({ resumeText, jobDescriptionText }) {
   const headers = await getAuthHeaders();
+
+  // Compute idempotency key: SHA-256 hash of resume + job description
+  const encoder = new TextEncoder();
+  const dataBytes = encoder.encode((resumeText || '') + (jobDescriptionText || ''));
+  const hashBuffer = await crypto.subtle.digest('SHA-256', dataBytes);
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  const idempotencyKey = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+
+  headers['X-Idempotency-Key'] = idempotencyKey;
 
   const response = await fetch(`${FUNCTIONS_URL}/transform`, {
     method: 'POST',
@@ -119,6 +131,39 @@ export async function updateTransformationScore(id, score) {
   const { error } = await supabase
     .from('transformations')
     .update({ match_score: score })
+    .eq('id', id);
+
+  if (error) throw error;
+}
+
+export async function rescoreTransformation(transformationId, weights) {
+  const headers = await getAuthHeaders();
+
+  const response = await fetch(`${FUNCTIONS_URL}/rescore`, {
+    method: 'POST',
+    headers,
+    body: JSON.stringify({
+      transformation_id: transformationId,
+      weights,
+    }),
+  });
+
+  const data = await response.json();
+
+  if (!response.ok || !data.success) {
+    const error = new Error(data.error || 'RESCORE_FAILED');
+    error.code = data.error;
+    error.details = data.details || null;
+    throw error;
+  }
+
+  return data.data; // { score, matched, missing, total, output_json }
+}
+
+export async function updateTransformationStatus(id, status) {
+  const { error } = await supabase
+    .from('transformations')
+    .update({ status })
     .eq('id', id);
 
   if (error) throw error;

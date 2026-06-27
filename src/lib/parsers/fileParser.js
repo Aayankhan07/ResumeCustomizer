@@ -1,4 +1,3 @@
-import pdfjsWorker from 'pdfjs-dist/build/pdf.worker.min.mjs?url';
 
 const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
 
@@ -17,28 +16,8 @@ export async function parseFile(file) {
 }
 
 async function parsePDF(file) {
-  // Lazy load pdfjs-dist (large library — don't include in main bundle)
-  const pdfjsLib = await import('pdfjs-dist');
-  pdfjsLib.GlobalWorkerOptions.workerSrc = pdfjsWorker;
-
-  const arrayBuffer = await file.arrayBuffer();
-  const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
-  let fullText = '';
-
-  for (let i = 1; i <= pdf.numPages; i++) {
-    const page = await pdf.getPage(i);
-    const content = await page.getTextContent();
-    const pageText = content.items
-      .map(item => item.str)
-      .join(' ');
-    fullText += pageText + '\n';
-  }
-
-  if (fullText.trim().length < 50) {
-    throw new Error('PDF_NO_TEXT');
-  }
-
-  return fullText.trim();
+  const { parsePDF } = await import('./pdfParser.client');
+  return await parsePDF(file);
 }
 
 async function parseDOCX(file) {

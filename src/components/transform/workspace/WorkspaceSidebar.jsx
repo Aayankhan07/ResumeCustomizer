@@ -10,10 +10,12 @@ export default function WorkspaceSidebar({
   scoreColors,
   originalText,
   handleDownloadPDF,
+  handleDownloadDOCX,
   handleCopyText,
   copying
 }) {
   const [isDownloading, setIsDownloading] = useState(false);
+  const [isDownloadingDocx, setIsDownloadingDocx] = useState(false);
 
   const onDownloadClick = async () => {
     if (isDownloading) return;
@@ -22,6 +24,16 @@ export default function WorkspaceSidebar({
       await handleDownloadPDF();
     } finally {
       setIsDownloading(false);
+    }
+  };
+
+  const onDocxClick = async () => {
+    if (isDownloadingDocx) return;
+    setIsDownloadingDocx(true);
+    try {
+      await handleDownloadDOCX();
+    } finally {
+      setIsDownloadingDocx(false);
     }
   };
 
@@ -98,7 +110,7 @@ export default function WorkspaceSidebar({
       <div className="hidden lg:flex flex-col gap-2 pt-6 border-t border-slate-200/80 mt-6">
         <button
           onClick={onDownloadClick}
-          disabled={isDownloading}
+          disabled={isDownloading || isDownloadingDocx}
           className="flex items-center justify-center gap-2 w-full px-3 py-2 text-xs font-bold text-slate-700 bg-white border border-slate-200 hover:bg-slate-50 disabled:opacity-70 disabled:cursor-not-allowed rounded-lg transition-colors cursor-pointer"
         >
           {isDownloading ? (
@@ -110,6 +122,23 @@ export default function WorkspaceSidebar({
             <>
               <Download size={13} />
               Download PDF
+            </>
+          )}
+        </button>
+        <button
+          onClick={onDocxClick}
+          disabled={isDownloading || isDownloadingDocx}
+          className="flex items-center justify-center gap-2 w-full px-3 py-2 text-xs font-bold text-slate-700 bg-white border border-slate-200 hover:bg-slate-50 disabled:opacity-70 disabled:cursor-not-allowed rounded-lg transition-colors cursor-pointer"
+        >
+          {isDownloadingDocx ? (
+            <>
+              <LoadingSpinner size="sm" strokeWidth={2.5} className="text-slate-600" />
+              Generating DOCX...
+            </>
+          ) : (
+            <>
+              <Download size={13} />
+              Download DOCX
             </>
           )}
         </button>

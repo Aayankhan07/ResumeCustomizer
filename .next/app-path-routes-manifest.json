@@ -1,0 +1,18 @@
+{
+  "/(auth)/forgot-password/page": "/forgot-password",
+  "/(auth)/login/page": "/login",
+  "/(auth)/reset-password/page": "/reset-password",
+  "/(auth)/signup/page": "/signup",
+  "/(auth)/verify-email/page": "/verify-email",
+  "/_global-error/page": "/_global-error",
+  "/_not-found/page": "/_not-found",
+  "/api/cleanup/route": "/api/cleanup",
+  "/api/rescore/route": "/api/rescore",
+  "/api/transform/route": "/api/transform",
+  "/auth/callback/route": "/auth/callback",
+  "/dashboard/page": "/dashboard",
+  "/page": "/",
+  "/profile/page": "/profile",
+  "/transform/[id]/page": "/transform/[id]",
+  "/transform/page": "/transform"
+}

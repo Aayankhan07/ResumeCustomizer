@@ -13,8 +13,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { generateResumePDF } from '../../lib/pdfGenerator';
-import { COMPREHENSIVE_STOP_WORDS } from '../../utils/constants';
-import { computeMatchScore } from '../../utils/matchScore';
+import { rescoreTransformation } from '../../lib/api';
 
 // UI components
 import Button from '../ui/Button';
@@ -40,14 +39,19 @@ import CoverLetterTab from './tabs/CoverLetterTab';
 import AtsCheckTab from './tabs/AtsCheckTab';
 import RescoreTab from './tabs/RescoreTab';
 
-export default function TransformOutput({ result, plainText, originalText, jobDescriptionText, onReset }) {
-  // Compute highly accurate ATS metrics locally
-  const { 
-    score: localScore, 
-    matched: localMatched, 
-    missing: localMissing,
-    total: localTotal 
-  } = computeMatchScore(jobDescriptionText || result.original_job_description || '', result);
+export default function TransformOutput({ result: initialResult, plainText, originalText, jobDescriptionText, onReset, transformationId }) {
+  const [result, setResult] = useState(initialResult);
+
+  // Sync state if initialResult prop changes
+  useEffect(() => {
+    setResult(initialResult);
+  }, [initialResult]);
+
+  // Read ATS metrics directly from the stateful result payload
+  const localScore = result.meta?.match_score ?? 0;
+  const localMatched = result.meta?.keywords_matched ?? [];
+  const localMissing = result.meta?.keywords_missing ?? [];
+  const localTotal = result.meta?.keywords_total ?? 0;
 
   // Set Compatibility Overview as the default active tab
   const [activeTab, setActiveTab] = useState('overview');
@@ -242,6 +246,21 @@ export default function TransformOutput({ result, plainText, originalText, jobDe
     }
   };
 
+  const handleDownloadDOCX = async () => {
+    try {
+      // Import the generator dynamically to keep bundle size low
+      const { generateResumeDOCX } = await import('../../lib/docxGenerator');
+      // Simulate a small delay for premium rendering feel
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      await generateResumeDOCX(result);
+      toast.success('DOCX Word document saved to your downloads');
+    } catch (err) {
+      console.error(err);
+      toast.error('Failed to generate Word document.');
+      throw err;
+    }
+  };
+
   const handleCopyText = async () => {
     setCopying(true);
     try {
@@ -300,16 +319,19 @@ export default function TransformOutput({ result, plainText, originalText, jobDe
     }));
   };
 
-  const handleApplyAdjustments = () => {
+  const handleApplyAdjustments = async () => {
     setIsReScoring(true);
-    setTimeout(() => {
-      setIsReScoring(false);
-      const baseScore = result.meta?.match_score ?? 85;
-      const boost = Math.min(100, Math.max(0, Math.floor((sliders.techDepth + sliders.industryFocus) / 18)));
-      const newScore = Math.min(98, Math.floor(baseScore + (boost - 8)));
-      setAdjustedScore(newScore);
+    try {
+      const updatedResult = await rescoreTransformation(transformationId, sliders);
+      setResult(updatedResult.output_json);
+      setAdjustedScore(updatedResult.score);
       toast.success('Resume parameters refined. Compatibility adjusted!');
-    }, 1200);
+    } catch (err) {
+      console.error(err);
+      toast.error('Failed to refine compatibility score.');
+    } finally {
+      setIsReScoring(false);
+    }
   };
 
   // Unified Sidebar Menu Items
@@ -377,6 +399,7 @@ ${candidateName}`;
           scoreColors={scoreColors}
           originalText={originalText}
           handleDownloadPDF={handleDownloadPDF}
+          handleDownloadDOCX={handleDownloadDOCX}
           handleCopyText={handleCopyText}
           copying={copying}
         />

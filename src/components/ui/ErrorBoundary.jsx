@@ -2,6 +2,7 @@ import React from 'react';
 import { AlertTriangle, RefreshCw, Home } from 'lucide-react';
 import GlassPanel from './GlassPanel';
 import Button from './Button';
+import * as Sentry from '@sentry/react';
 
 export default class ErrorBoundary extends React.Component {
   constructor(props) {
@@ -15,6 +16,11 @@ export default class ErrorBoundary extends React.Component {
 
   componentDidCatch(error, errorInfo) {
     console.error("ErrorBoundary caught an error:", error, errorInfo);
+    try {
+      Sentry.captureException(error, { extra: errorInfo });
+    } catch (err) {
+      console.error("Failed to report exception to Sentry:", err);
+    }
   }
 
   handleReset = () => {

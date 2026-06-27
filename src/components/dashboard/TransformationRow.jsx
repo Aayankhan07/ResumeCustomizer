@@ -1,4 +1,5 @@
-import { useNavigate } from 'react-router-dom';
+'use client';
+import { useRouter } from 'next/navigation';
 import { Download, Trash2 } from 'lucide-react';
 import { timeAgo } from '../../utils/formatDate';
 import { getScoreColor } from '../../utils/scoreColor';
@@ -7,8 +8,16 @@ import { generateResumePDF } from '../../lib/pdfGenerator';
 import { toast } from 'sonner';
 import { useState } from 'react';
 
-export default function TransformationRow({ item, onDelete }) {
-  const navigate = useNavigate();
+const STATUS_STYLES = {
+  Saved:        'bg-slate-100 text-slate-650 border-slate-200 dark:bg-slate-800 dark:text-slate-400 dark:border-slate-700',
+  Applied:      'bg-blue-50 text-blue-700 border-blue-200/80 dark:bg-blue-955/20 dark:text-blue-300 dark:border-blue-900/30',
+  Interviewing: 'bg-amber-50 text-amber-700 border-amber-200/80 dark:bg-amber-955/20 dark:text-amber-300 dark:border-amber-900/30',
+  Offer:        'bg-emerald-50 text-emerald-755 border-emerald-200/80 dark:bg-emerald-955/20 dark:text-emerald-300 dark:border-emerald-900/30',
+  Rejected:     'bg-rose-50 text-rose-650 border-rose-200/80 dark:bg-rose-955/20 dark:text-rose-300 dark:border-rose-900/30',
+};
+
+export default function TransformationRow({ item, onDelete, onUpdateStatus }) {
+  const router = useRouter();
   const [downloading, setDownloading] = useState(false);
   const { text: scoreText, bg: scoreBg, border: scoreBorder } = getScoreColor(item.match_score);
 
@@ -35,7 +44,7 @@ export default function TransformationRow({ item, onDelete }) {
 
   return (
     <div
-      onClick={() => navigate(`/transform/${item.id}`)}
+      onClick={() => router.push(`/transform/${item.id}`)}
       className="flex flex-col sm:flex-row sm:items-center justify-between p-5.5 bg-white dark:bg-slate-900/10 hover:bg-slate-50/60 dark:hover:bg-slate-800/20 border-b border-slate-100 dark:border-slate-800/60 cursor-pointer transition-colors duration-200 select-none group gap-3 sm:gap-6"
     >
       {/* Job Info */}
@@ -52,6 +61,23 @@ export default function TransformationRow({ item, onDelete }) {
 
       {/* Score and actions */}
       <div className="flex items-center justify-between sm:justify-end gap-4 sm:gap-5 w-full sm:w-auto border-t sm:border-t-0 border-slate-100 dark:border-slate-800/60 pt-3.5 sm:pt-0">
+        {/* Status Dropdown Pill */}
+        <select
+          value={item.status || 'Saved'}
+          onChange={(e) => {
+            e.stopPropagation();
+            onUpdateStatus(item.id, e.target.value);
+          }}
+          onClick={(e) => e.stopPropagation()}
+          className={`px-2 py-0.5 text-[10px] font-extrabold uppercase tracking-wider border rounded-md cursor-pointer transition-all outline-none focus:ring-1 focus:ring-slate-900/10 focus:border-slate-350 dark:focus:ring-indigo-500/10 dark:focus:border-indigo-500 shrink-0 appearance-none text-center ${STATUS_STYLES[item.status || 'Saved']}`}
+        >
+          <option value="Saved" className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white uppercase font-bold">Saved</option>
+          <option value="Applied" className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white uppercase font-bold">Applied</option>
+          <option value="Interviewing" className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white uppercase font-bold">Interviewing</option>
+          <option value="Offer" className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white uppercase font-bold">Offer</option>
+          <option value="Rejected" className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white uppercase font-bold">Rejected</option>
+        </select>
+
         {/* Score Badge */}
         <span
           className={`px-2.5 py-0.5 text-xs font-semibold rounded-md border shrink-0 ${scoreBg} ${scoreText} ${scoreBorder}`}

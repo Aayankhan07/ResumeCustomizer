@@ -1,0 +1,3 @@
+module.exports=[26823,a=>{"use strict";let b=null;async function c(c){b||((b=await a.A(61751)).GlobalWorkerOptions.workerSrc=`https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${b.version}/pdf.worker.min.js`);let d=await c.arrayBuffer(),e=await b.getDocument({data:d}).promise,f="";for(let a=1;a<=e.numPages;a++){let b=await e.getPage(a);f+=(await b.getTextContent()).items.map(a=>a.str).join(" ")+"\n"}if(f.trim().length<50)throw Error("PDF_NO_TEXT");return f.trim()}a.s(["parsePDF",0,c])},61751,a=>{a.v(b=>Promise.all(["server/chunks/ssr/node_modules_pdfjs-dist_build_pdf_mjs_0z37jkk._.js"].map(b=>a.l(b))).then(()=>b(68062)))}];
+
+//# sourceMappingURL=_1ns8eca._.js.map

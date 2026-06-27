@@ -9,9 +9,10 @@ import { useEffect, useRef } from 'react';
  */
 export default function useDocumentTitle(title, retainOnUnmount = false) {
   const defaultTitle = 'ResumOrph | AI-Tailored Resume Workspace';
-  const prevTitleRef = useRef(document.title);
+  const prevTitleRef = useRef(typeof document !== 'undefined' ? document.title : '');
 
   useEffect(() => {
+    if (typeof document === 'undefined') return;
     const formattedTitle = title ? `${title} | ResumOrph` : defaultTitle;
     document.title = formattedTitle;
   }, [title]);
@@ -19,7 +20,7 @@ export default function useDocumentTitle(title, retainOnUnmount = false) {
   useEffect(() => {
     const prevTitle = prevTitleRef.current;
     return () => {
-      if (!retainOnUnmount) {
+      if (typeof document !== 'undefined' && !retainOnUnmount) {
         document.title = prevTitle || defaultTitle;
       }
     };

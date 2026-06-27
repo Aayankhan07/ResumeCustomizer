@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { motion } from 'framer-motion';
 
 function getScoreColor(score) {
   if (score >= 75) return { fill: '#16A34A', label: 'Strong Match', bg: '#F0FDF4', border: '#DCFCE7' };
@@ -8,14 +9,14 @@ function getScoreColor(score) {
 
 export default function ScoreDisplay({ score, keywordsMatched = [], keywordsTotal = 0 }) {
   const [displayScore, setDisplayScore] = useState(0);
-  const { fill, label, bg, border } = getScoreColor(score);
+  const { fill, label } = getScoreColor(score);
   const [showAll, setShowAll] = useState(false);
   const MAX_SHOWN = 8;
 
   // Animate score counting up
   useEffect(() => {
     let frame;
-    const duration = 800;
+    const duration = 1200; // 1.2 seconds count up
     const start = performance.now();
     const animate = (now) => {
       const progress = Math.min((now - start) / duration, 1);
@@ -34,10 +35,15 @@ export default function ScoreDisplay({ score, keywordsMatched = [], keywordsTota
   // Radial ring calculation
   const radius = 34;
   const circumference = 2 * Math.PI * radius;
-  const strokeDashoffset = circumference - (displayScore / 100) * circumference;
+  const finalStrokeDashoffset = circumference - (score / 100) * circumference;
 
   return (
-    <div className="bg-white border border-slate-200 rounded-lg p-6 shadow-sm select-none animate-slide-up">
+    <motion.div 
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.6, ease: 'easeOut' }}
+      className="bg-white border border-slate-200 rounded-lg p-6 shadow-sm select-none"
+    >
       {/* Score row */}
       <div className="flex flex-col sm:flex-row items-center gap-6 mb-5">
         {/* Animated SVG Progress Circle */}
@@ -52,8 +58,8 @@ export default function ScoreDisplay({ score, keywordsMatched = [], keywordsTota
               strokeWidth="5"
               fill="transparent"
             />
-            {/* Foreground circle */}
-            <circle
+            {/* Foreground circle with Framer Motion */}
+            <motion.circle
               cx="40"
               cy="40"
               r={radius}
@@ -61,9 +67,10 @@ export default function ScoreDisplay({ score, keywordsMatched = [], keywordsTota
               stroke={fill}
               strokeWidth="5"
               strokeDasharray={circumference}
-              strokeDashoffset={strokeDashoffset}
+              initial={{ strokeDashoffset: circumference }}
+              animate={{ strokeDashoffset: finalStrokeDashoffset }}
+              transition={{ duration: 1.2, ease: 'easeOut' }}
               strokeLinecap="round"
-              className="transition-all duration-700 ease-out"
             />
           </svg>
           <div className="absolute flex flex-col items-center justify-center">
@@ -81,12 +88,12 @@ export default function ScoreDisplay({ score, keywordsMatched = [], keywordsTota
             <span className="text-xs font-mono font-semibold text-slate-500">{displayScore}% Match</span>
           </div>
           <div className="h-1.5 bg-slate-100 rounded-full overflow-hidden">
-            <div
-              className="h-full rounded-full transition-all duration-700 ease-out"
-              style={{ 
-                width: `${displayScore}%`, 
-                backgroundColor: fill
-              }}
+            <motion.div
+              className="h-full rounded-full"
+              initial={{ width: 0 }}
+              animate={{ width: `${score}%` }}
+              transition={{ duration: 1.2, ease: 'easeOut' }}
+              style={{ backgroundColor: fill }}
             />
           </div>
           <p className="text-xs text-slate-500 mt-2 font-medium">
@@ -119,6 +126,6 @@ export default function ScoreDisplay({ score, keywordsMatched = [], keywordsTota
           </div>
         </div>
       )}
-    </div>
+    </motion.div>
   );
 }
