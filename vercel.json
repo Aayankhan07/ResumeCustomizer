@@ -1,8 +1,9 @@
 {
+  
   "crons": [
     {
-      "path": "/api/cleanup",
-      "schedule": "0 */2 * * *"
+      "path": "/api/your-cron-endpoint",
+      "schedule": "0 0 * * *" 
     }
   ],
   "headers": [
