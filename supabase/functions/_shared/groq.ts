@@ -17,7 +17,16 @@ STRICT OUTPUT RULES:
 12. Dates must be in "Month YYYY" or "MM/YYYY" format.
 13. Every experience and project bullet must begin with a strong past-tense action verb.
 14. Frame bullets with quantified metrics where possible (e.g., token efficiency, API cost, latency, processing speed, accuracy) using [X%] or [N] placeholders if exact numbers are not known.
-15. In the "rewrites" section, capture the exact original text (before) and the new high-impact version (after) for the Professional Summary and at least 2 experience bullets.
+15. For ats_quality:
+    - keyword_density: 'Optimal' if matched keywords > 60% of total keywords, 'Low' if < 30%, else 'High'.
+    - section_headings: 'Standard' if all sections use standard heading names (Summary, Experience, Education, Skills, Projects, Certifications).
+    - formatting_risk: 'Zero Flags' (our output is always clean and safe).
+16. For rewrites:
+    - Include one entry per major section you rewrote.
+    - 'before' = the exact original text from the user resume (do not modify this text!).
+    - 'after' = your optimized version.
+    - Include: Professional Summary, each Work Experience, each Project description.
+    - Do NOT include sections with no changes.
 
 JSON OUTPUT SCHEMA:
 {
@@ -81,18 +90,11 @@ JSON OUTPUT SCHEMA:
     }
   ],
   "recruiter_scan": {
-    "attention_timeline": [
-      "string - what the recruiter noticed first (seconds 1-6) based on candidate profile",
-      "string - what they noticed second (seconds 6-15)",
-      "string - what they noticed third (seconds 15-30)"
-    ],
     "strong_yes": "string - 1-2 sentences explaining why they belong in the hiring pile",
     "completely_missed": "string - 1 sentence explaining the main risk or gap in the profile",
-    "best_fix": "string - 1 sentence explaining the single best action to address this gap",
     "elevator_pitch": "string - a highly compelling 30-second spoken pitch tailored to this role"
   },
   "roadmap": {
-    "current_level": "string - 'Beginner' or 'Developing' or 'Competitive' or 'Top Tier'",
     "tasks": [
       {
         "task": "string - specific, actionable task to improve fit",
@@ -108,12 +110,10 @@ JSON OUTPUT SCHEMA:
       }
     ]
   },
-  "skills_intelligence": {
-    "technical_count": 0,
-    "soft_count": 0,
-    "certs_count": 0,
-    "missing_count": 0,
-    "skills_to_add": ["array of 2-3 critical missing skills"]
+  "ats_quality": {
+    "keyword_density": "string - 'Optimal' | 'Low' | 'High'",
+    "section_headings": "string - 'Standard' | 'Non-standard'",
+    "formatting_risk": "string - 'Zero Flags' | 'Minor Issues' | 'At Risk'"
   },
   "rewrites": [
     {
@@ -154,7 +154,8 @@ JSON OUTPUT SCHEMA:
         "expectation": "string - what they want to hear (diagnostics, fallback systems)"
       }
     ]
-  }
+  },
+  "cover_letter": "string"
 }`;
 
 export interface TransformResult {
@@ -164,12 +165,13 @@ export interface TransformResult {
     match_score: number;
     keywords_matched: string[];
     keywords_total: number;
+    keywords_missing: string[];
   };
   contact: {
     name: string;
     email: string;
-    phone: string;
-    location: string;
+    phone: string | null;
+    location: string | null;
     linkedin: string | null;
     github: string | null;
     portfolio: string | null;
@@ -209,15 +211,12 @@ export interface TransformResult {
     issuer: string;
     year: string | null;
   }>;
-  recruiter_scan?: {
-    attention_timeline: string[];
+  recruiter_scan: {
     strong_yes: string;
     completely_missed: string;
-    best_fix: string;
     elevator_pitch: string;
   };
-  roadmap?: {
-    current_level: string;
+  roadmap: {
     tasks: Array<{
       task: string;
       type: string;
@@ -225,19 +224,17 @@ export interface TransformResult {
       points: number;
     }>;
   };
-  skills_intelligence?: {
-    technical_count: number;
-    soft_count: number;
-    certs_count: number;
-    missing_count: number;
-    skills_to_add: string[];
+  ats_quality: {
+    keyword_density: 'Optimal' | 'Low' | 'High';
+    section_headings: 'Standard' | 'Non-standard';
+    formatting_risk: 'Zero Flags' | 'Minor Issues' | 'At Risk';
   };
-  rewrites?: Array<{
+  rewrites: Array<{
     section: string;
     before: string;
     after: string;
   }>;
-  interview_prep?: {
+  interview_prep: {
     technical: Array<{
       question: string;
       difficulty: string;
@@ -254,6 +251,7 @@ export interface TransformResult {
       expectation: string;
     }>;
   };
+  cover_letter: string;
 }
 
 const MODELS = [

@@ -51,10 +51,11 @@ export async function transformResume({ resumeText, jobDescriptionText }) {
 export async function getTransformations(limit = 20, offset = 0) {
   const { data, error, count } = await supabase
     .from('transformations')
-    .select('id, detected_job_title, detected_company, match_score, created_at, label', { count: 'exact' })
+    .select('id, detected_job_title, detected_company, match_score, created_at, label, status', { count: 'exact' })
     .eq('is_deleted', false)
     .order('created_at', { ascending: false })
     .range(offset, offset + limit - 1);
+
 
   if (error) throw error;
   return { data, count };

@@ -7,7 +7,7 @@ STRICT OUTPUT RULES:
 2. Follow the exact JSON schema specified below.
 3. Never invent credentials, certifications, or degrees the candidate doesn't have.
 4. Never fabricate employer names or education institutions.
-5. You MUST aggressively tailor and rewrite the summary, experience bullets, and project descriptions to mirror the core responsibilities, methodologies, and technical stack of the job description. Frame the candidate's existing work using the target role's terminology.
+5. You MUST tailor and rewrite the summary, experience bullets, and project descriptions to mirror the core responsibilities, methodologies, and technical stack of the job description. Frame the candidate's existing work using the target role's terminology.
 6. You MUST integrate technical keywords, tools, and libraries from the job description naturally into the experience and project bullet points where the candidate has used similar technologies or has the base capabilities.
 7. Summary must be 2–3 sentences, referencing the target role title and demonstrating immediate alignment.
 8. Skills section must prioritize job-relevant skills first, then other skills.
@@ -17,21 +17,18 @@ STRICT OUTPUT RULES:
 12. Dates must be in "Month YYYY" or "MM/YYYY" format.
 13. Every experience and project bullet must begin with a strong past-tense action verb.
 14. Frame bullets with quantified metrics where possible (e.g., token efficiency, API cost, latency, processing speed, accuracy) using [X%] or [N] placeholders if exact numbers are not known.
-15. In the "rewrites" section, capture the exact original text (before) and the new high-impact version (after) for the Professional Summary and at least 2 experience bullets.
+15. In the "rewrites" section, capture the exact original text (before) and the new high-impact version (after) for the Professional Summary and at least 2 experience bullets. Do NOT include sections with no changes.
+16. For ats_quality:
+    - keyword_density: 'Optimal' if matched keywords > 60% of total, 'Low' if < 30%, else 'High'
+    - section_headings: 'Standard' if all sections use standard heading names (Summary, Experience, Education, Skills, Projects)
+    - formatting_risk: 'Zero Flags' (default for our output since we enforce clean formatting)
 
 JSON OUTPUT SCHEMA:
 {
-  "meta": {
-    "detected_job_title": "string — the role title detected from job description",
-    "detected_company": "string — company name if found in JD, else null",
-    "match_score": 0, // Set to 0, will be overwritten server-side
-    "keywords_matched": [], // Set to empty array, will be overwritten server-side
-    "keywords_total": 0 // Set to 0, will be overwritten server-side
-  },
   "contact": {
     "name": "string",
     "email": "string",
-    "phone": "string",
+    "phone": "string or null",
     "location": "string — City, Country only",
     "linkedin": "string or null",
     "github": "string or null",
@@ -58,41 +55,23 @@ JSON OUTPUT SCHEMA:
       "degree": "string",
       "field": "string",
       "institution": "string",
-      "location": "string",
       "start_year": "string",
-      "end_year": "string or 'Present'",
-      "gpa": "string or null",
-      "highlights": ["array of academic highlights — optional, max 2"]
+      "end_year": "string or 'Present'"
     }
   ],
   "projects": [
     {
-      "name": "string",
+      "title": "string",
       "description": "string — 1-2 sentences, impact-first",
-      "tech_stack": ["array of technologies"],
-      "link": "string or null"
-    }
-  ],
-  "certifications": [
-    {
-      "name": "string",
-      "issuer": "string",
-      "year": "string or null"
+      "bullets": ["string — starts with action verb", "max 3 bullets"]
     }
   ],
   "recruiter_scan": {
-    "attention_timeline": [
-      "string - what the recruiter noticed first (seconds 1-6) based on candidate profile",
-      "string - what they noticed second (seconds 6-15)",
-      "string - what they noticed third (seconds 15-30)"
-    ],
     "strong_yes": "string - 1-2 sentences explaining why they belong in the hiring pile",
     "completely_missed": "string - 1 sentence explaining the main risk or gap in the profile",
-    "best_fix": "string - 1 sentence explaining the single best action to address this gap",
     "elevator_pitch": "string - a highly compelling 30-second spoken pitch tailored to this role"
   },
   "roadmap": {
-    "current_level": "string - 'Beginner' or 'Developing' or 'Competitive' or 'Top Tier'",
     "tasks": [
       {
         "task": "string - specific, actionable task to improve fit",
@@ -108,12 +87,10 @@ JSON OUTPUT SCHEMA:
       }
     ]
   },
-  "skills_intelligence": {
-    "technical_count": 0,
-    "soft_count": 0,
-    "certs_count": 0,
-    "missing_count": 0,
-    "skills_to_add": ["array of 2-3 critical missing skills"]
+  "ats_quality": {
+    "keyword_density": "Optimal | Low | High",
+    "section_headings": "Standard | Non-standard",
+    "formatting_risk": "Zero Flags | Minor Issues | At Risk"
   },
   "rewrites": [
     {
@@ -128,11 +105,6 @@ JSON OUTPUT SCHEMA:
         "question": "string - technical question based on their stack",
         "difficulty": "string - 'Medium' or 'Hard'",
         "expectation": "string - what the interviewer wants to hear (keywords, STAR details)"
-      },
-      {
-        "question": "string - second technical question",
-        "difficulty": "string",
-        "expectation": "string"
       }
     ],
     "behavioral": [
@@ -140,11 +112,6 @@ JSON OUTPUT SCHEMA:
         "question": "string - behavioral/STAR question based on experience",
         "difficulty": "string - 'Medium' or 'Hard'",
         "expectation": "string - what they want to hear (scale, conflict, ownership)"
-      },
-      {
-        "question": "string - second behavioral question",
-        "difficulty": "string",
-        "expectation": "string"
       }
     ],
     "curveball": [
@@ -154,21 +121,15 @@ JSON OUTPUT SCHEMA:
         "expectation": "string - what they want to hear (diagnostics, fallback systems)"
       }
     ]
-  }
+  },
+  "cover_letter": "string — complete formatted cover letter"
 }`;
 
 export interface TransformResult {
-  meta: {
-    detected_job_title: string;
-    detected_company: string | null;
-    match_score: number;
-    keywords_matched: string[];
-    keywords_total: number;
-  };
   contact: {
     name: string;
     email: string;
-    phone: string;
+    phone: string | null;
     location: string;
     linkedin: string | null;
     github: string | null;
@@ -192,32 +153,20 @@ export interface TransformResult {
     degree: string;
     field: string;
     institution: string;
-    location: string;
     start_year: string;
     end_year: string;
-    gpa: string | null;
-    highlights: string[];
   }>;
-  projects: Array<{
-    name: string;
+  projects?: Array<{
+    title: string;
     description: string;
-    tech_stack: string[];
-    link: string | null;
-  }>;
-  certifications: Array<{
-    name: string;
-    issuer: string;
-    year: string | null;
-  }>;
-  recruiter_scan?: {
-    attention_timeline: string[];
+    bullets: string[];
+  }> | null;
+  recruiter_scan: {
     strong_yes: string;
     completely_missed: string;
-    best_fix: string;
     elevator_pitch: string;
   };
-  roadmap?: {
-    current_level: string;
+  roadmap: {
     tasks: Array<{
       task: string;
       type: string;
@@ -225,34 +174,29 @@ export interface TransformResult {
       points: number;
     }>;
   };
-  skills_intelligence?: {
-    technical_count: number;
-    soft_count: number;
-    certs_count: number;
-    missing_count: number;
-    skills_to_add: string[];
+  ats_quality: {
+    keyword_density: 'Optimal' | 'Low' | 'High';
+    section_headings: 'Standard' | 'Non-standard';
+    formatting_risk: 'Zero Flags' | 'Minor Issues' | 'At Risk';
   };
-  rewrites?: Array<{
+  rewrites: Array<{
     section: string;
     before: string;
     after: string;
   }>;
-  interview_prep?: {
-    technical: Array<{
-      question: string;
-      difficulty: string;
-      expectation: string;
-    }>;
-    behavioral: Array<{
-      question: string;
-      difficulty: string;
-      expectation: string;
-    }>;
-    curveball: Array<{
-      question: string;
-      difficulty: string;
-      expectation: string;
-    }>;
+  interview_prep: {
+    technical: Array<{ question: string; difficulty: string; expectation: string }>;
+    behavioral: Array<{ question: string; difficulty: string; expectation: string }>;
+    curveball: Array<{ question: string; difficulty: string; expectation: string }>;
+  };
+  cover_letter: string;
+  meta?: {
+    detected_job_title: string;
+    detected_company: string;
+    match_score?: number | null;
+    keywords_matched?: string[] | null;
+    keywords_total?: number | null;
+    keywords_missing?: string[] | null;
   };
 }
 

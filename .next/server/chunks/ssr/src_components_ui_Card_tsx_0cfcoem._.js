@@ -1,3 +1,0 @@
-module.exports=[62067,a=>{"use strict";var b=a.i(87924);let c=(0,a.i(72131).forwardRef)(({className:a="",hoverable:c=!1,children:d,...e},f)=>(0,b.jsx)("div",{ref:f,className:`bg-white border border-boundary rounded-xl p-6 shadow-card transition-all duration-200 ${c?"cursor-pointer hover:border-gray-300 hover:shadow-card-hover":""} ${a}`,...e,children:d}));c.displayName="Card",a.s(["default",0,c])}];
-
-//# sourceMappingURL=src_components_ui_Card_tsx_0cfcoem._.js.map

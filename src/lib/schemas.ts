@@ -39,15 +39,11 @@ export const TransformOutputSchema = z.object({
     bullets: z.array(z.string()),
   })).optional().nullable(),
   recruiter_scan: z.object({
-    attention_timeline: z.array(z.string()),
     strong_yes: z.string(),
     completely_missed: z.string(),
-    best_fix: z.string(),
-    pile: z.string().optional().nullable(),
     elevator_pitch: z.string(),
   }),
   roadmap: z.object({
-    current_level: z.string(),
     tasks: z.array(z.object({
       task: z.string(),
       type: z.string(),
@@ -55,6 +51,16 @@ export const TransformOutputSchema = z.object({
       points: z.number(),
     })),
   }),
+  ats_quality: z.object({
+    keyword_density: z.enum(['Optimal', 'Low', 'High']),
+    section_headings: z.enum(['Standard', 'Non-standard']),
+    formatting_risk: z.enum(['Zero Flags', 'Minor Issues', 'At Risk']),
+  }),
+  rewrites: z.array(z.object({
+    section: z.string(),
+    before: z.string(),
+    after: z.string(),
+  })),
   interview_prep: z.object({
     technical: z.array(z.object({ question: z.string(), difficulty: z.string(), expectation: z.string() })),
     behavioral: z.array(z.object({ question: z.string(), difficulty: z.string(), expectation: z.string() })),

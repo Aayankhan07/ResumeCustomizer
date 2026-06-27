@@ -4,23 +4,48 @@ import { parseFile, getFileParseError } from '../../../lib/parsers/fileParser';
 
 export default function FileDropzone({ onTextExtracted, label = 'Drop your file here' }) {
   const [status, setStatus] = useState('idle'); // idle | dragging | parsing | success | error
+  const [fileNameInfo, setFileNameInfo] = useState('');
   const [message, setMessage] = useState('');
   const [wordCount, setWordCount] = useState(0);
   const inputRef = useRef(null);
 
   const handleFile = useCallback(async (file) => {
     setStatus('parsing');
-    setMessage('Extracting text...');
+    setMessage('Parsing...');
+    
+    // Size check
+    if (file.size > 5 * 1024 * 1024) {
+      setStatus('error');
+      setMessage('File too large. Maximum size is 5MB.');
+      return;
+    }
+
     try {
       const text = await parseFile(file);
+      
+      // Min length check
+      if (text.length < 200) {
+        setStatus('error');
+        setMessage('Resume too short to analyze. Paste more content.');
+        return;
+      }
+      
+      // Max length check
+      if (text.length > 15000) {
+        setStatus('error');
+        setMessage('Resume too long. Consider trimming older roles.');
+        return;
+      }
+
       const words = text.trim().split(/\s+/).length;
       setWordCount(words);
-      setMessage(`✓ Extracted ${words.toLocaleString()} words`);
+      const kb = Math.round(file.size / 1024);
+      setFileNameInfo(`${file.name}  ·  ${kb} KB`);
       setStatus('success');
       onTextExtracted(text);
     } catch (err) {
       setStatus('error');
-      setMessage(getFileParseError(err.message));
+      setMessage('Could not read this file. Try a .txt copy.');
     }
   }, [onTextExtracted]);
 
@@ -79,14 +104,25 @@ export default function FileDropzone({ onTextExtracted, label = 'Drop your file 
       </div>
 
       <div className="flex flex-col items-center gap-1.5 max-w-sm">
-        <span className="text-sm font-semibold text-slate-900">
-          {status === 'idle' ? label : message}
-        </span>
+        {status === 'success' ? (
+          <span className="flex items-center gap-1.5 text-emerald-600 font-bold text-sm">
+            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+            Ready
+          </span>
+        ) : (
+          <span className={`text-sm font-semibold ${status === 'error' ? 'text-red-600' : 'text-slate-900'}`}>
+            {status === 'idle' || status === 'dragging' ? label : message}
+          </span>
+        )}
+        
         {status === 'idle' && (
           <span className="text-xs text-slate-500 font-medium">PDF, DOCX, or TXT &bull; up to 5MB</span>
         )}
         {status === 'success' && (
-          <span className="text-xs text-slate-400 font-semibold uppercase tracking-wider font-mono">Click to replace file</span>
+          <>
+            <span className="text-xs text-slate-650 font-semibold">{fileNameInfo}</span>
+            <span className="text-[10px] text-slate-400 font-semibold uppercase tracking-wider font-mono mt-1">Click to replace file</span>
+          </>
         )}
       </div>
     </div>

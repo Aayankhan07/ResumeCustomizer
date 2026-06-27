@@ -153,6 +153,7 @@ export async function POST(req: Request) {
         input_jd_chars:      job_description_text.length,
         output_json:         transformResult,
         output_plain_text:   plainText,
+        input_plain_text:    resume_text,
         match_score:         scoreResult.score,
         keywords_matched:    scoreResult.matched,
         keywords_total:      scoreResult.total,
@@ -161,6 +162,7 @@ export async function POST(req: Request) {
       })
       .select('id')
       .single();
+
 
     if (saveError) {
       console.error('DB save error:', saveError);

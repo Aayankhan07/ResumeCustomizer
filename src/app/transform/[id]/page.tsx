@@ -105,7 +105,7 @@ export default function TransformDetail() {
             <TransformOutput
               result={data.output_json}
               plainText={data.output_plain_text}
-              originalText={data.output_json?.original_resume_text || ""}
+              originalText={data.input_plain_text || data.output_json?.original_resume_text || ""}
               jobDescriptionText={data.output_json?.original_job_description || ""}
               onReset={() => router.push('/transform')}
               transformationId={data.id}

@@ -183,6 +183,7 @@ Deno.serve(async (req: Request) => {
         detected_company:    transformResult.meta.detected_company,
         input_resume_chars:  resume_text.length,
         input_jd_chars:      job_description_text.length,
+        input_plain_text:    resume_text,
         output_json:         transformResult,
         output_plain_text:   plainText,
         match_score:         scoreResult.score,

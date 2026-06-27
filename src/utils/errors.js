@@ -30,8 +30,8 @@ export const ERROR_MESSAGES = {
     action: "Log back in"
   },
   DEFAULT_ERROR: {
-    title: "Something went wrong",
-    description: (details) => details || "We encountered an unexpected error while processing your resume. Please check your inputs and try again.",
+    title: "Analysis failed",
+    description: (details) => details || "The AI response was unexpected. Please try again.",
     action: "Try again"
   }
 };

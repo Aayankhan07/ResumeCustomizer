@@ -1,22 +1,86 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useTransform } from '../../hooks/useTransform';
 import { ArrowLeft, ArrowRight } from 'lucide-react';
 import Navbar from '../../components/layout/Navbar';
 import Footer from '../../components/layout/Footer';
 import ResumeInput from '../../components/transform/wizard/ResumeInput';
 import JobInput from '../../components/transform/wizard/JobInput';
-import TransformLoading from '../../components/transform/wizard/TransformLoading';
+import StepProgress from '../../components/transform/workspace/StepProgress';
 import TransformOutput from '../../components/transform/TransformOutput';
 import TransformErrorPanel from '../../components/transform/workspace/TransformErrorPanel';
 import Button from '../../components/ui/Button';
+import { trackEvent } from '../../utils/analytics';
+
 
 export default function Transform() {
   const [step, setStep] = useState(1);
   const [resumeText, setResumeText] = useState('');
   const [jobDescriptionText, setJobDescriptionText] = useState('');
   const { status, result, plainText, transformationId, error, errorDetails, rateLimit, transform, reset } = useTransform();
+  const [showLoading, setShowLoading] = useState(false);
+  const [localStatus, setLocalStatus] = useState('idle');
+
+  useEffect(() => {
+    if (status === 'loading') {
+      setShowLoading(true);
+      setLocalStatus('loading');
+    } else if (status === 'success') {
+      setLocalStatus('success');
+      if (result) {
+        const res = result as any;
+        trackEvent('analysis_complete', {
+          match_score: res.meta?.match_score,
+          job_title: res.meta?.detected_job_title,
+          model_used: res.ai_model || 'unknown',
+        });
+      }
+      const timer = setTimeout(() => {
+        setShowLoading(false);
+      }, 800);
+      return () => clearTimeout(timer);
+    } else if (status === 'error') {
+      trackEvent('analysis_failed', { error_code: error });
+      setShowLoading(false);
+      setLocalStatus(status);
+    } else {
+      setShowLoading(false);
+      setLocalStatus(status);
+    }
+  }, [status, result, error]);
+
+
+  // Navigation guard when analysis is running
+  useEffect(() => {
+    const handleBeforeUnload = (e) => {
+      if (status === 'loading') {
+        e.preventDefault();
+        e.returnValue = 'Your analysis is still running. Leave anyway?';
+        return 'Your analysis is still running. Leave anyway?';
+      }
+    };
+    
+    const handleAnchorClick = (e) => {
+      if (status === 'loading') {
+        const target = e.target.closest('a');
+        if (target && target.href) {
+          const confirmLeave = window.confirm('Your analysis is still running. Leave anyway?');
+          if (!confirmLeave) {
+            e.preventDefault();
+          }
+        }
+      }
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    document.addEventListener('click', handleAnchorClick, true);
+    
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+      document.removeEventListener('click', handleAnchorClick, true);
+    };
+  }, [status]);
 
   const handleNext = () => {
     if (step === 1 && resumeText.trim().length >= 50) {
@@ -32,9 +96,11 @@ export default function Transform() {
 
   const handleTransform = () => {
     if (resumeText.trim().length >= 50 && jobDescriptionText.trim().length >= 50) {
+      trackEvent('analysis_started');
       transform({ resumeText, jobDescriptionText });
     }
   };
+
 
   const handleReset = () => {
     reset();
@@ -43,21 +109,21 @@ export default function Transform() {
     setJobDescriptionText('');
   };
 
-  const isStep1Valid = resumeText.trim().length >= 50;
-  const isStep2Valid = jobDescriptionText.trim().length >= 50;
+  const isStep1Valid = resumeText.trim().length >= 200 && resumeText.trim().length <= 15000;
+  const isStep2Valid = jobDescriptionText.trim().length >= 200 && jobDescriptionText.trim().length <= 10000;
 
   return (
-    <div className="min-h-screen bg-mist dark:bg-[#030712] text-slate-900 dark:text-slate-200 flex flex-col font-sans transition-colors duration-300">
+    <div className="min-h-screen bg-[var(--bg-base)] text-[var(--text-primary)] flex flex-col font-sans transition-colors duration-300">
       <Navbar />
 
-      <main className={`flex-1 ${status === 'success' ? 'max-w-6xl' : 'max-w-4xl'} w-full mx-auto px-4 py-12 flex flex-col justify-start transition-all duration-300`}>
-        {status === 'loading' && (
+      <main className={`flex-1 ${status === 'success' && !showLoading ? 'max-w-6xl' : 'max-w-4xl'} w-full mx-auto px-4 py-12 flex flex-col justify-start transition-all duration-300`}>
+        {showLoading && (
           <div className="my-auto">
-            <TransformLoading />
+            <StepProgress jobDescriptionText={jobDescriptionText} apiStatus={localStatus} />
           </div>
         )}
 
-        {status === 'success' && result && (
+        {!showLoading && status === 'success' && result && (
           <TransformOutput
             result={result}
             plainText={plainText}
@@ -68,7 +134,7 @@ export default function Transform() {
           />
         )}
 
-        {status === 'error' && (
+        {!showLoading && status === 'error' && (
           <TransformErrorPanel
             errorCode={error}
             errorDetails={errorDetails}
@@ -81,9 +147,10 @@ export default function Transform() {
           <div className="w-full flex flex-col gap-8 stagger-children">
             {/* Header */}
             <div>
-              <h1 className="font-serif text-3xl text-ink dark:text-white font-bold">Optimize Resume</h1>
-              <p className="text-sm text-graphite dark:text-slate-400 mt-1 font-semibold">Transform your resume to match the requirements of the job description.</p>
+              <h1 className="text-2xl font-bold text-[var(--text-primary)]">Optimize Resume</h1>
+              <p className="text-xs text-[var(--text-muted)] mt-1 font-medium">Transform your resume to match the requirements of the job description.</p>
             </div>
+
 
             {/* Step progress bar */}
             <div className="flex items-center justify-between max-w-sm w-full mx-auto mb-6 select-none px-4">

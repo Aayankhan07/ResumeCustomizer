@@ -1,131 +1,175 @@
-import React from 'react';
-import { Mic, Target, UserCheck, AlertTriangle, ChevronUp, ChevronDown, Copy } from 'lucide-react';
+import React, { useState } from 'react';
+import { Target, UserCheck, AlertTriangle, ChevronDown, Copy } from 'lucide-react';
 import { toast } from 'sonner';
+import { trackEvent } from '../../../utils/analytics';
 
-export default function InterviewTab({ 
-  interviewPrep, 
-  interviewSubTab, 
-  setInterviewSubTab, 
-  expandedExpectation, 
-  setExpandedExpectation,
-  jobTitle
-}) {
 
-  // Copy all questions to clipboard in a clean formatted block
-  const handleCopyAllQuestions = async () => {
-    const formattedText = `MOCK INTERVIEW PREPARATION
-Target Role: ${jobTitle}
+export default function InterviewTab({ interviewPrep, jobTitle }) {
+  const [activeSubTab, setActiveSubTab] = useState('technical'); // 'technical' | 'behavioral' | 'curveball'
+  const [expandedIdx, setExpandedIdx] = useState(null);
 
---- TECHNICAL QUESTIONS ---
-${interviewPrep.technical.map((q, i) => `${i+1}. ${q.question} (${q.difficulty})\nExpectation: ${q.expectation}`).join('\n\n')}
+  const prep = interviewPrep || { technical: [], behavioral: [], curveball: [] };
 
---- BEHAVIORAL QUESTIONS ---
-${interviewPrep.behavioral.map((q, i) => `${i+1}. ${q.question} (${q.difficulty})\nExpectation: ${q.expectation}`).join('\n\n')}
+  // Helper for difficulty badge
+  const getDifficultyBadge = (difficulty) => {
+    const diff = String(difficulty).toUpperCase();
+    if (diff === 'HARD') {
+      return 'bg-[var(--danger-subtle)] text-[var(--danger-fg)] border border-[var(--danger-fg)]/10';
+    }
+    if (diff === 'MEDIUM' || diff === 'MODERATE') {
+      return 'bg-[var(--warning-subtle)] text-[var(--warning-fg)] border border-[var(--warning-fg)]/10';
+    }
+    return 'bg-[var(--success-subtle)] text-[var(--success-fg)] border border-[var(--success-fg)]/10';
+  };
 
---- CURVEBALL QUESTIONS ---
-${interviewPrep.curveball.map((q, i) => `${i+1}. ${q.question} (${q.difficulty})\nExpectation: ${q.expectation}`).join('\n\n')}`;
+  // Copy all questions to clipboard as requested
+  const handleCopyAll = async () => {
+    let text = '';
+    
+    if (prep.technical?.length > 0) {
+      text += 'TECHNICAL:\n';
+      prep.technical.forEach((q, i) => {
+        text += `${i + 1}. ${q.question} (${String(q.difficulty).toUpperCase()})\n`;
+      });
+      text += '\n';
+    }
+
+    if (prep.behavioral?.length > 0) {
+      text += 'BEHAVIORAL:\n';
+      prep.behavioral.forEach((q, i) => {
+        text += `${i + 1}. ${q.question} (${String(q.difficulty).toUpperCase()})\n`;
+      });
+      text += '\n';
+    }
+
+    if (prep.curveball?.length > 0) {
+      text += 'CURVEBALL:\n';
+      prep.curveball.forEach((q, i) => {
+        text += `${i + 1}. ${q.question} (${String(q.difficulty).toUpperCase()})\n`;
+      });
+    }
 
     try {
-      await navigator.clipboard.writeText(formattedText);
-      toast.success('All interview questions copied to clipboard!');
+      await navigator.clipboard.writeText(text.trim());
+      trackEvent('interview_copied');
+      toast.success('Questions copied');
     } catch (err) {
       toast.error('Failed to copy questions.');
     }
   };
 
+  const toggleAccordion = (idx) => {
+    setExpandedIdx(expandedIdx === idx ? null : idx);
+  };
+
+  const currentQuestions = prep[activeSubTab] || [];
+
   return (
-    <div className="animate-fade-in flex flex-col gap-6 font-sans">
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+    <div className="animate-fade-in flex flex-col gap-6 font-sans text-left text-[var(--text-primary)] bg-transparent">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 select-none">
         <div>
-          <div className="flex items-center gap-1.5 text-xs font-bold text-slate-400 uppercase tracking-wider select-none">
-            <Mic size={14} className="text-emerald-500" />
-            Interview Prep
-          </div>
-          <h3 className="font-serif text-2xl text-slate-955 font-bold tracking-tight mt-1">Questions from resume evidence</h3>
-          <p className="text-xs text-slate-500 mt-1 font-medium">Practice prompts generated from the candidate's actual experience and skill profile.</p>
+          <h3 className="text-lg font-semibold text-[var(--text-primary)]">Practice Interview Questions</h3>
+          <p className="text-xs text-[var(--text-muted)] mt-1 font-normal">Practice questions tailored specifically to your resume and target role.</p>
         </div>
         
-        {/* Copy All Questions Button */}
+        {/* Copy All Questions */}
         <button
-          onClick={handleCopyAllQuestions}
-          className="border border-slate-200 hover:bg-slate-50 text-slate-700 rounded-lg px-3.5 py-2 text-xs font-bold flex items-center gap-1.5 transition-colors cursor-pointer shrink-0 select-none shadow-sm"
+          onClick={handleCopyAll}
+          className="btn-default py-1.5 px-3 text-xs font-medium rounded-[var(--radius-sm)] flex items-center gap-1.5 shrink-0"
         >
           <Copy size={13} />
-          Copy Questions
+          Copy All Questions
         </button>
       </div>
 
-      {/* Sub Navigation (Technical, Behavioral, Curveball) */}
-      <div className="flex items-center gap-2 border-b border-slate-200/60 pb-3 select-none">
+      {/* Category Tabs Switcher */}
+      <div className="flex items-center gap-2 border-b border-[var(--border-default)] pb-3 select-none">
         {[
-          { id: 'technical', label: 'Technical', count: interviewPrep.technical.length, icon: Target },
-          { id: 'behavioral', label: 'Behavioral', count: interviewPrep.behavioral.length, icon: UserCheck },
-          { id: 'curveball', label: 'Curveball', count: interviewPrep.curveball.length, icon: AlertTriangle }
+          { id: 'technical', label: 'Technical', count: prep.technical?.length || 0, icon: Target },
+          { id: 'behavioral', label: 'Behavioral', count: prep.behavioral?.length || 0, icon: UserCheck },
+          { id: 'curveball', label: 'Curveball', count: prep.curveball?.length || 0, icon: AlertTriangle }
         ].map((subTab) => {
-          const isActive = interviewSubTab === subTab.id;
+          const isActive = activeSubTab === subTab.id;
           return (
             <button
               key={subTab.id}
               onClick={() => {
-                setInterviewSubTab(subTab.id);
-                setExpandedExpectation(null);
+                setActiveSubTab(subTab.id);
+                setExpandedIdx(null);
               }}
-              className={`px-4 py-2 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer ${
+              className={`px-3.5 py-1.5 rounded-full text-xs font-medium flex items-center gap-1.5 transition-all cursor-pointer ${
                 isActive 
-                  ? 'bg-slate-900 text-white shadow-sm' 
-                  : 'bg-slate-50 border border-slate-200 text-slate-600 hover:text-slate-955'
+                  ? 'bg-[var(--text-primary)] text-[var(--bg-base)]' 
+                  : 'bg-transparent border border-[var(--border-default)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-subtle)]'
               }`}
             >
               <subTab.icon size={13} />
               {subTab.label}
-              <span className={`rounded-full px-1.5 py-0.2 text-[9px] font-black ${
-                isActive ? 'bg-emerald-500 text-white' : 'bg-slate-200 text-slate-850'
+              <span className={`rounded-full px-1.5 py-0.2 text-[9px] font-bold ${
+                isActive ? 'bg-[var(--bg-base)] text-[var(--text-primary)]' : 'bg-[var(--bg-subtle)] text-[var(--text-muted)]'
               }`}>{subTab.count}</span>
             </button>
           );
         })}
       </div>
 
-      {/* Questions Grid based on active Sub-tab */}
-      <div className="flex flex-col gap-4">
-        {interviewPrep[interviewSubTab]?.map((qItem, idx) => {
-          const uniqueId = `${interviewSubTab}-${idx}`;
-          const isExpanded = expandedExpectation === uniqueId;
-          return (
-            <div key={idx} className="border border-slate-200 rounded-xl p-5 bg-white shadow-sm flex flex-col gap-4 hover:shadow-md transition-all">
-              <div className="flex justify-between items-start">
-                <div className="flex gap-3 items-center">
-                  <span className="w-6 h-6 rounded bg-slate-900 text-white flex items-center justify-center text-xs font-bold shrink-0 select-none">{idx + 1}</span>
-                  <h4 className="text-xs font-bold text-slate-900 leading-snug">{qItem.question}</h4>
-                </div>
-                <span className={`rounded px-2.5 py-0.5 text-[9px] font-black uppercase tracking-wider shrink-0 select-none ${
-                  qItem.difficulty === 'Hard'
-                    ? 'bg-rose-50 border border-rose-200 text-rose-700'
-                    : 'bg-amber-50 border border-amber-200 text-amber-750'
-                }`}>{qItem.difficulty}</span>
-              </div>
-              
-              <div className="border-t border-slate-100 pt-3">
+      {/* Questions List */}
+      {currentQuestions.length === 0 ? (
+        <div className="border border-[var(--border-default)] rounded-[var(--radius-lg)] p-8 text-center bg-[var(--bg-elevated)]">
+          <p className="text-sm text-[var(--text-muted)] italic font-normal">No interview questions generated. Try adding more detail to the job description.</p>
+        </div>
+      ) : (
+        <div className="flex flex-col border border-[var(--border-default)] rounded-[var(--radius-lg)] bg-[var(--bg-elevated)] divide-y divide-[var(--border-default)] overflow-hidden shadow-[var(--shadow-sm)]">
+          {currentQuestions.map((qItem, idx) => {
+            const isExpanded = expandedIdx === idx;
+            return (
+              <div key={idx} className="flex flex-col">
+                {/* Header (Trigger) */}
                 <button
-                  onClick={() => setExpandedExpectation(isExpanded ? null : uniqueId)}
-                  className="flex items-center gap-1 text-slate-505 hover:text-slate-950 text-xs font-bold cursor-pointer select-none"
+                  onClick={() => toggleAccordion(idx)}
+                  aria-expanded={isExpanded}
+                  aria-controls={`faq-body-${idx}`}
+                  className="w-full flex items-center justify-between p-4 text-left gap-4 cursor-pointer focus:outline-none hover:bg-[var(--bg-subtle)] transition-colors duration-150"
                 >
-                  {isExpanded ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
-                  Interviewer Expectation
+                  <div className="flex items-center gap-3">
+                    <span className="w-5.5 h-5.5 rounded bg-[var(--text-primary)] text-[var(--bg-base)] flex items-center justify-center text-[10px] font-bold shrink-0 select-none">
+                      {idx + 1}
+                    </span>
+                    <span className="text-sm font-semibold text-[var(--text-primary)] leading-snug">
+                      {qItem.question}
+                    </span>
+                  </div>
+                  
+                  <div className="flex items-center gap-3 shrink-0 select-none">
+                    <span className={`rounded-[var(--radius-xs)] px-2 py-0.5 text-[9px] font-semibold uppercase tracking-wider border ${getDifficultyBadge(qItem.difficulty)}`}>
+                      {qItem.difficulty}
+                    </span>
+                    <ChevronDown size={14} className={`text-[var(--text-muted)] transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`} />
+                  </div>
                 </button>
-                {isExpanded && (
-                  <div className="mt-2.5 bg-slate-50 border border-slate-200/60 rounded-lg p-4 text-xs flex flex-col gap-2 animate-fade-in">
-                    <span className="font-bold text-slate-900 uppercase tracking-wider text-[10px] select-none">What they want to hear:</span>
-                    <p className="text-slate-650 leading-relaxed font-medium">
+
+                {/* Collapsible Body */}
+                <div
+                  id={`faq-body-${idx}`}
+                  className={`overflow-hidden transition-all duration-300 ease-in-out ${
+                    isExpanded ? 'max-h-96 border-t border-[var(--border-subtle)]' : 'max-h-0'
+                  }`}
+                >
+                  <div className="p-4 bg-[var(--bg-subtle)] flex flex-col gap-2 text-xs">
+                    <span className="font-semibold text-[var(--text-muted)] uppercase tracking-wider text-[10px]">
+                      WHAT THE INTERVIEWER EXPECTS:
+                    </span>
+                    <p className="text-[var(--text-secondary)] leading-relaxed font-normal text-xs">
                       {qItem.expectation}
                     </p>
                   </div>
-                )}
+                </div>
+
               </div>
-            </div>
-          );
-        })}
-      </div>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 }

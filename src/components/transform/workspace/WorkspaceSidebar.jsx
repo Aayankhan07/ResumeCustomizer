@@ -1,18 +1,16 @@
 import { useState } from 'react';
-import { Download, Copy } from 'lucide-react';
+import { Download } from 'lucide-react';
 import LoadingSpinner from '../../ui/LoadingSpinner';
+import ScoreRing from '../../ui/ScoreRing';
 
 export default function WorkspaceSidebar({
   activeTab,
   setActiveTab,
   menuItems,
   currentScore,
-  scoreColors,
   originalText,
   handleDownloadPDF,
-  handleDownloadDOCX,
-  handleCopyText,
-  copying
+  handleDownloadDOCX
 }) {
   const [isDownloading, setIsDownloading] = useState(false);
   const [isDownloadingDocx, setIsDownloadingDocx] = useState(false);
@@ -38,21 +36,12 @@ export default function WorkspaceSidebar({
   };
 
   return (
-    <aside className="w-full lg:w-64 shrink-0 bg-slate-50/70 border border-slate-200/80 rounded-xl p-5 flex flex-col justify-between select-none shadow-inner animate-fade-in">
+    <aside className="w-full lg:w-64 shrink-0 bg-[var(--bg-base)] border border-[var(--border-default)] rounded-[var(--radius-lg)] p-5 flex flex-col justify-between select-none shadow-[var(--shadow-sm)]">
       <div className="flex flex-col gap-6">
         
         {/* ATS Score Box */}
-        <div className="bg-white border border-slate-200/70 rounded-xl p-4 flex flex-col gap-2 shadow-sm">
-          <div className="flex items-center justify-between">
-            <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500">ATS Compatibility</span>
-            <span className="text-xs font-bold text-slate-900">{currentScore}%</span>
-          </div>
-          <div className="w-full h-2 bg-slate-100 rounded-full overflow-hidden">
-            <div 
-              className={`h-full transition-all duration-1000 ease-out ${scoreColors.bar}`} 
-              style={{ width: `${currentScore}%` }}
-            />
-          </div>
+        <div className="bg-[var(--bg-elevated)] border border-[var(--border-default)] rounded-[var(--radius-lg)] p-5 flex flex-col items-center gap-1 mb-4">
+          <ScoreRing score={currentScore} />
         </div>
 
         {/* Mobile Tab Navigation (Scrollable Row) */}
@@ -67,8 +56,8 @@ export default function WorkspaceSidebar({
                 onClick={() => setActiveTab(item.id)}
                 className={`snap-center flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-semibold whitespace-nowrap transition-all cursor-pointer ${
                   isActive 
-                    ? 'bg-slate-900 text-white font-bold shadow-sm' 
-                    : 'bg-white border border-slate-200 text-slate-600 hover:text-slate-900'
+                    ? 'bg-[var(--text-primary)] text-[var(--bg-base)] font-bold shadow-sm' 
+                    : 'bg-transparent border border-[var(--border-default)] text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
                 }`}
               >
                 <IconComponent size={14} />
@@ -88,15 +77,15 @@ export default function WorkspaceSidebar({
               <button
                 key={item.id}
                 onClick={() => setActiveTab(item.id)}
-                className={`flex items-center gap-3 w-full px-3.5 py-2.5 rounded-lg text-sm font-semibold tracking-tight transition-all cursor-pointer ${
+                className={`flex items-center gap-3 w-full px-3.5 py-2.5 rounded-[var(--radius-sm)] text-sm font-normal tracking-tight transition-all cursor-pointer ${
                   isActive 
-                    ? 'bg-slate-900 text-white shadow-sm font-bold animate-pulse-subtle' 
-                    : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/50'
+                    ? 'bg-[var(--bg-subtle)] text-[var(--text-primary)] font-medium shadow-[inset_2px_0_0_var(--accent)]' 
+                    : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-subtle)]'
                 }`}
               >
                 <IconComponent 
                   size={15} 
-                  className={`transition-colors ${isActive ? 'text-emerald-400' : 'text-slate-400'}`} 
+                  className={`transition-colors ${isActive ? 'text-[var(--accent)]' : 'text-[var(--text-muted)]'}`} 
                 />
                 {item.label}
               </button>
@@ -107,15 +96,15 @@ export default function WorkspaceSidebar({
       </div>
 
       {/* Bottom Sidebar Action Buttons */}
-      <div className="hidden lg:flex flex-col gap-2 pt-6 border-t border-slate-200/80 mt-6">
+      <div className="hidden lg:flex flex-col gap-2 pt-6 border-t border-[var(--border-default)] mt-6">
         <button
           onClick={onDownloadClick}
           disabled={isDownloading || isDownloadingDocx}
-          className="flex items-center justify-center gap-2 w-full px-3 py-2 text-xs font-bold text-slate-700 bg-white border border-slate-200 hover:bg-slate-50 disabled:opacity-70 disabled:cursor-not-allowed rounded-lg transition-colors cursor-pointer"
+          className="flex items-center justify-center gap-2 w-full px-3 py-2 text-xs font-medium text-[var(--text-secondary)] bg-transparent border border-[var(--border-default)] hover:bg-[var(--bg-subtle)] hover:text-[var(--text-primary)] hover:border-[var(--border-strong)] disabled:opacity-45 disabled:cursor-not-allowed rounded-[var(--radius-sm)] transition-all cursor-pointer"
         >
           {isDownloading ? (
             <>
-              <LoadingSpinner size="sm" strokeWidth={2.5} className="text-slate-600" />
+              <LoadingSpinner size="sm" strokeWidth={2.5} className="text-[var(--text-secondary)]" />
               Generating PDF...
             </>
           ) : (
@@ -128,11 +117,11 @@ export default function WorkspaceSidebar({
         <button
           onClick={onDocxClick}
           disabled={isDownloading || isDownloadingDocx}
-          className="flex items-center justify-center gap-2 w-full px-3 py-2 text-xs font-bold text-slate-700 bg-white border border-slate-200 hover:bg-slate-50 disabled:opacity-70 disabled:cursor-not-allowed rounded-lg transition-colors cursor-pointer"
+          className="flex items-center justify-center gap-2 w-full px-3 py-2 text-xs font-medium text-[var(--text-secondary)] bg-transparent border border-[var(--border-default)] hover:bg-[var(--bg-subtle)] hover:text-[var(--text-primary)] hover:border-[var(--border-strong)] disabled:opacity-45 disabled:cursor-not-allowed rounded-[var(--radius-sm)] transition-all cursor-pointer"
         >
           {isDownloadingDocx ? (
             <>
-              <LoadingSpinner size="sm" strokeWidth={2.5} className="text-slate-600" />
+              <LoadingSpinner size="sm" strokeWidth={2.5} className="text-[var(--text-secondary)]" />
               Generating DOCX...
             </>
           ) : (
@@ -141,13 +130,6 @@ export default function WorkspaceSidebar({
               Download DOCX
             </>
           )}
-        </button>
-        <button
-          onClick={handleCopyText}
-          className="flex items-center justify-center gap-2 w-full px-3 py-2 text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 rounded-lg transition-colors shadow-sm cursor-pointer active:scale-95"
-        >
-          <Copy size={13} />
-          {copying ? 'Copied Link' : 'Share Score'}
         </button>
       </div>
     </aside>
