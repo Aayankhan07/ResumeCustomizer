@@ -5,9 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { createClient } from '../../../lib/supabase/client';
 import { toast } from 'sonner';
-import Button from '../../../components/ui/Button';
 import Input from '../../../components/ui/Input';
-import GlassPanel from '../../../components/ui/GlassPanel';
 import { Sparkles } from 'lucide-react';
 import useDocumentTitle from '../../../hooks/useDocumentTitle';
 
@@ -65,53 +63,53 @@ export default function Signup() {
   };
 
   return (
-    <div className="min-h-screen bg-[#0B0F19] text-slate-200 flex flex-col lg:flex-row relative overflow-hidden select-none font-sans">
+    <div className="min-h-screen bg-[var(--bg-base)] text-[var(--text-primary)] flex flex-col lg:flex-row relative overflow-hidden select-none font-sans transition-colors duration-300">
       {/* Decorative spotlights */}
-      <div className="absolute top-0 left-0 right-0 h-[400px] bg-[radial-gradient(circle_at_top,_var(--tw-gradient-stops))] from-indigo-500/10 via-transparent to-transparent blur-3xl pointer-events-none" />
-      <div className="absolute bottom-0 right-0 w-[500px] h-[500px] bg-emerald-500/5 rounded-full blur-[120px] pointer-events-none" />
+      <div className="absolute top-0 left-0 right-0 h-[400px] bg-[radial-gradient(circle_at_top,_var(--tw-gradient-stops))] from-[color-mix(in_srgb,var(--accent)_8%,transparent)] via-transparent to-transparent blur-3xl pointer-events-none" />
+      <div className="absolute bottom-0 right-0 w-[500px] h-[500px] bg-[color-mix(in_srgb,var(--accent)_4%,transparent)] rounded-full blur-[120px] pointer-events-none" />
       
       {/* Grid Pattern Overlay */}
-      <div className="absolute inset-0 bg-[linear-gradient(to_right,#1f293708_1px,transparent_1px),linear-gradient(to_bottom,#1f293708_1px,transparent_1px)] bg-[size:4rem_4rem] pointer-events-none" />
+      <div className="absolute inset-0 bg-[linear-gradient(to_right,#1f293704_1px,transparent_1px),linear-gradient(to_bottom,#1f293708_1px,transparent_1px)] bg-[size:4rem_4rem] pointer-events-none opacity-40" />
 
       {/* Left panel: Premium Branding (SaaS style) */}
-      <div className="relative hidden lg:flex lg:w-[42%] bg-slate-955/40 border-r border-slate-900/60 p-12 flex-col justify-between shrink-0 overflow-hidden z-10">
-        <div className="absolute inset-0 bg-[linear-gradient(to_right,#33415509_1px,transparent_1px),linear-gradient(to_bottom,#33415509_1px,transparent_1px)] bg-[size:3.5rem_3.5rem] opacity-30 pointer-events-none" />
-        <div className="absolute -top-40 -left-40 w-96 h-96 bg-indigo-500/10 rounded-full blur-[100px]" />
+      <div className="relative hidden lg:flex lg:w-[42%] bg-[var(--bg-elevated)] border-r border-[var(--border-default)] p-12 flex-col justify-between shrink-0 overflow-hidden z-10">
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,#33415504_1px,transparent_1px),linear-gradient(to_bottom,#33415504_1px,transparent_1px)] bg-[size:3.5rem_3.5rem] opacity-30 pointer-events-none" />
+        <div className="absolute -top-40 -left-40 w-96 h-96 bg-[color-mix(in_srgb,var(--accent)_10%,transparent)] rounded-full blur-[100px]" />
 
-        <Link href="/" className="flex items-center gap-2.5 font-serif text-2xl font-bold text-white tracking-tight">
-          <div className="w-8 h-8 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center">
-            <Sparkles size={16} className="text-indigo-400 fill-indigo-400/20" />
+        <Link href="/" className="flex items-center gap-2.5 font-serif text-2xl font-bold text-[var(--text-primary)] tracking-tight">
+          <div className="w-8 h-8 rounded-lg bg-[var(--bg-subtle)] border border-[var(--border-default)] flex items-center justify-center">
+            <Sparkles size={16} className="text-[var(--accent)] fill-[var(--accent)]/10" />
           </div>
           <span>ResumOrph</span>
         </Link>
 
         <div className="my-auto max-w-sm">
-          <span className="text-xs font-mono font-bold uppercase tracking-widest text-indigo-400 bg-indigo-950/60 border border-indigo-850/50 px-2.5 py-1 rounded-md mb-6 inline-block">
+          <span className="text-xs font-mono font-bold uppercase tracking-widest text-[var(--accent)] bg-[var(--accent-subtle)] border border-[var(--accent-border)] px-2.5 py-1 rounded-[var(--radius-sm)] mb-6 inline-block">
             Professional AI Tailoring
           </span>
-          <h1 className="font-serif text-3xl sm:text-4xl leading-snug font-bold mb-5 text-white bg-gradient-to-r from-white via-slate-150 to-slate-300 bg-clip-text text-transparent">
+          <h1 className="font-serif text-3xl sm:text-4xl leading-snug font-bold mb-5 text-[var(--text-primary)]">
             "Get more callbacks in under 60 seconds."
           </h1>
-          <div className="h-1 w-12 bg-indigo-500/80 mb-6 rounded-full" />
-          <p className="text-sm text-slate-400 leading-relaxed font-medium">
+          <div className="h-1 w-12 bg-[var(--accent)] mb-6 rounded-full" />
+          <p className="text-sm text-[var(--text-secondary)] leading-relaxed font-medium">
             ResumOrph analyzes your resume against industry-specific keywords and automatically formats it to fit high-density ATS standards.
           </p>
         </div>
 
-        <div className="flex items-center justify-between border-t border-slate-900/80 pt-6">
-          <p className="text-xs text-slate-550 font-mono">ResumOrph Engine v1.2</p>
-          <span className="text-xs text-slate-550 font-mono">&copy; {new Date().getFullYear()}</span>
+        <div className="flex items-center justify-between border-t border-[var(--border-default)] pt-6">
+          <p className="text-xs text-[var(--text-muted)] font-mono">ResumOrph Engine v1.2</p>
+          <span className="text-xs text-[var(--text-muted)] font-mono">&copy; {new Date().getFullYear()}</span>
         </div>
       </div>
 
       {/* Right panel: Form Container */}
       <div className="flex-1 flex items-center justify-center p-4 sm:p-8 lg:p-16 z-10">
-        <GlassPanel className="w-full max-w-md border-slate-800/80 bg-slate-900/45 backdrop-blur-xl p-8 sm:p-10 shadow-2xl relative">
-          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-40 h-px bg-gradient-to-r from-transparent via-indigo-500/40 to-transparent" />
+        <div className="w-full max-w-md border border-[var(--border-default)] bg-[var(--bg-elevated)] rounded-[var(--radius-lg)] p-8 sm:p-10 shadow-lg relative">
+          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-40 h-px bg-gradient-to-r from-transparent via-[var(--accent)]/40 to-transparent" />
           
           <div className="mb-8">
-            <h2 className="font-serif text-3xl text-white font-bold mb-1.5 tracking-tight">Create Account</h2>
-            <p className="text-xs text-slate-400 font-semibold leading-relaxed">Start optimizing your resumes for free.</p>
+            <h2 className="font-serif text-3xl text-[var(--text-primary)] font-bold mb-1.5 tracking-tight">Create Account</h2>
+            <p className="text-xs text-[var(--text-secondary)] font-semibold leading-relaxed">Start optimizing your resumes for free.</p>
           </div>
 
           <form onSubmit={handleSignup} className="flex flex-col gap-5">
@@ -123,7 +121,6 @@ export default function Signup() {
               onChange={(e) => setName(e.target.value)}
               disabled={loading}
               required
-              className="bg-slate-955/50 border-slate-800 text-white placeholder:text-slate-550 focus:border-indigo-500 focus:ring-indigo-500/10"
             />
 
             <Input
@@ -134,7 +131,6 @@ export default function Signup() {
               onChange={(e) => setEmail(e.target.value)}
               disabled={loading}
               required
-              className="bg-slate-955/50 border-slate-800 text-white placeholder:text-slate-550 focus:border-indigo-500 focus:ring-indigo-500/10"
             />
             
             <Input
@@ -145,31 +141,29 @@ export default function Signup() {
               onChange={(e) => setPassword(e.target.value)}
               disabled={loading}
               required
-              className="bg-slate-955/50 border-slate-800 text-white placeholder:text-slate-550 focus:border-indigo-500 focus:ring-indigo-500/10"
             />
 
-            <Button 
+            <button 
               type="submit" 
-              className="w-full py-3 text-sm font-semibold rounded-md bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-500 hover:to-blue-500 text-white shadow-lg shadow-indigo-500/15 border-0 tracking-wide cursor-pointer active:scale-98" 
+              className="btn-primary w-full py-3 text-sm font-semibold rounded-lg tracking-wide cursor-pointer flex items-center justify-center gap-2"
               disabled={loading}
             >
               {loading ? 'Creating Account...' : 'Create Account'}
-            </Button>
+            </button>
           </form>
 
           <div className="relative my-8 select-none">
             <div className="absolute inset-0 flex items-center">
-              <span className="w-full border-t border-slate-800"></span>
+              <span className="w-full border-t border-[var(--border-default)]"></span>
             </div>
             <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-[#0B1528] px-3.5 text-slate-455 font-bold tracking-wider">Or continue with</span>
+              <span className="bg-[var(--bg-elevated)] px-3.5 text-[var(--text-muted)] font-bold tracking-wider">Or continue with</span>
             </div>
           </div>
 
-          <Button
+          <button
             type="button"
-            variant="ghost"
-            className="w-full flex items-center justify-center gap-2.5 py-3 rounded-md border border-slate-800 hover:bg-slate-800/40 font-bold text-slate-300 cursor-pointer transition-colors"
+            className="btn-ghost w-full flex items-center justify-center gap-2.5 py-3 rounded-lg font-semibold text-sm cursor-pointer transition-colors"
             onClick={handleGoogleLogin}
             disabled={loading}
           >
@@ -192,15 +186,15 @@ export default function Signup() {
               />
             </svg>
             Sign up with Google
-          </Button>
+          </button>
 
-          <p className="mt-8 text-center text-sm text-slate-400 font-semibold">
+          <p className="mt-8 text-center text-sm text-[var(--text-secondary)] font-semibold">
             Already have an account?{' '}
-            <Link href="/login" className="font-bold text-white hover:text-indigo-400 transition-colors">
+            <Link href="/login" className="font-bold text-[var(--text-primary)] hover:text-[var(--accent)] transition-colors">
               Sign In
             </Link>
           </p>
-        </GlassPanel>
+        </div>
       </div>
     </div>
   );
