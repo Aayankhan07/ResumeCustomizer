@@ -36,25 +36,25 @@ export function generateResumePDF(data, templateId = 'classic', pageBudget = 'st
     if (templateId === 'classic') {
       doc.setDrawColor(30, 30, 30).setLineWidth(0.75);
       doc.line(MARGIN, y, PAGE_W - MARGIN, y);
-      y += isFit ? 5 : 8;
+      y += isFit ? 10 : 14;
     } else if (templateId === 'modern') {
       doc.setDrawColor(203, 213, 225).setLineWidth(0.5); // light slate border
       doc.line(MARGIN, y, PAGE_W - MARGIN, y);
-      y += isFit ? 4 : 6;
+      y += isFit ? 10 : 14;
     } else if (templateId === 'executive') {
       doc.setDrawColor(148, 163, 184).setLineWidth(0.5); // very thin border
       doc.line(MARGIN, y, PAGE_W - MARGIN, y);
-      y += isFit ? 5 : 8;
+      y += isFit ? 10 : 14;
     } else if (templateId === 'tech') {
       // Clean Tech template uses a vertical sidebar accent instead of a horizontal rule
-      y += isFit ? 3 : 5;
+      y += isFit ? 6 : 10;
     }
   };
 
   // ── DRAW SECTION HEADER
   const sectionHead = (title) => {
     spaceCheck(isFit ? 30 : 45); // prevent orphaning headers
-    y += isFit ? 4 : 8;
+    y += isFit ? 6 : 10;
 
     if (templateId === 'tech') {
       // Clean Tech: Vertical Accent Block on left
@@ -65,7 +65,7 @@ export function generateResumePDF(data, templateId = 'classic', pageBudget = 'st
       setHeaderFont('bold', isFit ? 9.5 : 10.5);
       setColor(15, 23, 42);
       doc.text(title.toUpperCase(), MARGIN + 8, y);
-      y += isFit ? 5 : 8;
+      y += isFit ? 14 : 18;
     } else if (templateId === 'executive') {
       // Executive: Centered elegant header
       setFont('normal', isFit ? 9.5 : 10.5);
@@ -73,21 +73,21 @@ export function generateResumePDF(data, templateId = 'classic', pageBudget = 'st
       // Letter spacing simulation for centered title
       const spacedTitle = title.toUpperCase().split('').join(' ');
       doc.text(spacedTitle, PAGE_W / 2, y, { align: 'center' });
-      y += isFit ? 3 : 5;
+      y += isFit ? 4 : 6;
       drawSectionDivider();
     } else if (templateId === 'modern') {
       // Modern: Left-aligned clean bold
       setFont('bold', isFit ? 9.5 : 10.5);
       setColor(15, 23, 42);
       doc.text(title.toUpperCase(), MARGIN, y);
-      y += isFit ? 3 : 5;
+      y += isFit ? 4 : 6;
       drawSectionDivider();
     } else {
       // Classic: Traditional centered or left serif
       setFont('bold', isFit ? 9.5 : 10.5);
       setColor(15, 15, 15);
       doc.text(title.toUpperCase(), MARGIN, y);
-      y += isFit ? 3 : 5;
+      y += isFit ? 4 : 6;
       drawSectionDivider();
     }
   };
@@ -139,12 +139,16 @@ export function generateResumePDF(data, templateId = 'classic', pageBudget = 'st
   }
   setColor(71, 85, 105); // slate-600
 
-  if (isCentered) {
-    doc.text(contactText, PAGE_W / 2, y, { align: 'center' });
-  } else {
-    doc.text(contactText, MARGIN, y);
-  }
-  y += gapTitle;
+  const contactLines = doc.splitTextToSize(contactText, CW);
+  contactLines.forEach((line) => {
+    if (isCentered) {
+      doc.text(line, PAGE_W / 2, y, { align: 'center' });
+    } else {
+      doc.text(line, MARGIN, y);
+    }
+    y += isFit ? 10 : 13;
+  });
+  y += isFit ? 8 : 12;
 
   // ── SUMMARY SECTION
   if (data.summary) {
@@ -212,7 +216,7 @@ export function generateResumePDF(data, templateId = 'classic', pageBudget = 'st
         if (templateId === 'tech') bulletMarker = '>  ';
         if (templateId === 'executive') bulletMarker = '▪  ';
 
-        const lines = doc.splitTextToSize(`${bulletMarker}${bullet}`, CW - 12);
+        const lines = doc.splitTextToSize(`${bulletMarker}${bullet}`, CW - 20);
         spaceCheck(lines.length * hBullet + gapBullet);
         
         // Bullet styling
@@ -222,7 +226,7 @@ export function generateResumePDF(data, templateId = 'classic', pageBudget = 'st
           setFont('normal', isFit ? 9 : 10);
         }
         setColor(30, 41, 59);
-        doc.text(lines, MARGIN + 8, y);
+        doc.text(lines, MARGIN + 10, y);
         y += lines.length * hBullet + gapBullet;
       });
 

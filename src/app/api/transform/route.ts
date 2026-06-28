@@ -1,6 +1,5 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '../../../lib/supabase/server';
-import { createServiceClient } from '../../../lib/supabase/service';
 import { checkRateLimit } from '../../../lib/rateLimit';
 import { callGroqWithFallback } from '../../../lib/groq';
 import { computeMatchScore } from '../../../lib/matchScore';
@@ -57,14 +56,11 @@ export async function POST(req: Request) {
       }, { status: 429 });
     }
 
-    // Initialize Service Client for elevated permissions
-    const serviceClient = createServiceClient();
-
     // Idempotency check
     const idempotencyKey = req.headers.get('x-idempotency-key');
     if (idempotencyKey) {
       const fiveMinsAgo = new Date(Date.now() - 5 * 60 * 1000).toISOString();
-      const { data: existing } = await serviceClient
+      const { data: existing } = await supabase
         .from('transformations')
         .select('id, output_json, output_plain_text')
         .eq('user_id', user.id)
@@ -143,7 +139,7 @@ export async function POST(req: Request) {
     const plainText = resumeToPlainText(transformResult);
 
     // 8. Save to database
-    const { data: saved, error: saveError } = await serviceClient
+    const { data: saved, error: saveError } = await supabase
       .from('transformations')
       .insert({
         user_id:             user.id,
@@ -162,7 +158,6 @@ export async function POST(req: Request) {
       })
       .select('id')
       .single();
-
 
     if (saveError) {
       console.error('DB save error:', saveError);

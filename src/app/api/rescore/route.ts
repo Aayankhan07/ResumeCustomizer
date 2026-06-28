@@ -1,6 +1,5 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '../../../lib/supabase/server';
-import { createServiceClient } from '../../../lib/supabase/service';
 import { computeMatchScore } from '../../../lib/matchScore';
 
 export async function POST(req: Request) {
@@ -20,11 +19,8 @@ export async function POST(req: Request) {
       return NextResponse.json({ success: false, error: 'MISSING_TRANSFORMATION_ID' }, { status: 400 });
     }
 
-    // Initialize Service Client for elevated permissions
-    const serviceClient = createServiceClient();
-
     // 3. Fetch original job description and transformation output
-    const { data: trans, error: fetchError } = await serviceClient
+    const { data: trans, error: fetchError } = await supabase
       .from('transformations')
       .select('id, output_json, output_plain_text')
       .eq('id', transformation_id)
@@ -51,7 +47,7 @@ export async function POST(req: Request) {
     }
 
     // 6. Save updated score, keywords, and output_json back to DB
-    const { error: updateError } = await serviceClient
+    const { error: updateError } = await supabase
       .from('transformations')
       .update({
         match_score: scoreResult.score,
