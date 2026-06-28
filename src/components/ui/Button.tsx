@@ -7,14 +7,14 @@ export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 
 const Button = forwardRef<HTMLButtonElement, ButtonProps>(
   ({ className = '', variant = 'primary', size = 'md', children, ...props }, ref) => {
-    const baseStyle = 'inline-flex items-center justify-center font-sans font-medium rounded-lg transition-all duration-150 active:translate-y-0 active:shadow-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-cobalt focus-visible:outline-offset-2 disabled:bg-gray-200 disabled:text-gray-400 disabled:cursor-not-allowed disabled:shadow-none disabled:translate-y-0';
+    const baseStyle = 'inline-flex items-center justify-center font-sans font-medium rounded-lg transition-all duration-150 active:scale-[0.98] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[var(--accent)] focus-visible:outline-offset-2 disabled:opacity-45 disabled:cursor-not-allowed disabled:transform-none disabled:active:scale-100';
     
     const variants = {
-      primary: 'bg-cobalt text-white shadow-cobalt hover:bg-cobalt-light hover:-translate-y-px hover:shadow-lg',
-      secondary: 'bg-cobalt-subtle text-cobalt hover:bg-blue-100 hover:-translate-y-px',
-      ghost: 'bg-transparent text-ink border border-boundary hover:border-graphite hover:bg-mist/50',
-      danger: 'bg-transparent text-red-600 border border-red-200 hover:bg-red-50 hover:border-red-600 hover:-translate-y-px',
-      text: 'bg-transparent text-graphite hover:text-ink',
+      primary: 'bg-[var(--accent)] text-[var(--accent-fg)] hover:bg-[var(--accent-hover)] border border-transparent shadow-sm',
+      secondary: 'bg-[var(--bg-subtle)] text-[var(--text-primary)] border border-[var(--border-default)] hover:bg-[var(--bg-muted)]',
+      ghost: 'bg-transparent text-[var(--text-secondary)] border border-[var(--border-default)] hover:bg-[var(--bg-subtle)] hover:text-[var(--text-primary)]',
+      danger: 'bg-[var(--danger-subtle)] text-[var(--danger-fg)] border border-[var(--danger-subtle)] hover:bg-[var(--danger)] hover:text-white',
+      text: 'bg-transparent text-[var(--text-secondary)] hover:text-[var(--text-primary)]',
     };
 
     const sizes = {
