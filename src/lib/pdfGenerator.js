@@ -287,10 +287,11 @@ export function generateResumePDF(data, templateId = 'classic', pageBudget = 'st
     data.projects.forEach((proj, idx) => {
       spaceCheck(isFit ? 35 : 45);
 
-      // Project Name and Link
+      // Project Name/Title and Link
+      const projectTitle = proj.title || proj.name || 'Project';
       setFont('bold', isFit ? 9.5 : 10.5);
       setColor(15, 23, 42);
-      doc.text(proj.name, MARGIN, y);
+      doc.text(projectTitle, MARGIN, y);
       
       if (proj.link) {
         setFont('normal', isFit ? 8 : 9);
@@ -302,12 +303,29 @@ export function generateResumePDF(data, templateId = 'classic', pageBudget = 'st
       y += isFit ? 11 : 13;
 
       // Description
-      const descLines = doc.splitTextToSize(proj.description, CW);
-      spaceCheck(descLines.length * hText + 3);
-      setFont('normal', isFit ? 9 : 10);
-      setColor(30, 41, 59);
-      doc.text(descLines, MARGIN, y);
-      y += descLines.length * hText + 3;
+      if (proj.description) {
+        const descLines = doc.splitTextToSize(proj.description, CW);
+        spaceCheck(descLines.length * hText + 3);
+        setFont('normal', isFit ? 9 : 10);
+        setColor(30, 41, 59);
+        doc.text(descLines, MARGIN, y);
+        y += descLines.length * hText + 3;
+      }
+
+      // Bullets (if present)
+      proj.bullets?.forEach(bullet => {
+        let bulletMarker = '•  ';
+        if (templateId === 'modern') bulletMarker = '–  ';
+        if (templateId === 'tech') bulletMarker = '>  ';
+        if (templateId === 'executive') bulletMarker = '▪  ';
+
+        const lines = doc.splitTextToSize(`${bulletMarker}${bullet}`, CW - 12);
+        spaceCheck(lines.length * hBullet + gapBullet);
+        setFont('normal', isFit ? 9 : 10);
+        setColor(30, 41, 59);
+        doc.text(lines, MARGIN + 8, y);
+        y += lines.length * hBullet + gapBullet;
+      });
 
       // Tech Stack
       if (proj.tech_stack?.length) {
