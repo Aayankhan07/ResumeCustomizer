@@ -30,6 +30,11 @@ export function useTransform() {
           error: null,
           rateLimit: data.rate_limit,
         });
+
+        if (data.db_error) {
+          console.error('Database save error:', data.db_error);
+          toast.error(`Failed to save to history: ${data.db_error.message || JSON.stringify(data.db_error)}`);
+        }
       } catch (err) {
         if (attempt === 1 && RETRY_ERRORS.includes(err.code)) {
           // Auto-retry once after 2 seconds

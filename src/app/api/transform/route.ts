@@ -177,6 +177,7 @@ export async function POST(req: Request) {
       data: transformResult,
       plain_text: plainText,
       transformation_id: saved?.id ?? null,
+      db_error: saveError || null,
       rate_limit: {
         remaining: rateCheck.remaining,
         reset_at: rateCheck.resetAt.toISOString(),
