@@ -44,8 +44,9 @@ export default function FileDropzone({ onTextExtracted, label = 'Drop your file 
       setStatus('success');
       onTextExtracted(text);
     } catch (err) {
+      console.error('File parsing error:', err);
       setStatus('error');
-      setMessage('Could not read this file. Try a .txt copy.');
+      setMessage(getFileParseError(err.message));
     }
   }, [onTextExtracted]);
 
