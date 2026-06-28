@@ -161,6 +161,14 @@ export async function POST(req: Request) {
 
     if (saveError) {
       console.error('DB save error:', saveError);
+      try {
+        const fs = require('fs');
+        const path = require('path');
+        const logPath = path.join(process.cwd(), 'db_error.log');
+        fs.appendFileSync(logPath, `${new Date().toISOString()} - DB save error: ${JSON.stringify(saveError)}\n`);
+      } catch (logErr) {
+        console.error('Failed to write to log file:', logErr);
+      }
     }
 
     // 9. Return response
