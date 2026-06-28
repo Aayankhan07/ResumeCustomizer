@@ -123,7 +123,9 @@ JSON OUTPUT SCHEMA:
     ]
   },
   "cover_letter": "string — complete formatted cover letter"
-}`;
+}
+
+Ensure the "interview_prep" object contains exactly 10 questions in total: exactly 4 technical questions, exactly 4 behavioral questions, and exactly 2 curveball questions. All questions must be highly specific to the candidate's actual CV and the target job description.`;
 
 export interface TransformResult {
   contact: {

@@ -1,175 +1,217 @@
-import React, { useState } from 'react';
-import { Target, UserCheck, AlertTriangle, ChevronDown, Copy } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Target, UserCheck, AlertTriangle, ArrowLeft, ArrowRight, RotateCw, Copy } from 'lucide-react';
 import { toast } from 'sonner';
-import { trackEvent } from '../../../utils/analytics';
 
-
-export default function InterviewTab({ interviewPrep, jobTitle }) {
-  const [activeSubTab, setActiveSubTab] = useState('technical'); // 'technical' | 'behavioral' | 'curveball'
-  const [expandedIdx, setExpandedIdx] = useState(null);
+export default function InterviewTab({ interviewPrep }) {
+  const [currentIdx, setCurrentIdx] = useState(0);
+  const [isFlipped, setIsFlipped] = useState(false);
 
   const prep = interviewPrep || { technical: [], behavioral: [], curveball: [] };
 
-  // Helper for difficulty badge
+  // Combine and tag all questions into a single deck of 10
+  const questions = [
+    ...(prep.technical || []).map(q => ({ ...q, category: 'Technical' })),
+    ...(prep.behavioral || []).map(q => ({ ...q, category: 'Behavioral' })),
+    ...(prep.curveball || []).map(q => ({ ...q, category: 'Curveball' }))
+  ];
+
+  // Helper for difficulty badge styling
   const getDifficultyBadge = (difficulty) => {
     const diff = String(difficulty).toUpperCase();
     if (diff === 'HARD') {
-      return 'bg-[var(--danger-subtle)] text-[var(--danger-fg)] border border-[var(--danger-fg)]/10';
+      return 'bg-[var(--danger-subtle)] text-[var(--danger-fg)] border-[var(--danger-fg)]/10';
     }
     if (diff === 'MEDIUM' || diff === 'MODERATE') {
-      return 'bg-[var(--warning-subtle)] text-[var(--warning-fg)] border border-[var(--warning-fg)]/10';
+      return 'bg-[var(--warning-subtle)] text-[var(--warning-fg)] border-[var(--warning-fg)]/10';
     }
-    return 'bg-[var(--success-subtle)] text-[var(--success-fg)] border border-[var(--success-fg)]/10';
+    return 'bg-[var(--success-subtle)] text-[var(--success-fg)] border-[var(--success-fg)]/10';
   };
 
-  // Copy all questions to clipboard as requested
+  const handleNext = () => {
+    if (currentIdx < questions.length - 1) {
+      setIsFlipped(false);
+      setTimeout(() => {
+        setCurrentIdx(prev => prev + 1);
+      }, 150);
+    }
+  };
+
+  const handlePrev = () => {
+    if (currentIdx > 0) {
+      setIsFlipped(false);
+      setTimeout(() => {
+        setCurrentIdx(prev => prev - 1);
+      }, 150);
+    }
+  };
+
+  // Keyboard navigation for active study session
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      // Ignore if user is typing in an input/textarea
+      if (document.activeElement?.tagName === 'INPUT' || document.activeElement?.tagName === 'TEXTAREA') {
+        return;
+      }
+      if (e.key === 'ArrowRight') {
+        handleNext();
+      } else if (e.key === 'ArrowLeft') {
+        handlePrev();
+      } else if (e.key === ' ' || e.key === 'Enter') {
+        e.preventDefault();
+        setIsFlipped(prev => !prev);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [currentIdx, questions.length]);
+
+  // Copy all questions to clipboard
   const handleCopyAll = async () => {
     let text = '';
-    
-    if (prep.technical?.length > 0) {
-      text += 'TECHNICAL:\n';
-      prep.technical.forEach((q, i) => {
-        text += `${i + 1}. ${q.question} (${String(q.difficulty).toUpperCase()})\n`;
-      });
-      text += '\n';
-    }
-
-    if (prep.behavioral?.length > 0) {
-      text += 'BEHAVIORAL:\n';
-      prep.behavioral.forEach((q, i) => {
-        text += `${i + 1}. ${q.question} (${String(q.difficulty).toUpperCase()})\n`;
-      });
-      text += '\n';
-    }
-
-    if (prep.curveball?.length > 0) {
-      text += 'CURVEBALL:\n';
-      prep.curveball.forEach((q, i) => {
-        text += `${i + 1}. ${q.question} (${String(q.difficulty).toUpperCase()})\n`;
-      });
-    }
+    questions.forEach((q, i) => {
+      text += `Question ${i + 1} [${q.category} - ${q.difficulty}]:\nQ: ${q.question}\nA: ${q.expectation}\n\n`;
+    });
 
     try {
       await navigator.clipboard.writeText(text.trim());
-      trackEvent('interview_copied');
-      toast.success('Questions copied');
+      toast.success('All questions and answers copied to clipboard!');
     } catch (err) {
       toast.error('Failed to copy questions.');
     }
   };
 
-  const toggleAccordion = (idx) => {
-    setExpandedIdx(expandedIdx === idx ? null : idx);
-  };
+  if (questions.length === 0) {
+    return (
+      <div className="border border-[var(--border-default)] rounded-[var(--radius-lg)] p-8 text-center bg-[var(--bg-elevated)]">
+        <p className="text-sm text-[var(--text-muted)] italic font-normal">No interview questions generated. Try adding more detail to the job description.</p>
+      </div>
+    );
+  }
 
-  const currentQuestions = prep[activeSubTab] || [];
+  const qItem = questions[currentIdx];
 
   return (
     <div className="animate-fade-in flex flex-col gap-6 font-sans text-left text-[var(--text-primary)] bg-transparent">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 select-none">
         <div>
-          <h3 className="text-lg font-semibold text-[var(--text-primary)]">Practice Interview Questions</h3>
-          <p className="text-xs text-[var(--text-muted)] mt-1 font-normal">Practice questions tailored specifically to your resume and target role.</p>
+          <h3 className="text-lg font-semibold text-[var(--text-primary)]">Practice Interview Flashcards</h3>
+          <p className="text-xs text-[var(--text-muted)] mt-1 font-normal">Use arrow keys or click the card to flip and practice.</p>
         </div>
         
-        {/* Copy All Questions */}
         <button
           onClick={handleCopyAll}
           className="btn-default py-1.5 px-3 text-xs font-medium rounded-[var(--radius-sm)] flex items-center gap-1.5 shrink-0"
         >
           <Copy size={13} />
-          Copy All Questions
+          Copy All Q&As
         </button>
       </div>
 
-      {/* Category Tabs Switcher */}
-      <div className="flex items-center gap-2 border-b border-[var(--border-default)] pb-3 select-none">
-        {[
-          { id: 'technical', label: 'Technical', count: prep.technical?.length || 0, icon: Target },
-          { id: 'behavioral', label: 'Behavioral', count: prep.behavioral?.length || 0, icon: UserCheck },
-          { id: 'curveball', label: 'Curveball', count: prep.curveball?.length || 0, icon: AlertTriangle }
-        ].map((subTab) => {
-          const isActive = activeSubTab === subTab.id;
-          return (
-            <button
-              key={subTab.id}
-              onClick={() => {
-                setActiveSubTab(subTab.id);
-                setExpandedIdx(null);
-              }}
-              className={`px-3.5 py-1.5 rounded-full text-xs font-medium flex items-center gap-1.5 transition-all cursor-pointer ${
-                isActive 
-                  ? 'bg-[var(--text-primary)] text-[var(--bg-base)]' 
-                  : 'bg-transparent border border-[var(--border-default)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-subtle)]'
-              }`}
-            >
-              <subTab.icon size={13} />
-              {subTab.label}
-              <span className={`rounded-full px-1.5 py-0.2 text-[9px] font-bold ${
-                isActive ? 'bg-[var(--bg-base)] text-[var(--text-primary)]' : 'bg-[var(--bg-subtle)] text-[var(--text-muted)]'
-              }`}>{subTab.count}</span>
-            </button>
-          );
-        })}
+      {/* Progress Bar */}
+      <div className="w-full bg-[var(--bg-subtle)] h-1.5 rounded-full overflow-hidden select-none">
+        <div 
+          className="bg-[var(--accent)] h-full transition-all duration-300 rounded-full"
+          style={{ width: `${((currentIdx + 1) / questions.length) * 100}%` }}
+        />
       </div>
 
-      {/* Questions List */}
-      {currentQuestions.length === 0 ? (
-        <div className="border border-[var(--border-default)] rounded-[var(--radius-lg)] p-8 text-center bg-[var(--bg-elevated)]">
-          <p className="text-sm text-[var(--text-muted)] italic font-normal">No interview questions generated. Try adding more detail to the job description.</p>
-        </div>
-      ) : (
-        <div className="flex flex-col border border-[var(--border-default)] rounded-[var(--radius-lg)] bg-[var(--bg-elevated)] divide-y divide-[var(--border-default)] overflow-hidden shadow-[var(--shadow-sm)]">
-          {currentQuestions.map((qItem, idx) => {
-            const isExpanded = expandedIdx === idx;
-            return (
-              <div key={idx} className="flex flex-col">
-                {/* Header (Trigger) */}
-                <button
-                  onClick={() => toggleAccordion(idx)}
-                  aria-expanded={isExpanded}
-                  aria-controls={`faq-body-${idx}`}
-                  className="w-full flex items-center justify-between p-4 text-left gap-4 cursor-pointer focus:outline-none hover:bg-[var(--bg-subtle)] transition-colors duration-150"
-                >
-                  <div className="flex items-center gap-3">
-                    <span className="w-5.5 h-5.5 rounded bg-[var(--text-primary)] text-[var(--bg-base)] flex items-center justify-center text-[10px] font-bold shrink-0 select-none">
-                      {idx + 1}
-                    </span>
-                    <span className="text-sm font-semibold text-[var(--text-primary)] leading-snug">
-                      {qItem.question}
-                    </span>
-                  </div>
-                  
-                  <div className="flex items-center gap-3 shrink-0 select-none">
-                    <span className={`rounded-[var(--radius-xs)] px-2 py-0.5 text-[9px] font-semibold uppercase tracking-wider border ${getDifficultyBadge(qItem.difficulty)}`}>
-                      {qItem.difficulty}
-                    </span>
-                    <ChevronDown size={14} className={`text-[var(--text-muted)] transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`} />
-                  </div>
-                </button>
+      {/* 3D Flipping Card Stage */}
+      <div className="w-full max-w-xl h-80 mx-auto perspective-1000 relative select-none mt-4">
+        <div 
+          onClick={() => setIsFlipped(!isFlipped)}
+          style={{
+            transform: isFlipped ? 'rotateY(180deg)' : 'none',
+            transformStyle: 'preserve-3d',
+            transition: 'transform 0.6s cubic-bezier(0.4, 0, 0.2, 1)'
+          }}
+          className="w-full h-full relative cursor-pointer"
+        >
+          {/* FRONT OF THE CARD (Question) */}
+          <div 
+            style={{ backfaceVisibility: 'hidden' }}
+            className="absolute inset-0 w-full h-full p-8 rounded-[var(--radius-lg)] bg-[var(--bg-elevated)] border border-[var(--border-default)] shadow-[var(--shadow-md)] flex flex-col justify-between items-center text-center z-10"
+          >
+            {/* Top Bar */}
+            <div className="w-full flex justify-between items-center text-xs text-[var(--text-muted)] font-medium">
+              <span className="flex items-center gap-1.5 uppercase tracking-wider">
+                {qItem.category === 'Technical' && <Target size={13} className="text-[var(--accent)]" />}
+                {qItem.category === 'Behavioral' && <UserCheck size={13} className="text-emerald-600" />}
+                {qItem.category === 'Curveball' && <AlertTriangle size={13} className="text-[var(--warning)]" />}
+                {qItem.category}
+              </span>
+              <span className={`px-2 py-0.5 rounded-[var(--radius-xs)] text-[9px] font-bold uppercase tracking-wide border ${getDifficultyBadge(qItem.difficulty)}`}>
+                {qItem.difficulty}
+              </span>
+            </div>
 
-                {/* Collapsible Body */}
-                <div
-                  id={`faq-body-${idx}`}
-                  className={`overflow-hidden transition-all duration-300 ease-in-out ${
-                    isExpanded ? 'max-h-96 border-t border-[var(--border-subtle)]' : 'max-h-0'
-                  }`}
-                >
-                  <div className="p-4 bg-[var(--bg-subtle)] flex flex-col gap-2 text-xs">
-                    <span className="font-semibold text-[var(--text-muted)] uppercase tracking-wider text-[10px]">
-                      WHAT THE INTERVIEWER EXPECTS:
-                    </span>
-                    <p className="text-[var(--text-secondary)] leading-relaxed font-normal text-xs">
-                      {qItem.expectation}
-                    </p>
-                  </div>
-                </div>
+            {/* Question Text */}
+            <div className="my-auto px-2">
+              <h4 className="text-lg md:text-xl font-bold text-[var(--text-primary)] leading-relaxed font-serif">
+                "{qItem.question}"
+              </h4>
+            </div>
 
-              </div>
-            );
-          })}
+            {/* Bottom Bar */}
+            <div className="text-[11px] text-[var(--text-muted)] flex items-center gap-1.5 hover:text-[var(--text-secondary)] transition-colors">
+              <RotateCw size={12} />
+              Click card or press Space to reveal answer
+            </div>
+          </div>
+
+          {/* BACK OF THE CARD (Expectation / Answer) */}
+          <div 
+            style={{ 
+              backfaceVisibility: 'hidden',
+              transform: 'rotateY(180deg)'
+            }}
+            className="absolute inset-0 w-full h-full p-8 rounded-[var(--radius-lg)] bg-[var(--bg-elevated)] border border-[var(--border-default)] shadow-[var(--shadow-md)] flex flex-col justify-between items-center text-center"
+          >
+            {/* Top Bar */}
+            <div className="w-full flex justify-between items-center text-xs text-[var(--text-muted)] font-medium">
+              <span className="uppercase tracking-wider">Suggested Response</span>
+              <span className="text-[10px] font-semibold">Question {currentIdx + 1} of {questions.length}</span>
+            </div>
+
+            {/* Response Content */}
+            <div className="my-auto overflow-y-auto max-h-44 px-2 w-full text-left">
+              <p className="text-sm text-[var(--text-secondary)] leading-relaxed font-normal">
+                {qItem.expectation}
+              </p>
+            </div>
+
+            {/* Bottom Bar */}
+            <div className="text-[11px] text-[var(--text-muted)] flex items-center gap-1.5 hover:text-[var(--text-secondary)] transition-colors">
+              <RotateCw size={12} />
+              Click card or press Space to view question
+            </div>
+          </div>
         </div>
-      )}
+      </div>
+
+      {/* Navigation Controls */}
+      <div className="flex justify-between items-center max-w-xl w-full mx-auto mt-4 select-none">
+        <button
+          onClick={handlePrev}
+          disabled={currentIdx === 0}
+          className="btn-ghost flex items-center gap-1.5 px-4 py-2 text-xs font-semibold rounded-lg disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
+        >
+          <ArrowLeft size={14} />
+          Previous
+        </button>
+
+        <span className="text-xs font-medium text-[var(--text-secondary)]">
+          Card {currentIdx + 1} of {questions.length}
+        </span>
+
+        <button
+          onClick={handleNext}
+          disabled={currentIdx === questions.length - 1}
+          className="btn-ghost flex items-center gap-1.5 px-4 py-2 text-xs font-semibold rounded-lg disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
+        >
+          Next
+          <ArrowRight size={14} />
+        </button>
+      </div>
     </div>
   );
 }
