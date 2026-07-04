@@ -2,10 +2,15 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Calendar, Clock, AlertCircle } from 'lucide-react';
 import { getEvents } from '../../lib/api';
+import { TransformationItem } from '../../hooks/useHistory';
 
-export default function UpcomingWidget({ transformations = [] }) {
+interface UpcomingWidgetProps {
+  transformations?: TransformationItem[];
+}
+
+export default function UpcomingWidget({ transformations = [] }: UpcomingWidgetProps) {
   const router = useRouter();
-  const [events, setEvents] = useState({ overdue: [], upcoming: [] });
+  const [events, setEvents] = useState<{ overdue: any[]; upcoming: any[] }>({ overdue: [], upcoming: [] });
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -21,6 +26,7 @@ export default function UpcomingWidget({ transformations = [] }) {
     }
     fetchEvents();
   }, []);
+
   useEffect(() => {
     if (typeof window === 'undefined' || !('Notification' in window)) return;
     
@@ -31,7 +37,7 @@ export default function UpcomingWidget({ transformations = [] }) {
     if (Notification.permission !== 'granted') return;
 
     const todayStr = new Date().toDateString();
-    const triggerNotification = (id, title, body) => {
+    const triggerNotification = (id: string, title: string, body: string) => {
       const storageKey = `notified:${id}:${todayStr}`;
       if (localStorage.getItem(storageKey)) return;
       
@@ -44,7 +50,7 @@ export default function UpcomingWidget({ transformations = [] }) {
     };
 
     // Notify about overdue events
-    events.overdue.forEach(evt => {
+    events.overdue.forEach((evt: any) => {
       triggerNotification(evt.id, `Overdue: ${evt.title}`, `This event was scheduled in the past.`);
     });
 
@@ -52,7 +58,7 @@ export default function UpcomingWidget({ transformations = [] }) {
     const tomorrow = new Date();
     tomorrow.setDate(tomorrow.getDate() + 1);
     
-    events.upcoming.forEach(evt => {
+    events.upcoming.forEach((evt: any) => {
       const evtDate = new Date(evt.event_date);
       if (evtDate <= tomorrow) {
         const timeStr = evtDate.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' });
@@ -81,13 +87,14 @@ export default function UpcomingWidget({ transformations = [] }) {
       }
     });
   }, [events, transformations]);
+
   if (loading) return null;
 
   // Process deadlines from transformations list
   const now = new Date();
   now.setHours(0, 0, 0, 0);
 
-  const deadlineItems = [];
+  const deadlineItems: any[] = [];
   transformations.forEach((item) => {
     if (!item.application_deadline) return;
     const deadlineDate = new Date(item.application_deadline);
@@ -123,7 +130,7 @@ export default function UpcomingWidget({ transformations = [] }) {
   });
 
   // Process timeline events from GET /api/events
-  const overdueEvents = events.overdue.map((evt) => {
+  const overdueEvents = events.overdue.map((evt: any) => {
     const diffTime = now.getTime() - new Date(evt.event_date).getTime();
     const diffDays = Math.max(0, Math.floor(diffTime / (1000 * 60 * 60 * 24)));
     const compName = evt.transformations?.detected_company || 'Unknown Company';
@@ -137,7 +144,7 @@ export default function UpcomingWidget({ transformations = [] }) {
     };
   });
 
-  const upcomingEvents = events.upcoming.map((evt) => {
+  const upcomingEvents = events.upcoming.map((evt: any) => {
     const date = new Date(evt.event_date);
     const compName = evt.transformations?.detected_company || 'Unknown Company';
     
@@ -172,8 +179,8 @@ export default function UpcomingWidget({ transformations = [] }) {
   });
 
   // Combine overdue and upcoming
-  const allOverdue = [...deadlineItems.filter(d => d.isOverdue), ...overdueEvents].sort((a, b) => b.date - a.date);
-  const allUpcoming = [...deadlineItems.filter(d => !d.isOverdue), ...upcomingEvents].sort((a, b) => a.date - b.date);
+  const allOverdue = [...deadlineItems.filter(d => d.isOverdue), ...overdueEvents].sort((a, b) => b.date.getTime() - a.date.getTime());
+  const allUpcoming = [...deadlineItems.filter(d => !d.isOverdue), ...upcomingEvents].sort((a, b) => a.date.getTime() - b.date.getTime());
 
   if (allOverdue.length === 0 && allUpcoming.length === 0) return null;
 
