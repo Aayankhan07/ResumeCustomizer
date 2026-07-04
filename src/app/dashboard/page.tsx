@@ -11,6 +11,7 @@ import StatsRow from '../../components/dashboard/StatsRow';
 import AnalysisRow from '../../components/dashboard/AnalysisRow';
 import EmptyDashboard from '../../components/dashboard/EmptyDashboard';
 import useDocumentTitle from '../../hooks/useDocumentTitle';
+import UpcomingWidget from '../../components/dashboard/UpcomingWidget';
 
 export default function Dashboard() {
   useDocumentTitle('Dashboard');
@@ -36,7 +37,36 @@ export default function Dashboard() {
     const term = searchTerm.toLowerCase();
     
     const matchesSearch = labelText.includes(term) || jobTitleText.includes(term) || companyText.includes(term);
-    const matchesStatus = statusFilter === 'All' || item.status === statusFilter;
+    
+    let matchesStatus = false;
+    if (statusFilter === 'All') {
+      matchesStatus = true;
+    } else if (statusFilter === 'Overdue') {
+      if (item.application_deadline) {
+        const today = new Date();
+        today.setHours(0,0,0,0);
+        const deadlineDate = new Date(item.application_deadline);
+        deadlineDate.setHours(0,0,0,0);
+        const isFinished = ['Offer', 'Rejected', 'Withdrawn'].includes(item.status || '');
+        matchesStatus = deadlineDate < today && !isFinished;
+      } else {
+        matchesStatus = false;
+      }
+    } else if (statusFilter === 'This Week') {
+      if (item.application_deadline) {
+        const today = new Date();
+        today.setHours(0,0,0,0);
+        const nextWeek = new Date(today);
+        nextWeek.setDate(nextWeek.getDate() + 7);
+        const deadlineDate = new Date(item.application_deadline);
+        deadlineDate.setHours(0,0,0,0);
+        matchesStatus = deadlineDate >= today && deadlineDate <= nextWeek;
+      } else {
+        matchesStatus = false;
+      }
+    } else {
+      matchesStatus = item.status === statusFilter;
+    }
     
     return matchesSearch && matchesStatus;
   });
@@ -68,9 +98,14 @@ export default function Dashboard() {
           </Link>
         </div>
 
-        {/* Stats Section */}
+        {/* Upcoming widget */}
         <div className="animate-slide-up">
-          <StatsRow stats={stats} />
+          <UpcomingWidget transformations={transformations} />
+        </div>
+
+        {/* Stats Section */}
+        <div className="animate-slide-up" style={{ animationDelay: '60ms' }}>
+          <StatsRow stats={stats} transformations={transformations} />
         </div>
 
         {/* Transformations History Section */}
@@ -96,7 +131,7 @@ export default function Dashboard() {
           {/* Status Filter Pills */}
           {transformations.length > 0 && (
             <div className="flex flex-wrap gap-2 select-none">
-              {['All', 'Applied', 'Interviewing', 'Offer', 'Saved', 'Rejected'].map((status) => {
+              {['All', 'Applied', 'Interviewing', 'Offer', 'Saved', 'Rejected', 'Overdue', 'This Week'].map((status) => {
                 const isActive = statusFilter === status;
                 return (
                   <button

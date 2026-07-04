@@ -51,7 +51,7 @@ export async function transformResume({ resumeText, jobDescriptionText }) {
 export async function getTransformations(limit = 20, offset = 0) {
   const { data, error, count } = await supabase
     .from('transformations')
-    .select('id, detected_job_title, detected_company, match_score, created_at, label, status', { count: 'exact' })
+    .select('id, detected_job_title, detected_company, match_score, created_at, label, status, applied_at, application_deadline, priority, application_events(event_date, event_type, is_done)', { count: 'exact' })
     .eq('is_deleted', false)
     .order('created_at', { ascending: false })
     .range(offset, offset + limit - 1);
@@ -168,5 +168,84 @@ export async function updateTransformationStatus(id, status) {
     .eq('id', id);
 
   if (error) throw error;
+}
+
+export async function updateTransformationTracking(id, trackingData) {
+  const headers = await getAuthHeaders();
+  const response = await fetch(`${FUNCTIONS_URL}/transformations/${id}`, {
+    method: 'PATCH',
+    headers,
+    body: JSON.stringify(trackingData),
+  });
+  const data = await response.json();
+  if (!response.ok || !data.success) {
+    throw new Error(data.error || 'Failed to update tracking info');
+  }
+  return data.data;
+}
+
+export async function getEvents(days = 14) {
+  const headers = await getAuthHeaders();
+  const response = await fetch(`${FUNCTIONS_URL}/events?days=${days}`, {
+    method: 'GET',
+    headers,
+  });
+  const data = await response.json();
+  if (!response.ok || !data.success) {
+    throw new Error(data.error || 'Failed to fetch events');
+  }
+  return data.data;
+}
+
+export async function createEvent(eventData) {
+  const headers = await getAuthHeaders();
+  const response = await fetch(`${FUNCTIONS_URL}/events`, {
+    method: 'POST',
+    headers,
+    body: JSON.stringify(eventData),
+  });
+  const data = await response.json();
+  if (!response.ok || !data.success) {
+    throw new Error(data.error || 'Failed to create event');
+  }
+  return data.data;
+}
+
+export async function updateEvent(id, eventData) {
+  const headers = await getAuthHeaders();
+  const response = await fetch(`${FUNCTIONS_URL}/events/${id}`, {
+    method: 'PATCH',
+    headers,
+    body: JSON.stringify(eventData),
+  });
+  const data = await response.json();
+  if (!response.ok || !data.success) {
+    throw new Error(data.error || 'Failed to update event');
+  }
+  return data.data;
+}
+
+export async function deleteEvent(id) {
+  const headers = await getAuthHeaders();
+  const response = await fetch(`${FUNCTIONS_URL}/events/${id}`, {
+    method: 'DELETE',
+    headers,
+  });
+  const data = await response.json();
+  if (!response.ok || !data.success) {
+    throw new Error(data.error || 'Failed to delete event');
+  }
+  return data;
+}
+
+export async function getTransformationEvents(transformationId) {
+  const { data, error } = await supabase
+    .from('application_events')
+    .select('*')
+    .eq('transformation_id', transformationId)
+    .order('created_at', { ascending: false });
+
+  if (error) throw error;
+  return data;
 }
 

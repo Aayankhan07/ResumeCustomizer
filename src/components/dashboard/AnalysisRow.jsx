@@ -11,6 +11,7 @@ const STATUS_STYLES = {
   Interviewing: 'bg-[var(--warning-subtle)] text-[var(--warning-fg)] border-[var(--warning-fg)]/10',
   Offer:        'bg-[var(--success-subtle)] text-[var(--success-fg)] border-[var(--success-fg)]/10',
   Rejected:     'bg-[var(--danger-subtle)] text-[var(--danger-fg)] border-[var(--danger-fg)]/10',
+  Withdrawn:    'bg-[var(--bg-subtle)] text-[var(--text-muted)] border-[var(--border-default)] opacity-75 line-through',
 };
 
 export default function AnalysisRow({ item, onDelete, onUpdateStatus }) {
@@ -18,6 +19,36 @@ export default function AnalysisRow({ item, onDelete, onUpdateStatus }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
   const menuRef = useRef(null);
+  
+  const upcomingInterviews = (item.application_events || [])
+    .filter(e => e.event_type === 'interview' && !e.is_done && e.event_date)
+    .sort((a, b) => new Date(a.event_date).getTime() - new Date(b.event_date).getTime());
+  const nextInterview = upcomingInterviews[0];
+
+  const hasEvents = (item.application_events || []).length > 0;
+  const appliedDaysAgo = item.applied_at 
+    ? Math.floor((Date.now() - new Date(item.applied_at).getTime()) / (1000 * 60 * 60 * 24)) 
+    : 0;
+  const showFollowUpNudge = item.status === 'Applied' && appliedDaysAgo >= 7 && !hasEvents;
+
+  const getDeadlineBadgeStyle = () => {
+    if (!item.application_deadline) return '';
+    const now = new Date();
+    now.setHours(0,0,0,0);
+    const deadline = new Date(item.application_deadline);
+    deadline.setHours(0,0,0,0);
+    const diffDays = Math.ceil((deadline.getTime() - now.getTime()) / (1000 * 3600 * 24));
+    
+    if (diffDays < 2) return 'bg-rose-50 text-rose-600 border-rose-100 dark:bg-rose-500/10 dark:text-rose-400 dark:border-rose-500/20';
+    if (diffDays < 7) return 'bg-amber-50 text-amber-600 border-amber-100 dark:bg-amber-500/10 dark:text-amber-400 dark:border-amber-500/20';
+    return 'bg-[var(--bg-subtle)] text-[var(--text-secondary)] border-[var(--border-default)]';
+  };
+
+  const formatBadgeDate = (dateStr) => {
+    if (!dateStr) return '';
+    const date = new Date(dateStr);
+    return date.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+  };
 
   // Close menu on click outside
   useEffect(() => {
@@ -107,6 +138,11 @@ export default function AnalysisRow({ item, onDelete, onUpdateStatus }) {
           <span className="text-[var(--text-muted)] select-none">&bull;</span>
           <span className="font-mono text-[11px] text-[var(--text-muted)]">{timeAgo(item.created_at)}</span>
         </div>
+        {showFollowUpNudge && (
+          <div className="mt-1.5 text-[10px] font-semibold text-amber-600 dark:text-amber-400 flex items-center gap-1 bg-amber-500/[0.03] border border-amber-500/10 px-2 py-0.5 rounded w-max animate-pulse">
+            ⚠️ Applied over a week ago — consider following up!
+          </div>
+        )}
       </div>
 
       {/* Right Column: Score, Status & Actions */}
@@ -118,6 +154,20 @@ export default function AnalysisRow({ item, onDelete, onUpdateStatus }) {
           title={`Match Score: ${item.match_score}%`}
         >
           {item.match_score}
+        </div>
+
+        {/* Badges */}
+        <div className="hidden md:flex items-center gap-2">
+          {nextInterview && (
+            <span className="px-2 py-0.5 border text-[10px] font-semibold rounded-[var(--radius-xs)] bg-indigo-50 text-indigo-600 border-indigo-100 dark:bg-indigo-500/10 dark:text-indigo-400 dark:border-indigo-500/20 flex items-center gap-1 shrink-0">
+              🎤 {formatBadgeDate(nextInterview.event_date)}
+            </span>
+          )}
+          {item.application_deadline && !['Offer', 'Rejected', 'Withdrawn'].includes(item.status || '') && (
+            <span className={`px-2 py-0.5 border text-[10px] font-semibold rounded-[var(--radius-xs)] flex items-center gap-1 shrink-0 ${getDeadlineBadgeStyle()}`}>
+              📅 Due {formatBadgeDate(item.application_deadline)}
+            </span>
+          )}
         </div>
 
         {/* Status Dropdown */}
@@ -135,6 +185,7 @@ export default function AnalysisRow({ item, onDelete, onUpdateStatus }) {
             <option value="Interviewing">Interviewing</option>
             <option value="Offer">Offer</option>
             <option value="Rejected">Rejected</option>
+            <option value="Withdrawn">Withdrawn</option>
           </select>
         </div>
 

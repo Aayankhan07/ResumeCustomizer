@@ -5,7 +5,8 @@ import {
   Target, 
   Diff, 
   Mic, 
-  Mail
+  Mail,
+  ClipboardList
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { generateResumePDF } from '../../lib/pdfGenerator';
@@ -26,14 +27,30 @@ import KeywordsTab from './tabs/KeywordsTab';
 import RewritesTab from './tabs/RewritesTab';
 import InterviewTab from './tabs/InterviewTab';
 import CoverLetterTab from './tabs/CoverLetterTab';
+import TrackingTab from './tabs/TrackingTab';
 
 export default function TransformOutput({ result: initialResult, plainText, originalText, jobDescriptionText, onReset, transformationId }) {
   const [result, setResult] = useState(initialResult);
+  const [transformation, setTransformation] = useState(null);
 
   // Sync state if initialResult prop changes
   useEffect(() => {
     setResult(initialResult);
   }, [initialResult]);
+
+  useEffect(() => {
+    async function fetchTrans() {
+      if (!transformationId) return;
+      try {
+        const { getTransformation } = await import('../../lib/api');
+        const data = await getTransformation(transformationId);
+        setTransformation(data);
+      } catch (err) {
+        console.error('Error fetching transformation:', err);
+      }
+    }
+    fetchTrans();
+  }, [transformationId]);
 
   // Read ATS metrics directly from the stateful result payload
   const localScore = result.meta?.match_score ?? 0;
@@ -47,7 +64,7 @@ export default function TransformOutput({ result: initialResult, plainText, orig
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const tab = params.get('tab');
-    const validTabs = ['overview', 'resume', 'keywords', 'rewrites', 'interview', 'cover-letter'];
+    const validTabs = ['overview', 'tracking', 'resume', 'keywords', 'rewrites', 'interview', 'cover-letter'];
     if (tab && validTabs.includes(tab)) {
       setActiveTabState(tab);
     }
@@ -191,10 +208,10 @@ export default function TransformOutput({ result: initialResult, plainText, orig
         return;
       }
 
-      // Tab switcher: 1-6 keys
-      if (e.key >= '1' && e.key <= '6') {
+      // Tab switcher: 1-7 keys
+      if (e.key >= '1' && e.key <= '7') {
         e.preventDefault();
-        const tabMapping = ['overview', 'resume', 'keywords', 'rewrites', 'interview', 'cover-letter'];
+        const tabMapping = ['overview', 'tracking', 'resume', 'keywords', 'rewrites', 'interview', 'cover-letter'];
         const selectedTab = tabMapping[parseInt(e.key) - 1];
         if (selectedTab) {
           setActiveTab(selectedTab);
@@ -222,9 +239,10 @@ export default function TransformOutput({ result: initialResult, plainText, orig
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [activeTab, result]);
 
-  // Strict 6 tabs menu items list
+  // Strict 7 tabs menu items list
   const menuItems = [
     { id: 'overview', label: 'Overview', icon: LayoutDashboard },
+    { id: 'tracking', label: 'Tracking', icon: ClipboardList },
     { id: 'resume', label: 'Resume', icon: FileText },
     { id: 'keywords', label: 'Keywords', icon: Target },
     { id: 'rewrites', label: 'Rewrites', icon: Diff },
@@ -272,6 +290,18 @@ export default function TransformOutput({ result: initialResult, plainText, orig
                   roadmapData={roadmapData}
                   atsQuality={result.ats_quality}
                 />
+              </ErrorBoundary>
+            )}
+
+            {activeTab === 'tracking' && (
+              <ErrorBoundary>
+                {transformation ? (
+                  <TrackingTab transformation={transformation} />
+                ) : (
+                  <div className="flex justify-center items-center py-24">
+                    <div className="w-8 h-8 border-2 border-[var(--accent)] border-t-transparent rounded-full animate-spin" />
+                  </div>
+                )}
               </ErrorBoundary>
             )}
 
