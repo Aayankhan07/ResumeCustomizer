@@ -9,6 +9,10 @@ export interface TransformationItem {
   created_at: string;
   label: string | null;
   status: string | null;
+  application_deadline?: string | null;
+  applied_at?: string | null;
+  priority?: string | null;
+  application_events?: any[] | null;
 }
 
 export interface UserStats {
