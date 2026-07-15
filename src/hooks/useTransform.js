@@ -15,12 +15,12 @@ export function useTransform() {
     rateLimit: null,
   });
 
-  const transform = useCallback(async ({ resumeText, jobDescriptionText }) => {
+  const transform = useCallback(async ({ resumeText, jobDescriptionText, optimizationMode }) => {
     setState(s => ({ ...s, status: 'loading', error: null }));
 
     const attemptTransform = async (attempt = 1) => {
       try {
-        const data = await transformResume({ resumeText, jobDescriptionText });
+        const data = await transformResume({ resumeText, jobDescriptionText, optimizationMode });
 
         setState({
           status: 'success',
