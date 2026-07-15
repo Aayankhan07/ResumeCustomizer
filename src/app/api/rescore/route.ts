@@ -34,9 +34,13 @@ export async function POST(req: Request) {
 
     const outputJson = trans.output_json as Record<string, any>;
     const jobDescriptionText = outputJson.original_job_description || '';
+    const optimizationMode = outputJson.meta?.optimization_mode || 'description';
 
     // 4. Compute weighted match score
-    const scoreResult = computeMatchScore(jobDescriptionText, outputJson, weights);
+    const scoreResult = computeMatchScore(jobDescriptionText, outputJson, {
+      ...weights,
+      optimizationMode: optimizationMode as 'description' | 'title'
+    });
 
     // 5. Update output_json meta scoring fields for future retrievals
     if (outputJson.meta) {
