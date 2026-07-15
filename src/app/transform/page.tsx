@@ -18,6 +18,7 @@ export default function Transform() {
   const [step, setStep] = useState(1);
   const [resumeText, setResumeText] = useState('');
   const [jobDescriptionText, setJobDescriptionText] = useState('');
+  const [optimizationMode, setOptimizationMode] = useState('description');
   const { status, result, plainText, transformationId, error, errorDetails, rateLimit, transform, reset } = useTransform();
   const [showLoading, setShowLoading] = useState(false);
   const [localStatus, setLocalStatus] = useState('idle');
@@ -95,9 +96,10 @@ export default function Transform() {
   };
 
   const handleTransform = () => {
-    if (resumeText.trim().length >= 50 && jobDescriptionText.trim().length >= 50) {
-      trackEvent('analysis_started');
-      transform({ resumeText, jobDescriptionText });
+    const minLen = optimizationMode === 'title' ? 3 : 50;
+    if (resumeText.trim().length >= 50 && jobDescriptionText.trim().length >= minLen) {
+      trackEvent('analysis_started', { optimization_mode: optimizationMode });
+      transform({ resumeText, jobDescriptionText, optimizationMode });
     }
   };
 
@@ -107,10 +109,13 @@ export default function Transform() {
     setStep(1);
     setResumeText('');
     setJobDescriptionText('');
+    setOptimizationMode('description');
   };
 
   const isStep1Valid = resumeText.trim().length >= 200 && resumeText.trim().length <= 15000;
-  const isStep2Valid = jobDescriptionText.trim().length >= 200 && jobDescriptionText.trim().length <= 10000;
+  const isStep2Valid = optimizationMode === 'title'
+    ? jobDescriptionText.trim().length >= 3 && jobDescriptionText.trim().length <= 150
+    : jobDescriptionText.trim().length >= 200 && jobDescriptionText.trim().length <= 10000;
 
   return (
     <div className="min-h-screen bg-[var(--bg-base)] text-[var(--text-primary)] flex flex-col font-sans transition-colors duration-300">
@@ -198,7 +203,15 @@ export default function Transform() {
                 </div>
               ) : (
                 <div className="flex flex-col gap-6 animate-fade-in">
-                  <JobInput value={jobDescriptionText} onChange={setJobDescriptionText} />
+                  <JobInput 
+                    value={jobDescriptionText} 
+                    onChange={setJobDescriptionText} 
+                    optimizationMode={optimizationMode}
+                    onModeChange={(mode) => {
+                      setOptimizationMode(mode);
+                      setJobDescriptionText('');
+                    }}
+                  />
                   <div className="flex justify-between mt-2">
                     <Button 
                       variant="ghost"
