@@ -14,12 +14,12 @@ async function getAuthHeaders() {
   };
 }
 
-export async function transformResume({ resumeText, jobDescriptionText }) {
+export async function transformResume({ resumeText, jobDescriptionText, optimizationMode = 'description' }) {
   const headers = await getAuthHeaders();
 
-  // Compute idempotency key: SHA-256 hash of resume + job description
+  // Compute idempotency key: SHA-256 hash of resume + job description + optimizationMode
   const encoder = new TextEncoder();
-  const dataBytes = encoder.encode((resumeText || '') + (jobDescriptionText || ''));
+  const dataBytes = encoder.encode((resumeText || '') + (jobDescriptionText || '') + (optimizationMode || ''));
   const hashBuffer = await crypto.subtle.digest('SHA-256', dataBytes);
   const hashArray = Array.from(new Uint8Array(hashBuffer));
   const idempotencyKey = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
@@ -32,6 +32,7 @@ export async function transformResume({ resumeText, jobDescriptionText }) {
     body: JSON.stringify({
       resume_text: resumeText,
       job_description_text: jobDescriptionText,
+      optimization_mode: optimizationMode,
     }),
   });
 
