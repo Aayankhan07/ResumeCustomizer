@@ -86,17 +86,27 @@ const STOP_WORDS = new Set([
   'until', 'up', 'upon', 'versus', 'via', 'with', 'within', 'without'
 ]);
 
+const BASIC_STOP_WORDS = new Set([
+  'a', 'an', 'the', 'and', 'or', 'but', 'nor', 'so', 'yet', 'if', 'because', 'as', 'until', 'while', 'of', 'at', 'by', 'for', 'with', 'about', 'against', 'between', 'into', 'through', 'during', 'before', 'after', 'above', 'below', 'to', 'from', 'up', 'down', 'in', 'out', 'on', 'off', 'over', 'under', 'again', 'further', 'then', 'once',
+  'i', 'me', 'my', 'myself', 'we', 'our', 'ours', 'ourselves', 'you', 'your', 'yours', 'yourself', 'yourselves', 'he', 'him', 'his', 'himself', 'she', 'her', 'hers', 'herself', 'it', 'its', 'itself', 'they', 'them', 'their', 'theirs', 'themselves', 'what', 'which', 'who', 'whom', 'this', 'that', 'these', 'those', 'am', 'is', 'are', 'was', 'were', 'be', 'been', 'being', 'have', 'has', 'had', 'having', 'do', 'does', 'did', 'doing'
+]);
+
 export function computeMatchScore(
   jobDescText: string,
   outputJson: Record<string, unknown>,
-  weights?: { techDepth?: number; conciseness?: number; industryFocus?: number }
+  weights?: { techDepth?: number; conciseness?: number; industryFocus?: number; optimizationMode?: 'description' | 'title' }
 ): { score: number; matched: string[]; total: number; missing: string[] } {
+  const isTitleMode = weights?.optimizationMode === 'title';
+  const isShortText = jobDescText.split(/\s+/).filter(Boolean).length < 15;
+  const useBasicStopWords = isTitleMode || isShortText;
+  const activeStopWords = useBasicStopWords ? BASIC_STOP_WORDS : STOP_WORDS;
+
   // Extract meaningful words from JD (minimum 2 characters, exclude numbers and stop words)
   const words = jobDescText
     .toLowerCase()
     .replace(/[^a-z0-9\s\-]/g, ' ')
     .split(/\s+/)
-    .filter(w => w.length >= 2 && !STOP_WORDS.has(w) && !/^\d+$/.test(w));
+    .filter(w => w.length >= 2 && !activeStopWords.has(w) && !/^\d+$/.test(w));
 
   const jdKeywords = [...new Set(words)];
 
