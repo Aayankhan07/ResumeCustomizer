@@ -210,12 +210,25 @@ const MODELS = [
 
 export async function callGroqWithFallback(
   resumeText: string,
-  jobDescText: string
+  jobDescText: string,
+  optimizationMode: 'description' | 'title' = 'description'
 ): Promise<{ data: TransformResult; model_used: string }> {
   const apiKey = process.env.GROQ_API_KEY || '';
   if (!apiKey) throw new Error('GROQ_API_KEY not configured');
 
-  const prompt = `USER RESUME:
+  const prompt = optimizationMode === 'title'
+    ? `USER RESUME:
+${resumeText}
+
+---
+
+TARGET JOB TITLE:
+${jobDescText}
+
+---
+
+Since you only have a job title and not a full job description, infer standard industry requirements, skills, experience highlights, and keywords for a "${jobDescText}" role and optimize the resume accordingly. Transform the resume according to these inferred requirements. Output only valid JSON.`
+    : `USER RESUME:
 ${resumeText}
 
 ---
@@ -279,8 +292,9 @@ Transform the resume according to the job description. Output only valid JSON.`;
 
 export async function callGroq(
   resumeText: string,
-  jobDescText: string
+  jobDescText: string,
+  optimizationMode: 'description' | 'title' = 'description'
 ): Promise<TransformResult> {
-  const res = await callGroqWithFallback(resumeText, jobDescText);
+  const res = await callGroqWithFallback(resumeText, jobDescText, optimizationMode);
   return res.data;
 }
