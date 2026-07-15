@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { resumeToPlainText } from '../../../supabase/functions/_shared/resumeToText.ts';
+import { resumeToPlainText } from '../../lib/resumeToText.ts';
 
 describe('resumeToPlainText', () => {
   it('concatenates all sections into formatted plain text', () => {
