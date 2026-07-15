@@ -74,6 +74,7 @@ export const TransformOutputSchema = z.object({
     keywords_matched: z.array(z.string()).optional().nullable(),
     keywords_total: z.number().optional().nullable(),
     keywords_missing: z.array(z.string()).optional().nullable(),
+    optimization_mode: z.string().optional().nullable(),
   }).optional(),
 });
 
