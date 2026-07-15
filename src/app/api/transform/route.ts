@@ -23,7 +23,7 @@ export async function POST(req: Request) {
 
     // 2. Parse body
     const body = await req.json();
-    const { resume_text, job_description_text } = body;
+    const { resume_text, job_description_text, optimization_mode = 'description' } = body;
 
     // 3. Input validation
     if (!resume_text || typeof resume_text !== 'string') {
@@ -41,8 +41,13 @@ export async function POST(req: Request) {
         actual: resume_text.length
       }, { status: 400 });
     }
-    if (!job_description_text || job_description_text.trim().length < MIN_CHARS) {
-      return NextResponse.json({ success: false, error: 'INVALID_JD', field: 'job_description_text' }, { status: 400 });
+    const minJdChars = optimization_mode === 'title' ? 3 : MIN_CHARS;
+    if (!job_description_text || job_description_text.trim().length < minJdChars) {
+      return NextResponse.json({ 
+        success: false, 
+        error: optimization_mode === 'title' ? 'INVALID_JOB_TITLE' : 'INVALID_JD', 
+        field: 'job_description_text' 
+      }, { status: 400 });
     }
 
     // 4. Rate limit check
@@ -91,9 +96,11 @@ export async function POST(req: Request) {
     let transformResult;
     let modelUsed = 'llama-3.3-70b-versatile';
     try {
+      const maxJdChars = optimization_mode === 'title' ? 300 : MAX_JD_CHARS;
       const groqRes = await callGroqWithFallback(
         resume_text.substring(0, MAX_RESUME_CHARS),
-        job_description_text.substring(0, MAX_JD_CHARS)
+        job_description_text.substring(0, maxJdChars),
+        optimization_mode as 'description' | 'title'
       );
       transformResult = groqRes.data;
       modelUsed = groqRes.model_used;
@@ -122,7 +129,9 @@ export async function POST(req: Request) {
     transformResult = validationResult.data;
 
     // 6. Compute match score
-    const scoreResult = computeMatchScore(job_description_text, transformResult as any);
+    const scoreResult = computeMatchScore(job_description_text, transformResult as any, {
+      optimizationMode: optimization_mode as 'description' | 'title'
+    });
     
     // Override Groq's self-reported score with our computed one for consistency
     transformResult.meta = transformResult.meta || {};
@@ -130,6 +139,7 @@ export async function POST(req: Request) {
     transformResult.meta.keywords_matched = scoreResult.matched;
     transformResult.meta.keywords_total = scoreResult.total;
     transformResult.meta.keywords_missing = scoreResult.missing;
+    transformResult.meta.optimization_mode = optimization_mode;
 
     // Store original texts inside transformResult for history retrieval
     (transformResult as any).original_resume_text = resume_text;
