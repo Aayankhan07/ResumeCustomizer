@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { FileText } from 'lucide-react';
 import StyleControlPanel from '../workspace/StyleControlPanel';
 import ResumePreview from '../ResumePreview';
 import ResumeCompare from '../ResumeCompare';

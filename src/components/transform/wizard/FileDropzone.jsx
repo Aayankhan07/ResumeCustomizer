@@ -6,7 +6,6 @@ export default function FileDropzone({ onTextExtracted, label = 'Drop your file 
   const [status, setStatus] = useState('idle'); // idle | dragging | parsing | success | error
   const [fileNameInfo, setFileNameInfo] = useState('');
   const [message, setMessage] = useState('');
-  const [wordCount, setWordCount] = useState(0);
   const inputRef = useRef(null);
 
   const handleFile = useCallback(async (file) => {
@@ -37,8 +36,6 @@ export default function FileDropzone({ onTextExtracted, label = 'Drop your file 
         return;
       }
 
-      const words = text.trim().split(/\s+/).length;
-      setWordCount(words);
       const kb = Math.round(file.size / 1024);
       setFileNameInfo(`${file.name}  ·  ${kb} KB`);
       setStatus('success');
@@ -70,7 +67,7 @@ export default function FileDropzone({ onTextExtracted, label = 'Drop your file 
 
   const Icon = {
     idle:    <Upload size={18} className="text-slate-500 group-hover:text-slate-800 transition-colors stroke-[2.5]" />,
-    dragging:<Upload size={18} className="text-slate-900 animate-bounce stroke-[2.5]" />,
+    dragging:<Upload size={18} className="text-slate-900 animate-pulse stroke-[2.5]" />,
     parsing: <Loader2 size={18} className="text-slate-900 animate-spin stroke-[2.5]" />,
     success: <CheckCircle size={18} className="text-emerald-600 stroke-[2.5]" />,
     error:   <XCircle size={18} className="text-red-650 stroke-[2.5]" />,

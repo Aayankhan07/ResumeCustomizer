@@ -104,7 +104,7 @@ export function computeMatchScore(
   // Extract meaningful words from JD (minimum 2 characters, exclude numbers and stop words)
   const words = jobDescText
     .toLowerCase()
-    .replace(/[^a-z0-9\s\-]/g, ' ')
+    .replace(/[^a-z0-9\s-]/g, ' ')
     .split(/\s+/)
     .filter(w => w.length >= 2 && !activeStopWords.has(w) && !/^\d+$/.test(w));
 

@@ -1,5 +1,6 @@
 import React from 'react';
 import { Sparkles, AlertTriangle } from 'lucide-react';
+import { getScoreToken } from '../../../lib/scoring';
 
 export default function OverviewTab({ 
   currentScore, 
@@ -29,13 +30,6 @@ export default function OverviewTab({
     { task: 'Incorporate missing technical keywords from the job description', impact: 'MEDIUM IMPACT', points: 3 }
   ];
 
-  // Helper to determine score color variable
-  const getScoreColor = (score) => {
-    if (score >= 70) return 'var(--success)';
-    if (score >= 40) return 'var(--warning)';
-    return 'var(--danger)';
-  };
-
   // Helper for badge colors
   const getBadgeStyle = (val) => {
     const successValues = ['optimal', 'standard', 'zero flags', 'clean'];
@@ -52,7 +46,7 @@ export default function OverviewTab({
     return 'bg-[var(--danger-subtle)] text-[var(--danger-fg)] border-[var(--danger-fg)]/10';
   };
 
-  const scoreColor = getScoreColor(currentScore);
+  const scoreColor = getScoreToken(currentScore);
 
   return (
     <div className="animate-fade-in flex flex-col gap-6 text-left font-sans text-[var(--text-primary)] bg-transparent">

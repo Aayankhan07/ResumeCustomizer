@@ -1,7 +1,7 @@
 export const ERROR_MESSAGES = {
   RATE_LIMITED: {
     title: "Hourly limit reached",
-    description: (retryAfter) => `You've used all your transformations for this hour. Please wait for the cooldown reset.`,
+    description: () => `You've used all your transformations for this hour. Please wait for the cooldown reset.`,
     action: "Wait for reset or try again later"
   },
   CONTENT_TOO_LONG: {

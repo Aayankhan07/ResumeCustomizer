@@ -24,7 +24,6 @@ export function generateResumePDF(data, templateId = 'classic', pageBudget = 'st
   const gapSection = isFit ? 8 : 15;     // gap after sections
   const gapBullet = isFit ? 1 : 2.5;     // gap between bullet points
   const gapItem = isFit ? 4 : 10;        // gap between experiences/projects
-  const gapTitle = isFit ? 10 : 16;      // gap after main header name
 
   // Helper to set font and size quickly
   const setFont = (style, size) => doc.setFont(fontMain, style).setFontSize(size);
@@ -187,7 +186,7 @@ export function generateResumePDF(data, templateId = 'classic', pageBudget = 'st
   // ── EXPERIENCE SECTION
   if (data.experience?.length) {
     sectionHead('Experience');
-    data.experience.forEach((exp, idx) => {
+    data.experience.forEach((exp) => {
       spaceCheck(isFit ? 45 : 60); // check space for heading + at least 1 bullet
       
       // Job Title and Date
@@ -238,7 +237,7 @@ export function generateResumePDF(data, templateId = 'classic', pageBudget = 'st
   // ── EDUCATION SECTION
   if (data.education?.length) {
     sectionHead('Education');
-    data.education.forEach((edu, idx) => {
+    data.education.forEach((edu) => {
       spaceCheck(isFit ? 35 : 45);
 
       // Degree/Field and Dates
@@ -255,30 +254,8 @@ export function generateResumePDF(data, templateId = 'classic', pageBudget = 'st
       // Institution and Location
       setFont('italic', isFit ? 9 : 10);
       setColor(71, 85, 105);
-      const instLine = [edu.institution, edu.location].filter(Boolean).join(', ');
-      doc.text(instLine, MARGIN, y);
+      doc.text(edu.institution, MARGIN, y);
       y += isFit ? 10 : 12;
-
-      if (edu.gpa) {
-        setFont('normal', isFit ? 9 : 10);
-        setColor(71, 85, 105);
-        doc.text(`GPA: ${edu.gpa}`, MARGIN, y);
-        y += isFit ? 10 : 12;
-      }
-
-      edu.highlights?.forEach(h => {
-        let bulletMarker = '•  ';
-        if (templateId === 'modern') bulletMarker = '–  ';
-        if (templateId === 'tech') bulletMarker = '>  ';
-        if (templateId === 'executive') bulletMarker = '▪  ';
-
-        const lines = doc.splitTextToSize(`${bulletMarker}${h}`, CW - 12);
-        spaceCheck(lines.length * hBullet + gapBullet);
-        setFont('normal', isFit ? 9 : 10);
-        setColor(30, 41, 59);
-        doc.text(lines, MARGIN + 8, y);
-        y += lines.length * hBullet + gapBullet;
-      });
 
       y += gapItem;
     });
@@ -288,21 +265,13 @@ export function generateResumePDF(data, templateId = 'classic', pageBudget = 'st
   // ── PROJECTS SECTION
   if (data.projects?.length) {
     sectionHead('Projects');
-    data.projects.forEach((proj, idx) => {
+    data.projects.forEach((proj) => {
       spaceCheck(isFit ? 35 : 45);
 
-      // Project Name/Title and Link
-      const projectTitle = proj.title || proj.name || 'Project';
+      // Project title
       setFont('bold', isFit ? 9.5 : 10.5);
       setColor(15, 23, 42);
-      doc.text(projectTitle, MARGIN, y);
-      
-      if (proj.link) {
-        setFont('normal', isFit ? 8 : 9);
-        setColor(15, 23, 42); // slate link
-        const cleanLink = proj.link.replace(/^(https?:\/\/)?(www\.)?/, '');
-        doc.text(cleanLink, PAGE_W - MARGIN, y, { align: 'right' });
-      }
+      doc.text(proj.title || 'Project', MARGIN, y);
 
       y += isFit ? 11 : 13;
 
@@ -331,41 +300,13 @@ export function generateResumePDF(data, templateId = 'classic', pageBudget = 'st
         y += lines.length * hBullet + gapBullet;
       });
 
-      // Tech Stack
-      if (proj.tech_stack?.length) {
-        setFont('italic', isFit ? 8.5 : 9.5);
-        setColor(100, 116, 139);
-        doc.text(`Tech: ${proj.tech_stack.join(', ')}`, MARGIN, y);
-        y += isFit ? 10 : 12;
-      }
-
       y += gapItem;
     });
     y += gapSection - gapItem;
   }
 
-  // ── CERTIFICATIONS SECTION
-  if (data.certifications?.length) {
-    sectionHead('Certifications');
-    data.certifications.forEach((cert, idx) => {
-      spaceCheck(isFit ? 12 : 16);
-
-      let bulletMarker = '•  ';
-      if (templateId === 'modern') bulletMarker = '–  ';
-      if (templateId === 'tech') bulletMarker = '>  ';
-      if (templateId === 'executive') bulletMarker = '▪  ';
-
-      setFont('normal', isFit ? 9 : 10);
-      setColor(30, 41, 59);
-      const certText = `${cert.name} — ${cert.issuer}${cert.year ? ' (' + cert.year + ')' : ''}`;
-      const lines = doc.splitTextToSize(`${bulletMarker}${certText}`, CW - 12);
-      doc.text(lines, MARGIN + 8, y);
-      y += lines.length * hBullet + gapBullet;
-    });
-  }
-
   // ── SAVE OPERATIONS
-  const safeName = (data.contact.name || 'Resume').replace(/\s+/g, '_');
+  const safeName = (data.contact?.name || 'Resume').replace(/\s+/g, '_');
   const safeTitle = (data.meta?.detected_job_title || 'ATS').replace(/[^a-zA-Z0-9_]/g, '_');
   doc.save(`${safeName}_${safeTitle}_Resume.pdf`);
 }

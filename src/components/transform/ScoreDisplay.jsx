@@ -1,15 +1,10 @@
 import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-
-function getScoreColor(score) {
-  if (score >= 75) return { fill: '#16A34A', label: 'Strong Match', bg: '#F0FDF4', border: '#DCFCE7' };
-  if (score >= 50) return { fill: '#D97706', label: 'Good Match',   bg: '#FFFBEB', border: '#FEF3C7' };
-  return               { fill: '#DC2626', label: 'Partial Match', bg: '#FFF5F5', border: '#FEE2E2' };
-}
+import { getScoreHex } from '../../lib/scoring';
 
 export default function ScoreDisplay({ score, keywordsMatched = [], keywordsTotal = 0 }) {
   const [displayScore, setDisplayScore] = useState(0);
-  const { fill, label } = getScoreColor(score);
+  const { fill, label } = getScoreHex(score);
   const [showAll, setShowAll] = useState(false);
   const MAX_SHOWN = 8;
 

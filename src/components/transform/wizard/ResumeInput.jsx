@@ -5,8 +5,9 @@ export default function ResumeInput({ value, onChange }) {
   const MIN_CHARS = 200;
   const MAX_CHARS = 15000;
 
+  // The textarea enforces MAX_CHARS via maxLength, so an above-max state is
+  // unreachable here.
   const isBelowMin = value.length > 0 && value.length < MIN_CHARS;
-  const isAboveMax = value.length > MAX_CHARS;
 
   return (
     <div className="flex flex-col gap-5 text-left font-sans">

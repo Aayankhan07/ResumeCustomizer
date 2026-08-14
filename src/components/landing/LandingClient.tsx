@@ -53,7 +53,8 @@ export default function LandingClient({ initialStats }) {
   const { user } = useAuth();
   const [globalStats] = useState(initialStats || { total_transformations: 12400, total_users: 3800 });
   const [exampleIdx, setExampleIdx] = useState(0);
-  const [isTransformed, setIsTransformed] = useState(false);
+  // The value is unused; the setter drives the example-cycling toggle below.
+  const [_isTransformed, setIsTransformed] = useState(false);
 
   // Cycle animated before/after preview card
   useEffect(() => {

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Calendar, Link as LinkIcon, MapPin, User, Mail, DollarSign, Tag, Clock, Trash2, CheckCircle2, MessageSquare, Plus, Award } from 'lucide-react';
+import { Calendar, User, Clock, Trash2, CheckCircle2, MessageSquare, Plus, Award } from 'lucide-react';
 import { toast } from 'sonner';
 import {
   updateTransformationTracking,
@@ -23,11 +23,6 @@ const STATUS_STYLES = {
   Withdrawn:    'bg-[var(--bg-subtle)] text-[var(--text-muted)] border-[var(--border-default)] line-through opacity-75',
 };
 
-const PRIORITY_STYLES = {
-  High: 'bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-500/10 dark:text-rose-400 dark:border-rose-500/25',
-  Medium: 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-500/10 dark:text-amber-400 dark:border-amber-500/25',
-  Low: 'bg-slate-50 text-slate-700 border-slate-200 dark:bg-slate-500/10 dark:text-slate-400 dark:border-slate-500/25',
-};
 
 export default function TrackingTab({ transformation }) {
   const [status, setStatus] = useState(transformation.status || 'Saved');

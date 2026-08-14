@@ -202,10 +202,12 @@ export interface TransformResult {
   };
 }
 
+// Groq production models. mixtral-8x7b-32768 was removed after Groq
+// decommissioned it — it was a guaranteed-wasted retry on every failure path.
 const MODELS = [
   'llama-3.3-70b-versatile',
   'llama-3.1-8b-instant',
-  'mixtral-8x7b-32768',
+  'openai/gpt-oss-120b',
 ];
 
 export async function callGroqWithFallback(
@@ -240,7 +242,11 @@ ${jobDescText}
 
 Transform the resume according to the job description. Output only valid JSON.`;
 
+  let lastError: Error | null = null;
+
   for (const model of MODELS) {
+    let rawContent: string;
+
     try {
       console.log(`Attempting Groq call with model: ${model}`);
       
@@ -264,6 +270,7 @@ Transform the resume according to the job description. Output only valid JSON.`;
 
       if (response.status === 429) {
         console.warn(`Groq model ${model} rate limited (429). Trying next fallback...`);
+        lastError = new Error('GROQ_ERROR:429 All models rate limited');
         continue;
       }
 
@@ -276,25 +283,26 @@ Transform the resume according to the job description. Output only valid JSON.`;
       const rawText = data.choices?.[0]?.message?.content;
       if (!rawText) throw new Error('GROQ_EMPTY_RESPONSE');
 
-      const cleaned = rawText.trim();
-      const parsed = JSON.parse(cleaned) as TransformResult;
-
-      return { data: parsed, model_used: model };
+      rawContent = rawText.trim();
     } catch (err: any) {
       console.error(`Error with model ${model}:`, err.message);
-      if (model === MODELS[MODELS.length - 1]) {
-        throw err;
-      }
+      lastError = err;
+      continue;
+    }
+
+    // Parsing sits outside the retry block on purpose. A malformed body is not
+    // a transport failure, so retrying another model wastes a call; and when
+    // the parse threw inside the loop the raw SyntaxError propagated, whose
+    // message never contains INVALID_JSON — so the check in
+    // api/transform/route.ts never matched and users saw a generic 500.
+    try {
+      return { data: JSON.parse(rawContent) as TransformResult, model_used: model };
+    } catch {
+      console.error(`Model ${model} returned unparseable JSON`);
+      throw new Error('INVALID_JSON');
     }
   }
-  throw new Error('All Groq models exhausted');
-}
 
-export async function callGroq(
-  resumeText: string,
-  jobDescText: string,
-  optimizationMode: 'description' | 'title' = 'description'
-): Promise<TransformResult> {
-  const res = await callGroqWithFallback(resumeText, jobDescText, optimizationMode);
-  return res.data;
+  // Reached when every model failed at the transport level.
+  throw lastError ?? new Error('All Groq models exhausted');
 }

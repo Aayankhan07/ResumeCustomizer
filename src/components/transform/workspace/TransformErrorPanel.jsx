@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Clock, WifiOff, AlertOctagon, ShieldAlert, RefreshCw, LogIn, FileText, AlertTriangle } from 'lucide-react';
+import { Clock, WifiOff, AlertOctagon, ShieldAlert, FileText, AlertTriangle } from 'lucide-react';
 import GlassPanel from '../../ui/GlassPanel';
 import Button from '../../ui/Button';
 import { ERROR_MESSAGES } from '../../../utils/errors';

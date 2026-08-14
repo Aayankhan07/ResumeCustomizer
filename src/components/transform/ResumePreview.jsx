@@ -1,7 +1,7 @@
 export default function ResumePreview({ data, templateId = 'classic', pageBudget = 'standard' }) {
   if (!data) return null;
 
-  const { contact, summary, skills, experience, education, projects, certifications } = data;
+  const { contact, summary, skills, experience, education, projects } = data;
   const isCentered = templateId === 'classic' || templateId === 'executive';
 
   return (
@@ -88,16 +88,8 @@ export default function ResumePreview({ data, templateId = 'classic', pageBudget
                 <span className="text-xs text-gray-500 font-mono shrink-0">{edu.start_year} – {edu.end_year}</span>
               </div>
               <div className="text-xs text-gray-600 italic font-medium">
-                {[edu.institution, edu.location].filter(Boolean).join(', ')}
+                {edu.institution}
               </div>
-              {edu.gpa && <div className="text-xs text-gray-500">GPA: {edu.gpa}</div>}
-              {edu.highlights?.length > 0 && (
-                <ul className="list-none mt-0.5">
-                  {edu.highlights.map((h, j) => (
-                    <li key={j} className="text-xs bullet-item pl-3 text-gray-600">{h}</li>
-                  ))}
-                </ul>
-              )}
             </div>
           ))}
         </section>
@@ -110,32 +102,21 @@ export default function ResumePreview({ data, templateId = 'classic', pageBudget
           {projects.map((proj, i) => (
             <div key={i} className="project-item">
               <div className="flex items-center gap-2">
-                <strong className="text-sm">{proj.name}</strong>
-                {proj.link && (
-                  <a href={proj.link} target="_blank" rel="noreferrer"
-                    className="text-xs text-cobalt hover:underline">↗ Link</a>
-                )}
+                <strong className="text-sm">{proj.title}</strong>
               </div>
               <p className="text-xs leading-relaxed mt-0.5">{proj.description}</p>
-              {proj.tech_stack?.length > 0 && (
-                <p className="text-xs text-gray-500 italic mt-0.5">Tech: {proj.tech_stack.join(', ')}</p>
+              {proj.bullets?.length > 0 && (
+                <ul className="list-none mt-0.5">
+                  {proj.bullets.map((b, j) => (
+                    <li key={j} className="text-xs bullet-item pl-3 text-gray-600">{b}</li>
+                  ))}
+                </ul>
               )}
             </div>
           ))}
         </section>
       )}
 
-      {/* Certifications */}
-      {certifications?.length > 0 && (
-        <section className="mb-4">
-          <div className="section-title">Certifications</div>
-          {certifications.map((cert, i) => (
-            <div key={i} className="text-sm bullet-item pl-3 mb-1">
-              {cert.name} — {cert.issuer}{cert.year ? ` (${cert.year})` : ''}
-            </div>
-          ))}
-        </section>
-      )}
     </div>
   );
 }

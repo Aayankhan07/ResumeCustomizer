@@ -1,4 +1,16 @@
-export function resumeToPlainText(data: any): string {
+import type { TransformOutput } from './schemas';
+
+const DIVIDER = '─'.repeat(50);
+
+/**
+ * Renders a validated transform result as plain text.
+ *
+ * Typed against TransformOutput rather than `any`: the previous signature let
+ * this read fields the schema never produces (proj.name, proj.tech_stack,
+ * edu.gpa, data.certifications), which rendered "undefined" into the output.
+ * Keeping the parameter typed makes that class of drift a compile error.
+ */
+export function resumeToPlainText(data: TransformOutput): string {
   const lines: string[] = [];
 
   // Header
@@ -16,13 +28,13 @@ export function resumeToPlainText(data: any): string {
 
   // Summary
   lines.push('SUMMARY');
-  lines.push('─'.repeat(50));
+  lines.push(DIVIDER);
   lines.push(data.summary || '');
   lines.push('');
 
   // Skills
   lines.push('SKILLS');
-  lines.push('─'.repeat(50));
+  lines.push(DIVIDER);
   if (data.skills?.technical?.length) {
     lines.push(`Technical: ${data.skills.technical.join(', ')}`);
   }
@@ -36,45 +48,33 @@ export function resumeToPlainText(data: any): string {
 
   // Experience
   lines.push('EXPERIENCE');
-  lines.push('─'.repeat(50));
-  data.experience?.forEach((exp: any) => {
+  lines.push(DIVIDER);
+  data.experience?.forEach((exp) => {
     lines.push(`${exp.title} | ${exp.company}${exp.location ? ', ' + exp.location : ''}`);
     lines.push(`${exp.start_date} – ${exp.end_date}`);
-    exp.bullets?.forEach((b: string) => lines.push(`  • ${b}`));
+    exp.bullets?.forEach((b) => lines.push(`  • ${b}`));
     lines.push('');
   });
 
   // Education
   lines.push('EDUCATION');
-  lines.push('─'.repeat(50));
-  data.education?.forEach((edu: any) => {
+  lines.push(DIVIDER);
+  data.education?.forEach((edu) => {
     lines.push(`${edu.degree} in ${edu.field}`);
-    lines.push(`${edu.institution}${edu.location ? ', ' + edu.location : ''}`);
+    lines.push(edu.institution);
     lines.push(`${edu.start_year} – ${edu.end_year}`);
-    if (edu.gpa) lines.push(`GPA: ${edu.gpa}`);
-    edu.highlights?.forEach((h: string) => lines.push(`  • ${h}`));
     lines.push('');
   });
 
   // Projects
   if (data.projects?.length) {
     lines.push('PROJECTS');
-    lines.push('─'.repeat(50));
-    data.projects.forEach((proj: any) => {
-      lines.push(proj.name);
+    lines.push(DIVIDER);
+    data.projects.forEach((proj) => {
+      lines.push(proj.title);
       lines.push(proj.description);
-      if (proj.tech_stack?.length) lines.push(`Tech: ${proj.tech_stack.join(', ')}`);
-      if (proj.link) lines.push(`Link: ${proj.link}`);
+      proj.bullets?.forEach((b) => lines.push(`  • ${b}`));
       lines.push('');
-    });
-  }
-
-  // Certifications
-  if (data.certifications?.length) {
-    lines.push('CERTIFICATIONS');
-    lines.push('─'.repeat(50));
-    data.certifications.forEach((cert: any) => {
-      lines.push(`• ${cert.name} — ${cert.issuer}${cert.year ? ' (' + cert.year + ')' : ''}`);
     });
   }
 

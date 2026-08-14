@@ -28,7 +28,7 @@ const normalRun = (text, size = 20) => new TextRun({ text, font: "Calibri", size
 const italicRun = (text, size = 18) => new TextRun({ text, italic: true, font: "Calibri", size });
 
 export async function generateResumeDOCX(data) {
-  const { contact, summary, skills, experience, education, projects, certifications } = data;
+  const { contact, summary, skills, experience, education, projects } = data;
 
   const docChildren = [];
 
@@ -175,10 +175,7 @@ export async function generateResumeDOCX(data) {
       docChildren.push(
         new Paragraph({
           spacing: { before: 120, after: 40 },
-          children: [
-            boldRun(proj.name),
-            proj.link ? normalRun(` (↗ ${proj.link})`) : normalRun(""),
-          ],
+          children: [boldRun(proj.title || "Project")],
         })
       );
 
@@ -186,22 +183,20 @@ export async function generateResumeDOCX(data) {
       docChildren.push(
         new Paragraph({
           spacing: { after: 40 },
-          children: [normalRun(proj.description)],
+          children: [normalRun(proj.description || "")],
         })
       );
 
-      // Tech Stack
-      if (proj.tech_stack?.length > 0) {
+      // Bullets
+      proj.bullets?.forEach((bullet) => {
         docChildren.push(
           new Paragraph({
-            spacing: { after: 85 },
-            children: [
-              boldRun("Tech Stack: ", 18),
-              italicRun(proj.tech_stack.join(", "), 18),
-            ],
+            bullet: { level: 0 },
+            spacing: { after: 30 },
+            children: [normalRun(bullet, 18)],
           })
         );
-      }
+      });
     });
   }
 
@@ -223,40 +218,7 @@ export async function generateResumeDOCX(data) {
       docChildren.push(
         new Paragraph({
           spacing: { after: 40 },
-          children: [
-            italicRun([edu.institution, edu.location].filter(Boolean).join(", ")),
-            edu.gpa ? normalRun(`  |  GPA: ${edu.gpa}`) : normalRun(""),
-          ],
-        })
-      );
-
-      if (edu.highlights?.length > 0) {
-        edu.highlights.forEach((hl) => {
-          docChildren.push(
-            new Paragraph({
-              bullet: { level: 0 },
-              spacing: { after: 30 },
-              children: [normalRun(hl, 18)],
-            })
-          );
-        });
-      }
-    });
-  }
-
-  // 8. Certifications
-  if (certifications?.length > 0) {
-    docChildren.push(createHeading("Certifications"));
-    certifications.forEach((cert) => {
-      docChildren.push(
-        new Paragraph({
-          bullet: { level: 0 },
-          spacing: { after: 40 },
-          children: [
-            boldRun(cert.name),
-            normalRun(` — ${cert.issuer}`),
-            cert.year ? italicRun(` (${cert.year})`) : normalRun(""),
-          ],
+          children: [italicRun(edu.institution)],
         })
       );
     });

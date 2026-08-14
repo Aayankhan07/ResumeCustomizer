@@ -29,7 +29,7 @@ import InterviewTab from './tabs/InterviewTab';
 import CoverLetterTab from './tabs/CoverLetterTab';
 import TrackingTab from './tabs/TrackingTab';
 
-export default function TransformOutput({ result: initialResult, plainText, originalText, jobDescriptionText, onReset, transformationId }) {
+export default function TransformOutput({ result: initialResult, plainText, originalText, jobDescriptionText: _jobDescriptionText, onReset, transformationId }) {
   const [result, setResult] = useState(initialResult);
   const [transformation, setTransformation] = useState(null);
 
@@ -115,30 +115,6 @@ export default function TransformOutput({ result: initialResult, plainText, orig
   }, [localScore]);
 
   const currentScore = score;
-
-  const getScoreColorInfo = (scoreValue) => {
-    if (scoreValue < 40) {
-      return {
-        pill: 'bg-rose-50 border-rose-200 text-rose-700 dark:bg-rose-500/15 dark:border-rose-500/25 dark:text-rose-400',
-        dot: 'bg-rose-500',
-        bar: 'bg-rose-500'
-      };
-    } else if (scoreValue < 70) {
-      return {
-        pill: 'bg-amber-50 border-amber-200 text-amber-700 dark:bg-amber-500/15 dark:border-amber-500/25 dark:text-amber-400',
-        dot: 'bg-amber-500',
-        bar: 'bg-amber-500'
-      };
-    } else {
-      return {
-        pill: 'bg-emerald-50 border-emerald-200 text-emerald-700 dark:bg-emerald-500/15 dark:border-emerald-500/25 dark:text-emerald-400',
-        dot: 'bg-emerald-500',
-        bar: 'bg-emerald-500'
-      };
-    }
-  };
-
-  const scoreColors = getScoreColorInfo(currentScore);
 
   // Derive dynamic fields from results
   const jobTitle = result.meta?.detected_job_title || 'Machine Learning Engineer';
