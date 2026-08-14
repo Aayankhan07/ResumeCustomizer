@@ -16,7 +16,7 @@
     "format:check": "prettier --check ."
   },
   "dependencies": {
-    "@sentry/react": "^10.62.0",
+    "@sentry/nextjs": "^10.70.0",
     "@supabase/ssr": "^0.12.0",
     "@supabase/supabase-js": "^2.108.2",
     "@vercel/speed-insights": "^2.0.0",

@@ -2,7 +2,7 @@ import React from 'react';
 import { AlertTriangle, RefreshCw, Home } from 'lucide-react';
 import GlassPanel from './GlassPanel';
 import Button from './Button';
-import * as Sentry from '@sentry/react';
+import * as Sentry from '@sentry/nextjs';
 
 export default class ErrorBoundary extends React.Component {
   constructor(props) {
@@ -51,7 +51,7 @@ export default class ErrorBoundary extends React.Component {
                 <AlertTriangle className="w-8 h-8 text-red-500 dark:text-red-400" />
               </div>
 
-              <h1 className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-white via-slate-200 to-slate-400 bg-clip-text text-transparent mb-3">
+              <h1 className="text-2xl sm:text-3xl font-bold text-slate-100 mb-3">
                 Workspace Encountered a Crash
               </h1>
               
