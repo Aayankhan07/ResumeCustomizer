@@ -1,3 +1,5 @@
+'use client';
+
 import { useState } from 'react';
 
 export default function JobInput({ value, onChange, optimizationMode = 'description', onModeChange }) {
@@ -34,7 +36,7 @@ export default function JobInput({ value, onChange, optimizationMode = 'descript
             onClick={() => onModeChange && onModeChange('description')}
             className={`flex-1 px-3 py-1.5 rounded-md text-xs font-semibold tracking-wide transition-all duration-150 cursor-pointer ${
               optimizationMode === 'description'
-                ? 'bg-slate-900 text-white dark:bg-indigo-650 dark:text-white shadow-sm font-bold'
+                ? 'bg-slate-900 text-white dark:bg-indigo-600 dark:text-white shadow-sm font-bold'
                 : 'text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white'
             }`}
           >
@@ -45,7 +47,7 @@ export default function JobInput({ value, onChange, optimizationMode = 'descript
             onClick={() => onModeChange && onModeChange('title')}
             className={`flex-1 px-3 py-1.5 rounded-md text-xs font-semibold tracking-wide transition-all duration-150 cursor-pointer ${
               optimizationMode === 'title'
-                ? 'bg-slate-900 text-white dark:bg-indigo-650 dark:text-white shadow-sm font-bold'
+                ? 'bg-slate-900 text-white dark:bg-indigo-600 dark:text-white shadow-sm font-bold'
                 : 'text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white'
             }`}
           >
@@ -78,7 +80,7 @@ export default function JobInput({ value, onChange, optimizationMode = 'descript
 
         {/* Smart Detection URL Alert */}
         {isUrl && (
-          <div className="mt-2 text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg p-2.5 text-slate-650 dark:text-slate-350 flex items-center justify-between animate-fade-in select-none">
+          <div className="mt-2 text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg p-2.5 text-slate-600 dark:text-slate-300 flex items-center justify-between animate-fade-in select-none">
             <span>Want to paste the URL instead? We'll extract the job description.</span>
             <span className="text-[9px] font-bold text-slate-455 dark:text-slate-500 uppercase tracking-wider font-mono">Future Feature</span>
           </div>
@@ -96,7 +98,7 @@ export default function JobInput({ value, onChange, optimizationMode = 'descript
             </span>
           )}
           {isAboveMax && (
-            <span className="text-red-650 flex items-center gap-1">
+            <span className="text-red-600 flex items-center gap-1">
               {isTitleMode 
                 ? 'Job title too long (maximum 150 characters).' 
                 : 'Job description too long (maximum 10,000 characters).'}

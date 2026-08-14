@@ -111,9 +111,13 @@
    SHARED (theme-independent)
    ============================================= */
 :root {
-  /* Typography */
-  --font-sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  --font-mono: "JetBrains Mono", "Fira Code", "Cascadia Code", monospace;
+  /* Typography. The --font-* variables are supplied by next/font in
+     layout.tsx; the literal names remain as a fallback. font-serif was
+     previously undefined, so DM Serif Display was downloaded but never
+     actually applied to the headings that ask for it. */
+  --font-sans: var(--font-inter), "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-mono: var(--font-jetbrains), "JetBrains Mono", "Fira Code", "Cascadia Code", monospace;
+  --font-serif: var(--font-dm-serif), "DM Serif Display", Georgia, serif;
 
   /* Radius */
   --radius-xs: 4px;
@@ -132,6 +136,9 @@
 @theme {
   --font-sans: var(--font-sans);
   --font-mono: var(--font-mono);
+  /* Registers font-serif as a real utility. Components have been using it all
+     along; without this it resolved to nothing. */
+  --font-serif: var(--font-serif);
 }
 
 /* Base styles */

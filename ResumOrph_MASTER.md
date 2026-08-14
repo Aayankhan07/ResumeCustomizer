@@ -50,39 +50,54 @@
 
 ## 2. TECHNOLOGY STACK
 
+> This section previously described the pre-migration Vite / React Router /
+> Deno Edge Functions stack, which no longer exists. It now reflects what is
+> actually in the repository.
+
 ### Frontend
 | Technology | Version | Purpose |
 |---|---|---|
+| Next.js | 16 (App Router) | Framework, routing, route handlers, middleware |
 | React | 19 | UI framework — state sync, rendering |
-| Vite | Latest | Build tool, HMR, bundling |
-| React Router DOM | v7 | Client-side routing, protected routes |
-| Tailwind CSS | v4 | Utility-first styling, CSS-variable tokens |
+| TypeScript | 6 | Types (`strictNullChecks`; `allowJs` for remaining `.jsx`) |
+| Tailwind CSS | v4 | Utility-first styling; CSS-first config in `globals.css` |
+| next/font | — | Self-hosted Inter, DM Serif Display, JetBrains Mono |
 | Framer Motion | Latest | Micro-animations, transitions |
 | Lucide React | Latest | SVG icon library |
 | Sonner | Latest | Toast notifications |
 
+Routing is file-based under `src/app/`. There is no React Router and no `/dist`
+output; protected routes are gated by `src/middleware.ts`.
+
 ### Backend / Services
 | Technology | Purpose |
 |---|---|
-| Supabase Cloud | Auth + PostgreSQL DB + Deno Edge Functions |
-| Groq API | LLM inference — `llama-3.3-70b-versatile` |
-| Vercel | Hosting, SPA routing |
+| Supabase Cloud | Auth + PostgreSQL + RLS (via `@supabase/ssr`) |
+| Next.js route handlers | Server logic under `src/app/api/` — replaces the Deno Edge Functions |
+| Groq API | LLM inference — `llama-3.3-70b-versatile`, falling back to `llama-3.1-8b-instant` then `openai/gpt-oss-120b` |
+| Vercel | Hosting, cron (`/api/cleanup`), analytics |
+| Sentry | Error reporting (client, server, edge) |
 
 ### Client-Side Libraries
 | Library | Purpose | Loading |
 |---|---|---|
-| pdfjs-dist | Parse PDF files, extract text | Lazy (dynamic import) |
+| pdfjs-dist | Parse PDF files, extract text | Lazy; worker self-hosted from `/public/pdfjs/` |
 | mammoth | Parse .docx files, extract text | Lazy (dynamic import) |
 | jsPDF | Generate PDF resumes client-side | Eager |
+| docx | Generate DOCX resumes client-side | Lazy (dynamic import) |
+| zod | Validate LLM output *and* API request bodies | Eager |
 
 ### Dev Tooling
 | Tool | Purpose |
 |---|---|
-| ESLint | Code linting |
-| `npm run dev` | Local Vite dev server |
-| `npm run build` | Production build → `/dist` |
+| ESLint (flat config) | Lints `.js`, `.jsx`, `.ts`, `.tsx` |
+| Prettier | Formatting (`npm run format`) |
+| Vitest + jsdom | Unit tests |
+| `npm run dev` | Local Next dev server |
+| `npm run build` | Production build |
 | `npm run lint` | ESLint check |
-| `npm run preview` | Preview compiled build |
+| `npm run typecheck` | `tsc --noEmit` |
+| `npm test` | Single-run test suite |
 
 ---
 

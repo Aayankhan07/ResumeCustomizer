@@ -1,3 +1,5 @@
+'use client';
+
 import { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { MoreVertical, ChevronRight } from 'lucide-react';
@@ -233,4 +235,3 @@ export default function AnalysisRow({ item, onDelete, onUpdateStatus }) {
     </div>
   );
 }
-

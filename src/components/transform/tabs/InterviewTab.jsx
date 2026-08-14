@@ -1,3 +1,5 @@
+'use client';
+
 import React, { useState, useEffect } from 'react';
 import { Target, UserCheck, AlertTriangle, ArrowLeft, ArrowRight, RotateCw, Copy } from 'lucide-react';
 import { toast } from 'sonner';

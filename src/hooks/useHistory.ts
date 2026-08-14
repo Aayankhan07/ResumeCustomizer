@@ -1,3 +1,5 @@
+'use client';
+
 import { useState, useEffect, useCallback, useRef } from 'react';
 import {
   getTransformations,
@@ -41,9 +43,12 @@ export function useHistory() {
 
   // Held in a ref so `load` does not depend on the list length. That
   // dependency recreated the callback on every data change, which is why the
-  // mount effect needed an eslint-disable to avoid refetch loops.
+  // mount effect needed an eslint-disable to avoid refetch loops. Written in
+  // an effect rather than during render, which React forbids.
   const countRef = useRef(0);
-  countRef.current = transformations.length;
+  useEffect(() => {
+    countRef.current = transformations.length;
+  }, [transformations.length]);
 
   const load = useCallback(async (reset = true) => {
     setLoading(true);

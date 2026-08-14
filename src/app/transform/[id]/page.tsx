@@ -52,19 +52,19 @@ export default function TransformDetail() {
   };
 
   return (
-    <div className="min-h-screen bg-mist dark:bg-[#030712] text-slate-900 dark:text-slate-200 flex flex-col font-sans transition-colors duration-300">
+    <div className="min-h-screen bg-[var(--bg-subtle)] dark:bg-[#030712] text-slate-900 dark:text-slate-200 flex flex-col font-sans transition-colors duration-300">
       <Navbar />
 
       <main className={`flex-1 ${loading ? 'max-w-4xl' : 'max-w-6xl'} w-full mx-auto px-4 py-12 flex flex-col justify-start transition-all duration-300`}>
         {loading ? (
           <div className="flex justify-center items-center py-24 my-auto">
-            <div className="w-8 h-8 border-2 border-cobalt dark:border-indigo-500 border-t-transparent rounded-full animate-spin" />
+            <div className="w-8 h-8 border-2 border-[var(--accent)] dark:border-indigo-500 border-t-transparent rounded-full animate-spin" />
           </div>
         ) : (
           <div className="flex flex-col gap-6 w-full animate-fade-in">
             {/* Back controls */}
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-              <Link href="/dashboard" className="inline-flex items-center gap-1.5 text-sm text-graphite dark:text-slate-400 hover:text-ink dark:hover:text-white transition-colors font-medium">
+              <Link href="/dashboard" className="inline-flex items-center gap-1.5 text-sm text-[var(--text-secondary)] dark:text-slate-400 hover:text-[var(--text-primary)] dark:hover:text-white transition-colors font-medium">
                 <ArrowLeft size={16} />
                 Back to Dashboard
               </Link>
@@ -86,12 +86,12 @@ export default function TransformDetail() {
                   </div>
                 ) : (
                   <div className="flex items-center gap-2">
-                    <span className="text-xs font-semibold uppercase tracking-wider text-graphite dark:text-slate-400 font-mono">
+                    <span className="text-xs font-semibold uppercase tracking-wider text-[var(--text-secondary)] dark:text-slate-400 font-mono">
                       Label: {data.label || 'None'}
                     </span>
                     <button
                       onClick={() => setEditingLabel(true)}
-                      className="p-1 hover:bg-mist dark:hover:bg-slate-800 text-graphite hover:text-ink rounded transition-colors"
+                      className="p-1 hover:bg-[var(--bg-subtle)] dark:hover:bg-slate-800 text-[var(--text-secondary)] hover:text-[var(--text-primary)] rounded transition-colors"
                       title="Edit label"
                     >
                       <Edit2 size={12} />

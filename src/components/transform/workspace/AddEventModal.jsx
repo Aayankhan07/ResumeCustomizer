@@ -1,3 +1,5 @@
+'use client';
+
 import { useState } from 'react';
 import { X } from 'lucide-react';
 import Button from '../../ui/Button';
@@ -107,7 +109,7 @@ export default function AddEventModal({ isOpen, onClose, onSubmit }) {
           {/* Event Date (optional for Note, recommended for others) */}
           {eventType !== 'note' && (
             <div className="flex flex-col gap-1.5">
-              <label className="text-xs font-semibold text-graphite uppercase tracking-wide">
+              <label className="text-xs font-semibold text-[var(--text-secondary)] uppercase tracking-wide">
                 Date & Time
               </label>
               <input
@@ -125,7 +127,7 @@ export default function AddEventModal({ isOpen, onClose, onSubmit }) {
             <div className="space-y-4 pt-2 border-t border-[var(--border-subtle)]">
               <div className="grid grid-cols-2 gap-4">
                 <div className="flex flex-col gap-1.5">
-                  <label className="text-xs font-semibold text-graphite uppercase tracking-wide">
+                  <label className="text-xs font-semibold text-[var(--text-secondary)] uppercase tracking-wide">
                     Round
                   </label>
                   <select
@@ -141,7 +143,7 @@ export default function AddEventModal({ isOpen, onClose, onSubmit }) {
                   </select>
                 </div>
                 <div className="flex flex-col gap-1.5">
-                  <label className="text-xs font-semibold text-graphite uppercase tracking-wide">
+                  <label className="text-xs font-semibold text-[var(--text-secondary)] uppercase tracking-wide">
                     Format
                   </label>
                   <select
@@ -168,7 +170,7 @@ export default function AddEventModal({ isOpen, onClose, onSubmit }) {
 
           {/* Notes */}
           <div className="flex flex-col gap-1.5">
-            <label className="text-xs font-semibold text-graphite uppercase tracking-wide">
+            <label className="text-xs font-semibold text-[var(--text-secondary)] uppercase tracking-wide">
               Notes
             </label>
             <textarea

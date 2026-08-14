@@ -1,4 +1,7 @@
+'use client';
+
 import { Sparkles } from 'lucide-react';
+import { TEMPLATES } from '../../../lib/templates';
 
 export default function StyleControlPanel({
   selectedTemplate,
@@ -6,12 +9,9 @@ export default function StyleControlPanel({
   pageBudget,
   setPageBudget
 }) {
-  const templates = [
-    { id: 'classic', label: 'Classic Serif', desc: 'Traditional & elegant' },
-    { id: 'modern', label: 'Modern Minimalist', desc: 'Clean, left-aligned' },
-    { id: 'tech', label: 'Clean Tech', desc: 'Mono, structured' },
-    { id: 'executive', label: 'Executive Elegant', desc: 'Luxury serif, centered' }
-  ];
+  // Sourced from lib/templates.ts so this list cannot drift from what the
+  // PDF generator actually implements.
+  const templates = TEMPLATES;
 
   return (
     <div className="settings-panel bg-slate-50/50 border border-slate-200/80 rounded-xl p-4 sm:p-5 flex flex-col md:flex-row md:items-center justify-between gap-6 shadow-sm animate-fade-in">
@@ -37,7 +37,7 @@ export default function StyleControlPanel({
                     <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
                   )}
                 </span>
-                <span className="text-[9px] text-slate-450 font-medium mt-0.5">{tpl.desc}</span>
+                <span className="text-[9px] text-slate-400 font-medium mt-0.5">{tpl.description}</span>
               </button>
             ))}
           </div>

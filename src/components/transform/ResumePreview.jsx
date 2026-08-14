@@ -5,7 +5,7 @@ export default function ResumePreview({ data, templateId = 'classic', pageBudget
   const isCentered = templateId === 'classic' || templateId === 'executive';
 
   return (
-    <div className={`resume-document w-full bg-white rounded-lg border border-boundary shadow-document p-4 sm:p-8 md:p-12 max-w-2xl mx-auto text-left template-${templateId} budget-${pageBudget}`}>
+    <div className={`resume-document w-full bg-white rounded-lg border border-[var(--border-default)] shadow-document p-4 sm:p-8 md:p-12 max-w-2xl mx-auto text-left template-${templateId} budget-${pageBudget}`}>
       {/* Header */}
       <div className={`${isCentered ? 'text-center' : 'text-left'} mb-5`}>
         <h1>{contact.name}</h1>

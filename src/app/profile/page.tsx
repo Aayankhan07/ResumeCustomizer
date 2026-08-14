@@ -67,15 +67,15 @@ export default function Profile() {
   };
 
   return (
-    <div className="min-h-screen bg-mist dark:bg-[#030712] text-slate-900 dark:text-slate-200 flex flex-col font-sans transition-colors duration-300">
+    <div className="min-h-screen bg-[var(--bg-subtle)] dark:bg-[#030712] text-slate-900 dark:text-slate-200 flex flex-col font-sans transition-colors duration-300">
       <Navbar />
       <main className="flex-1 max-w-4xl w-full mx-auto px-4 py-12 stagger-children">
-        <h1 className="font-serif text-3xl text-ink dark:text-white font-bold mb-8">My Account</h1>
+        <h1 className="font-serif text-3xl text-[var(--text-primary)] dark:text-white font-bold mb-8">My Account</h1>
 
         <div className="flex flex-col gap-8">
           {/* Profile Card */}
-          <Card className="bg-white dark:bg-slate-900 border border-boundary dark:border-slate-800">
-            <h3 className="font-serif text-lg text-ink dark:text-white font-semibold mb-4">Profile Details</h3>
+          <Card className="bg-white dark:bg-slate-900 border border-[var(--border-default)] dark:border-slate-800">
+            <h3 className="font-serif text-lg text-[var(--text-primary)] dark:text-white font-semibold mb-4">Profile Details</h3>
             <form onSubmit={handleUpdateName} className="flex flex-col md:flex-row md:items-end gap-4 max-w-2xl">
               <div className="flex-1">
                 <Input
@@ -102,8 +102,8 @@ export default function Profile() {
           </Card>
 
           {/* Password Card */}
-          <Card className="bg-white dark:bg-slate-900 border border-boundary dark:border-slate-800">
-            <h3 className="font-serif text-lg text-ink dark:text-white font-semibold mb-4">Change Password</h3>
+          <Card className="bg-white dark:bg-slate-900 border border-[var(--border-default)] dark:border-slate-800">
+            <h3 className="font-serif text-lg text-[var(--text-primary)] dark:text-white font-semibold mb-4">Change Password</h3>
             <form onSubmit={handleUpdatePassword} className="flex flex-col md:flex-row md:items-end gap-4 max-w-2xl">
               <div className="flex-1">
                 <Input
@@ -135,8 +135,8 @@ export default function Profile() {
 
           {/* Danger Zone */}
           <Card className="border-red-200 dark:border-red-900/30 bg-red-50/20 dark:bg-red-950/10">
-            <h3 className="font-serif text-lg text-red-650 font-semibold mb-2">Danger Zone</h3>
-            <p className="text-sm text-graphite dark:text-slate-400 mb-4 leading-relaxed font-semibold">
+            <h3 className="font-serif text-lg text-red-600 font-semibold mb-2">Danger Zone</h3>
+            <p className="text-sm text-[var(--text-secondary)] dark:text-slate-400 mb-4 leading-relaxed font-semibold">
               Once you delete your account, there is no going back. All your saved transformations and metadata will be permanently removed.
             </p>
             <Button

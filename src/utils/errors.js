@@ -21,8 +21,48 @@ export const ERROR_MESSAGES = {
   },
   INVALID_JD: {
     title: "Job description invalid",
-    description: () => "The job description provided is too short. Please paste a comprehensive job description (at least 50 characters) to ensure the AI has enough context.",
+    description: () => "The job description is too short. Paste a fuller description (at least 200 characters) so the AI has enough context.",
     action: "Add more job description details"
+  },
+  INVALID_JOB_TITLE: {
+    title: "Job title invalid",
+    description: () => "Enter a job title between 3 and 150 characters, or switch to pasting a full job description.",
+    action: "Check the job title"
+  },
+  INVALID_REQUEST: {
+    title: "Request could not be processed",
+    description: () => "Some of the information submitted was not valid. Check your resume and job description, then try again.",
+    action: "Review your input"
+  },
+  MISSING_RESUME_TEXT: {
+    title: "No resume provided",
+    description: () => "Upload a resume file or paste your resume text to continue.",
+    action: "Add your resume"
+  },
+  INPUT_TOO_SHORT: {
+    title: "Not enough content to analyze",
+    description: () => "Your resume needs at least 200 characters so the AI has enough to work with.",
+    action: "Add more detail to your resume"
+  },
+  INVALID_JSON_FROM_AI: {
+    title: "AI returned an unreadable response",
+    description: () => "The AI response could not be read. This is usually transient.",
+    action: "Try again"
+  },
+  RESCORE_UNAVAILABLE: {
+    title: "Cannot rescore this analysis",
+    description: () => "This analysis was created before we started saving the original job description, so it cannot be rescored. Run a new analysis to use custom weightings.",
+    action: "Run a new analysis"
+  },
+  NETWORK_ERROR: {
+    title: "Connection problem",
+    description: () => "We couldn't reach the server. Check your connection and try again.",
+    action: "Retry"
+  },
+  INTERNAL_SERVER_ERROR: {
+    title: "Something went wrong",
+    description: () => "An unexpected error occurred on our side. It has been logged and we're looking into it.",
+    action: "Try again"
   },
   AUTH_FAILED: {
     title: "Authentication expired",

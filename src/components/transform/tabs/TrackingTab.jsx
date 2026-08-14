@@ -1,27 +1,14 @@
+'use client';
+
 import { useState, useEffect } from 'react';
 import { Calendar, User, Clock, Trash2, CheckCircle2, MessageSquare, Plus, Award } from 'lucide-react';
 import { toast } from 'sonner';
-import {
-  updateTransformationTracking,
-  getTransformationEvents,
-  createEvent,
-  updateEvent,
-  deleteEvent
-} from '../../../lib/api';
+import { updateTransformationTracking } from '../../../lib/api';
+import { useApplicationEvents } from '../../../hooks/useApplicationEvents';
+import ApplicationStatusBar from '../tracking/ApplicationStatusBar';
 import AddEventModal from '../workspace/AddEventModal';
 import Button from '../../ui/Button';
 import Input from '../../ui/Input';
-
-const STATUS_OPTIONS = ['Saved', 'Applied', 'Interviewing', 'Offer', 'Rejected', 'Withdrawn'];
-
-const STATUS_STYLES = {
-  Saved:        'bg-[var(--bg-subtle)] text-[var(--text-secondary)] border-[var(--border-default)]',
-  Applied:      'bg-[var(--neutral-subtle)] text-[var(--neutral)] border-[var(--border-default)]',
-  Interviewing: 'bg-[var(--warning-subtle)] text-[var(--warning-fg)] border-[var(--warning-fg)]/10',
-  Offer:        'bg-[var(--success-subtle)] text-[var(--success-fg)] border-[var(--success-fg)]/10',
-  Rejected:     'bg-[var(--danger-subtle)] text-[var(--danger-fg)] border-[var(--danger-fg)]/10',
-  Withdrawn:    'bg-[var(--bg-subtle)] text-[var(--text-muted)] border-[var(--border-default)] line-through opacity-75',
-};
 
 
 export default function TrackingTab({ transformation }) {
@@ -39,9 +26,17 @@ export default function TrackingTab({ transformation }) {
   const [source, setSource] = useState('');
   
   const [savingTracking, setSavingTracking] = useState(false);
-  const [events, setEvents] = useState([]);
-  const [loadingEvents, setLoadingEvents] = useState(true);
   const [isAddEventOpen, setIsAddEventOpen] = useState(false);
+
+  // Event CRUD lives in a hook rather than inline in this component.
+  const {
+    events,
+    loading: loadingEvents,
+    add: addEvent,
+    toggleDone: handleToggleEventDone,
+    setOutcome: handleEventOutcomeChange,
+    remove: removeEvent,
+  } = useApplicationEvents(transformation?.id);
 
   // Initialize form fields on mount/prop change
   useEffect(() => {
@@ -58,26 +53,6 @@ export default function TrackingTab({ transformation }) {
       setSource(transformation.source || '');
     }
   }, [transformation]);
-
-  // Load events
-  const loadEvents = async () => {
-    setLoadingEvents(true);
-    try {
-      const data = await getTransformationEvents(transformation.id);
-      setEvents(data || []);
-    } catch (err) {
-      console.error('Failed to load events', err);
-      toast.error('Failed to load events timeline.');
-    } finally {
-      setLoadingEvents(false);
-    }
-  };
-
-  useEffect(() => {
-    if (transformation?.id) {
-      loadEvents();
-    }
-  }, [transformation?.id]);
 
   const handleStatusChange = async (newStatus) => {
     const previousStatus = status;
@@ -119,50 +94,18 @@ export default function TrackingTab({ transformation }) {
 
   const handleAddEvent = async (eventData) => {
     try {
-      const data = await createEvent({
-        transformation_id: transformation.id,
-        ...eventData
-      });
-      setEvents(prev => [data, ...prev]);
-      toast.success('Event logged successfully');
+      await addEvent(eventData);
     } catch (err) {
       console.error(err);
       toast.error('Failed to create event.');
+      // Rethrown so the modal keeps the user's input rather than closing.
       throw err;
-    }
-  };
-
-  const handleToggleEventDone = async (event) => {
-    try {
-      const updated = await updateEvent(event.id, { is_done: !event.is_done });
-      setEvents(prev => prev.map(e => e.id === event.id ? updated : e));
-    } catch (err) {
-      console.error(err);
-      toast.error('Failed to update event status.');
-    }
-  };
-
-  const handleEventOutcomeChange = async (event, outcome) => {
-    try {
-      const updated = await updateEvent(event.id, { outcome });
-      setEvents(prev => prev.map(e => e.id === event.id ? updated : e));
-      toast.success(`Interview outcome updated to ${outcome}`);
-    } catch (err) {
-      console.error(err);
-      toast.error('Failed to update outcome.');
     }
   };
 
   const handleDeleteEvent = async (id) => {
     if (!confirm('Are you sure you want to delete this event from the timeline?')) return;
-    try {
-      await deleteEvent(id);
-      setEvents(prev => prev.filter(e => e.id !== id));
-      toast.success('Event removed');
-    } catch (err) {
-      console.error(err);
-      toast.error('Failed to delete event.');
-    }
+    await removeEvent(id);
   };
 
   const formatEventDate = (dateStr) => {
@@ -178,31 +121,7 @@ export default function TrackingTab({ transformation }) {
 
   return (
     <div className="space-y-8">
-      {/* Top Application Status Bar */}
-      <div className="bg-[var(--bg-base)] border border-[var(--border-default)] rounded-[var(--radius-lg)] p-5 flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
-          <h3 className="text-sm font-semibold text-[var(--text-primary)]">Application Status</h3>
-          <p className="text-xs text-[var(--text-muted)] mt-0.5">Where is this resume in the application lifecycle?</p>
-        </div>
-        <div className="flex flex-wrap gap-2">
-          {STATUS_OPTIONS.map((opt) => {
-            const isActive = status === opt;
-            return (
-              <button
-                key={opt}
-                onClick={() => handleStatusChange(opt)}
-                className={`px-3 py-1.5 rounded-full text-xs font-semibold border transition-all cursor-pointer ${
-                  isActive
-                    ? STATUS_STYLES[opt] + ' ring-2 ring-[var(--accent)]/15 border-[var(--accent)]'
-                    : 'bg-transparent border-[var(--border-default)] text-[var(--text-secondary)] hover:bg-[var(--bg-subtle)] hover:text-[var(--text-primary)]'
-                }`}
-              >
-                {opt}
-              </button>
-            );
-          })}
-        </div>
-      </div>
+      <ApplicationStatusBar status={status} onChange={handleStatusChange} />
 
       {/* Grid: Form fields (left) & Timeline Events (right) */}
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
@@ -216,7 +135,7 @@ export default function TrackingTab({ transformation }) {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="flex flex-col gap-1.5">
-              <label className="text-xs font-semibold text-graphite uppercase tracking-wide flex items-center gap-1.5">
+              <label className="text-xs font-semibold text-[var(--text-secondary)] uppercase tracking-wide flex items-center gap-1.5">
                 <Clock size={13} />
                 Date Applied
               </label>
@@ -228,7 +147,7 @@ export default function TrackingTab({ transformation }) {
               />
             </div>
             <div className="flex flex-col gap-1.5">
-              <label className="text-xs font-semibold text-graphite uppercase tracking-wide flex items-center gap-1.5">
+              <label className="text-xs font-semibold text-[var(--text-secondary)] uppercase tracking-wide flex items-center gap-1.5">
                 <Calendar size={13} />
                 Application Deadline
               </label>
@@ -260,7 +179,7 @@ export default function TrackingTab({ transformation }) {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="flex flex-col gap-1.5">
-              <label className="text-xs font-semibold text-graphite uppercase tracking-wide">
+              <label className="text-xs font-semibold text-[var(--text-secondary)] uppercase tracking-wide">
                 Priority
               </label>
               <select

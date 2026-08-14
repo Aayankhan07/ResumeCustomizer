@@ -1,3 +1,5 @@
+'use client';
+
 import { useState, useEffect } from 'react';
 import { 
   LayoutDashboard, 
@@ -345,7 +347,7 @@ export default function TransformOutput({ result: initialResult, plainText, orig
           </div>
 
           {/* Simple Clean Footer */}
-          <div className="flex justify-end border-t border-slate-150 dark:border-slate-800 pt-5 mt-8 select-none">
+          <div className="flex justify-end border-t border-slate-100 dark:border-slate-800 pt-5 mt-8 select-none">
             <span className="text-[10px] font-mono text-slate-400 font-bold">
               ResumOrph Engine v1.2
             </span>

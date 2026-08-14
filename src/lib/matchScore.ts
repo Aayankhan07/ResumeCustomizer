@@ -94,7 +94,14 @@ const BASIC_STOP_WORDS = new Set([
 export function computeMatchScore(
   jobDescText: string,
   outputJson: Record<string, unknown>,
-  weights?: { techDepth?: number; conciseness?: number; industryFocus?: number; optimizationMode?: 'description' | 'title' }
+  // `conciseness` was accepted here and never read. Removed rather than left
+  // in the signature implying an effect it never had; see lib/schemas/api.ts,
+  // which still accepts and ignores it for request compatibility.
+  weights?: {
+    techDepth?: number;
+    industryFocus?: number;
+    optimizationMode?: 'description' | 'title';
+  }
 ): { score: number; matched: string[]; total: number; missing: string[] } {
   const isTitleMode = weights?.optimizationMode === 'title';
   const isShortText = jobDescText.split(/\s+/).filter(Boolean).length < 15;
@@ -123,8 +130,29 @@ export function computeMatchScore(
   
   const outputText = extractText(outputJson);
 
-  const matched = jdKeywords.filter(kw => outputText.includes(kw));
-  const missing = jdKeywords.filter(kw => !outputText.includes(kw));
+  // Tokenized rather than substring-matched. `outputText.includes(kw)` had no
+  // word boundaries, so "ai" matched inside "maintained" and "go" inside
+  // "algorithm" — every score shown to users was inflated.
+  //
+  // A Set lookup is also O(1) per keyword instead of scanning the whole
+  // document text once per keyword.
+  const outputTokens = new Set(
+    outputText
+      .replace(/[^a-z0-9\s-]/g, ' ')
+      .split(/\s+/)
+      .filter(Boolean)
+  );
+
+  // Multi-word keywords (e.g. "ci/cd" split into parts) still need a phrase
+  // check, so fall back to a boundary-anchored search for hyphenated terms.
+  const hasKeyword = (kw: string): boolean => {
+    if (outputTokens.has(kw)) return true;
+    if (!kw.includes('-')) return false;
+    return kw.split('-').every((part) => outputTokens.has(part));
+  };
+
+  const matched = jdKeywords.filter(hasKeyword);
+  const missing = jdKeywords.filter((kw) => !hasKeyword(kw));
   const total = jdKeywords.length;
 
   // Calculate weights
@@ -140,33 +168,33 @@ export function computeMatchScore(
     'telemetry', 'sentry', 'git', 'ci', 'cd', 'ci/cd', 'cloud', 'deployment', 'mlops', 'framework'
   ]);
 
+  // Direct Set lookups. The previous implementation also ran
+  // `Array.from(SET).some(p => kw.includes(p))` for every keyword, which was
+  // O(keywords x setSize) and classified by substring — so "airflow" counted
+  // as technical because it contains "ai".
   const getKeywordWeight = (kw: string) => {
     if (!weights) return 1.0;
     const techDepth = weights.techDepth ?? 50;
     const industryFocus = weights.industryFocus ?? 80;
-    
-    // Check if it's a process/leadership keyword
-    const isProcess = PROCESS_WORDS.has(kw) || Array.from(PROCESS_WORDS).some(p => kw.includes(p));
-    if (isProcess) {
+
+    if (PROCESS_WORDS.has(kw)) {
       return Math.max(0.1, (100 - techDepth) / 50);
     }
-    
-    // Check if it's a technical keyword
-    const isTech = TECH_WORDS.has(kw) || Array.from(TECH_WORDS).some(t => kw.includes(t));
-    if (isTech) {
+
+    if (TECH_WORDS.has(kw)) {
       return Math.max(0.1, (techDepth / 50) * (industryFocus / 80));
     }
-    
+
     return 1.0;
   };
 
   let matchedWeightSum = 0;
   let totalWeightSum = 0;
-  
-  jdKeywords.forEach(kw => {
+
+  jdKeywords.forEach((kw) => {
     const w = getKeywordWeight(kw);
     totalWeightSum += w;
-    if (outputText.includes(kw)) {
+    if (hasKeyword(kw)) {
       matchedWeightSum += w;
     }
   });

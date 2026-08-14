@@ -1,4 +1,6 @@
-import { forwardRef, InputHTMLAttributes } from 'react';
+'use client';
+
+import { forwardRef, useId, InputHTMLAttributes } from 'react';
 
 export interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
   label?: string;
@@ -6,23 +8,35 @@ export interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
 }
 
 const Input = forwardRef<HTMLInputElement, InputProps>(
-  ({ className = '', label, error, ...props }, ref) => {
+  ({ className = '', label, error, id, ...props }, ref) => {
+    // The label previously had no htmlFor and the input no id, so screen
+    // readers announced an unlabelled field on every auth form.
+    const generatedId = useId();
+    const inputId = id ?? generatedId;
+    const errorId = `${inputId}-error`;
+
     return (
       <div className="w-full flex flex-col gap-1.5">
         {label && (
-          <label className="text-xs font-semibold text-graphite uppercase tracking-wide">
+          <label
+            htmlFor={inputId}
+            className="text-xs font-semibold text-[var(--text-secondary)] uppercase tracking-wide"
+          >
             {label}
           </label>
         )}
         <input
           ref={ref}
+          id={inputId}
+          aria-invalid={error ? true : undefined}
+          aria-describedby={error ? errorId : undefined}
           className={`w-full bg-[var(--bg-base)] border border-[var(--border-default)] rounded-lg px-3.5 py-2.5 font-sans text-sm text-[var(--text-primary)] placeholder:text-[var(--text-secondary)]/50 focus:outline-none focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent)]/10 transition-all duration-150 ${
             error ? 'border-red-500 focus:border-red-500 focus:ring-red-500/10' : ''
           } ${className}`}
           {...props}
         />
         {error && (
-          <span className="text-xs text-red-600 font-medium">
+          <span id={errorId} role="alert" className="text-xs text-red-600 font-medium">
             {error}
           </span>
         )}

@@ -1,3 +1,5 @@
+'use client';
+
 import { useEffect, useState } from 'react';
 import { Clock, WifiOff, AlertOctagon, ShieldAlert, FileText, AlertTriangle } from 'lucide-react';
 import GlassPanel from '../../ui/GlassPanel';
@@ -93,9 +95,9 @@ export default function TransformErrorPanel({
       case 'CONTENT_TOO_LONG':
       case 'AUTH_FAILED':
       case 'UNAUTHORIZED':
-        return "text-red-400 bg-red-950/40 border-red-850/55";
+        return "text-red-400 bg-red-950/40 border-red-800/55";
       case 'AI_TIMEOUT':
-        return "text-blue-400 bg-blue-950/40 border-blue-850/55";
+        return "text-blue-400 bg-blue-950/40 border-blue-800/55";
       case 'INVALID_JD':
         return "text-amber-600 bg-amber-50 border-amber-100";
       default:
@@ -139,7 +141,7 @@ export default function TransformErrorPanel({
           {normalizedErrorCode}
         </span>
 
-        <h3 className="text-xl font-bold bg-gradient-to-r from-white via-slate-200 to-slate-400 bg-clip-text text-transparent mb-2">
+        <h3 className="text-xl font-bold text-slate-100 mb-2">
           {errorObj.title}
         </h3>
         

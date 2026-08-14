@@ -1,3 +1,5 @@
+'use client';
+
 import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { getScoreHex } from '../../lib/scoring';
@@ -72,7 +74,7 @@ export default function ScoreDisplay({ score, keywordsMatched = [], keywordsTota
             <span className="font-serif text-3xl font-bold leading-none" style={{ color: fill }}>
               {displayScore}
             </span>
-            <span className="text-[9px] text-slate-450 font-mono mt-1 font-bold uppercase tracking-wider">Score</span>
+            <span className="text-[9px] text-slate-400 font-mono mt-1 font-bold uppercase tracking-wider">Score</span>
           </div>
         </div>
 

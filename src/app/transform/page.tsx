@@ -19,7 +19,7 @@ export default function Transform() {
   const [step, setStep] = useState(1);
   const [resumeText, setResumeText] = useState('');
   const [jobDescriptionText, setJobDescriptionText] = useState('');
-  const [optimizationMode, setOptimizationMode] = useState('description');
+  const [optimizationMode, setOptimizationMode] = useState<'description' | 'title'>('description');
   const { status, result, plainText, transformationId, error, errorDetails, rateLimit, transform, reset } = useTransform();
   const [showLoading, setShowLoading] = useState(false);
   const [localStatus, setLocalStatus] = useState('idle');

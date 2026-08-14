@@ -21,13 +21,13 @@ export async function parsePDF(file) {
     // pdf.js throws its own error shapes; map them to codes that
     // getFileParseError knows how to explain.
     if (err?.name === 'PasswordException') {
-      throw new Error('PDF_PASSWORD_PROTECTED');
+      throw new Error('PDF_PASSWORD_PROTECTED', { cause: err });
     }
     if (err?.name === 'InvalidPDFException') {
-      throw new Error('PDF_CORRUPT');
+      throw new Error('PDF_CORRUPT', { cause: err });
     }
     console.error('PDF load failed:', err);
-    throw new Error('PDF_LOAD_FAILED');
+    throw new Error('PDF_LOAD_FAILED', { cause: err });
   }
 
   let fullText = '';
@@ -40,7 +40,7 @@ export async function parsePDF(file) {
     }
   } catch (err) {
     console.error('PDF text extraction failed:', err);
-    throw new Error('PDF_EXTRACTION_FAILED');
+    throw new Error('PDF_EXTRACTION_FAILED', { cause: err });
   } finally {
     // Release the worker's copy of the document rather than waiting for GC.
     pdf.destroy?.();

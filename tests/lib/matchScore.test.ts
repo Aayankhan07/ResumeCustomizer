@@ -2,6 +2,44 @@ import { describe, it, expect } from 'vitest';
 import { computeMatchScore } from '@/lib/matchScore';
 
 describe('computeMatchScore', () => {
+  // Matching used to be `outputText.includes(kw)` with no word boundaries, so
+  // short keywords matched inside unrelated longer words and inflated every
+  // score the product displays.
+  describe('word-boundary matching', () => {
+    it('does not match "ai" inside "maintained"', () => {
+      const res = computeMatchScore('ai', { summary: 'Maintained legacy systems' });
+      expect(res.matched).toEqual([]);
+      expect(res.score).toBe(0);
+    });
+
+    it('does not match "go" inside "algorithm"', () => {
+      const res = computeMatchScore('go', { summary: 'Designed an algorithm' });
+      expect(res.matched).toEqual([]);
+      expect(res.score).toBe(0);
+    });
+
+    it('still matches a whole word', () => {
+      const res = computeMatchScore('ai', { summary: 'Built AI systems' });
+      expect(res.matched).toEqual(['Ai']);
+      expect(res.score).toBe(100);
+    });
+
+    it('matches a keyword adjacent to punctuation', () => {
+      const res = computeMatchScore('python', { summary: 'Skills: Python, SQL.' });
+      expect(res.matched).toEqual(['Python']);
+    });
+
+    it('does not classify "airflow" as a technical keyword via substring', () => {
+      // "airflow" contains "ai"; substring classification previously weighted
+      // it as a tech term.
+      const res = computeMatchScore('airflow', { summary: 'Used Airflow daily' }, {
+        techDepth: 100,
+        industryFocus: 80,
+      });
+      expect(res.matched).toEqual(['Airflow']);
+    });
+  });
+
   it('handles empty job description', () => {
     const res = computeMatchScore('', { summary: 'Experienced software engineer' });
     expect(res.score).toBe(0);

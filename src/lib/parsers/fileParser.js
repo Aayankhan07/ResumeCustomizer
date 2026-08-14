@@ -46,7 +46,7 @@ async function parseDOCX(file) {
     result = await mammoth.extractRawText({ arrayBuffer });
   } catch (err) {
     console.error('DOCX parse failed:', err);
-    throw new Error('DOCX_CORRUPT');
+    throw new Error('DOCX_CORRUPT', { cause: err });
   }
 
   if (!result.value || result.value.trim().length < 50) {
@@ -62,7 +62,7 @@ async function parseTXT(file) {
     text = await file.text();
   } catch (err) {
     console.error('TXT read failed:', err);
-    throw new Error('FILE_READ_FAILED');
+    throw new Error('FILE_READ_FAILED', { cause: err });
   }
 
   // The other two formats enforce a minimum; plain text previously did not,
@@ -80,7 +80,7 @@ export function getFileParseError(code) {
     UNSUPPORTED_FILE_TYPE: 'Upload a PDF, DOCX, or TXT file.',
     FILE_TYPE_MISMATCH: "This file's contents do not match its extension.",
     NO_FILE: 'No file selected.',
-    FILE_READ_FAILED: 'Could not read this file. Try a different one.',
+    FILE_READ_FAILED: 'The file could not be opened. It may have been moved or renamed.',
 
     PDF_NO_TEXT:
       'This PDF contains images only. Please paste your resume as text instead.',

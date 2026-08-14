@@ -1,3 +1,5 @@
+'use client';
+
 import { useEffect, useState, useRef } from 'react';
 
 export default function ScoreRing({ score, size = 88, strokeWidth = 6, duration = 900 }) {

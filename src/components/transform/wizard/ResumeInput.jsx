@@ -1,3 +1,5 @@
+'use client';
+
 import FileDropzone from './FileDropzone';
 import Textarea from '../../ui/Textarea';
 import { RESUME_LIMITS } from '../../../lib/limits';
@@ -29,7 +31,7 @@ export default function ResumeInput({ value, onChange }) {
           <span className="w-full border-t border-slate-200 dark:border-slate-800"></span>
         </div>
         <div className="relative flex justify-center text-xs uppercase">
-          <span className="bg-mist dark:bg-[#030712] px-3 text-slate-405 font-bold font-mono">Or paste text</span>
+          <span className="bg-[var(--bg-subtle)] dark:bg-[#030712] px-3 text-slate-400 font-bold font-mono">Or paste text</span>
         </div>
       </div>
 

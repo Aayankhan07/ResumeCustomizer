@@ -1,3 +1,5 @@
+'use client';
+
 import { useState, useCallback } from 'react';
 import { transformResume, ApiError } from '../lib/api';
 import type { TransformOutput } from '../lib/schemas';
