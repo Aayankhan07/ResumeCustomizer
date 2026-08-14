@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '../../../lib/supabase/server';
 import { computeMatchScore } from '../../../lib/matchScore';
+import { checkRateLimit } from '../../../lib/rateLimit';
 
 export async function POST(req: Request) {
   try {
@@ -11,7 +12,22 @@ export async function POST(req: Request) {
       return NextResponse.json({ success: false, error: 'AUTH_FAILED' }, { status: 401 });
     }
 
-    // 2. Parse body
+    // 2. Rate limit. This endpoint does a DB read plus a write per call and
+    // was previously uncapped.
+    const rateCheck = await checkRateLimit(user.id, 'rescore');
+    if (rateCheck.unavailable) {
+      return NextResponse.json({ success: false, error: 'RATE_LIMIT_UNAVAILABLE' }, { status: 503 });
+    }
+    if (!rateCheck.allowed) {
+      return NextResponse.json({
+        success: false,
+        error: 'RATE_LIMITED',
+        remaining: 0,
+        reset_at: rateCheck.resetAt.toISOString(),
+      }, { status: 429 });
+    }
+
+    // 3. Parse body
     const body = await req.json();
     const { transformation_id, weights } = body;
 

@@ -7,6 +7,7 @@ const RETRY_ERRORS = ['AI_TIMEOUT', 'INTERNAL_SERVER_ERROR'];
 export function useTransform() {
   const [state, setState] = useState({
     status: 'idle',      // idle | loading | success | error
+    persisted: true,     // false when the result was generated but not saved
     result: null,
     plainText: null,
     transformationId: null,
@@ -22,18 +23,23 @@ export function useTransform() {
       try {
         const data = await transformResume({ resumeText, jobDescriptionText, optimizationMode });
 
+        // The transform itself succeeded, but persisted === false means the
+        // result never reached history. Surface that rather than reporting
+        // plain success for a result the user cannot find again later.
+        const persisted = data.persisted !== false;
+
         setState({
           status: 'success',
+          persisted,
           result: data.data,
           plainText: data.plain_text,
           transformationId: data.transformation_id,
-          error: null,
+          error: persisted ? null : 'DATABASE_SAVE_FAILED',
           rateLimit: data.rate_limit,
         });
 
-        if (data.db_error) {
-          console.error('Database save error:', data.db_error);
-          toast.error(`Failed to save to history: ${data.db_error.message || JSON.stringify(data.db_error)}`);
+        if (!persisted) {
+          toast.warning('Your resume was generated but could not be saved to history. Download it before leaving this page.');
         }
       } catch (err) {
         if (attempt === 1 && RETRY_ERRORS.includes(err.code)) {
@@ -59,7 +65,7 @@ export function useTransform() {
 
   const reset = useCallback(() => {
     setState({
-      status: 'idle', result: null, plainText: null,
+      status: 'idle', persisted: true, result: null, plainText: null,
       transformationId: null, error: null, rateLimit: null,
     });
   }, []);

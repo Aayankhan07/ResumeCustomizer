@@ -26,8 +26,24 @@ export async function middleware(request: NextRequest) {
     }
   );
 
-  // Refresh session token
-  const { data: { user } } = await supabase.auth.getUser();
+  // Refresh session token.
+  //
+  // This runs on nearly every route (see matcher below), so an unguarded
+  // throw here takes down the whole site — landing page included — whenever
+  // Supabase has a blip. Treat any failure as "not signed in" and let the
+  // gating below decide: protected routes still redirect to /login, public
+  // routes still render.
+  let user: Awaited<ReturnType<typeof supabase.auth.getUser>>['data']['user'] = null;
+  try {
+    const { data, error } = await supabase.auth.getUser();
+    if (error) {
+      console.error('Middleware auth check failed:', error.message);
+    } else {
+      user = data.user;
+    }
+  } catch (err) {
+    console.error('Middleware auth check threw:', err);
+  }
 
   // Route auth gating
   const protectedPaths = ['/dashboard', '/transform', '/profile'];

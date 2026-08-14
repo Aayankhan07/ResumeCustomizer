@@ -52,6 +52,13 @@ export async function POST(req: Request) {
 
     // 4. Rate limit check
     const rateCheck = await checkRateLimit(user.id, 'transform');
+    if (rateCheck.unavailable) {
+      // Limiter itself failed. Fail closed rather than leave LLM spend uncapped.
+      return NextResponse.json({
+        success: false,
+        error: 'RATE_LIMIT_UNAVAILABLE',
+      }, { status: 503 });
+    }
     if (!rateCheck.allowed) {
       return NextResponse.json({
         success: false,
@@ -133,8 +140,9 @@ export async function POST(req: Request) {
       optimizationMode: optimization_mode as 'description' | 'title'
     });
     
-    // Override Groq's self-reported score with our computed one for consistency
-    transformResult.meta = transformResult.meta || {};
+    // Override Groq's self-reported score with our computed one for consistency.
+    // meta is required by the schema, so validation above guarantees it exists
+    // along with detected_job_title and detected_company.
     transformResult.meta.match_score = scoreResult.score;
     transformResult.meta.keywords_matched = scoreResult.matched;
     transformResult.meta.keywords_total = scoreResult.total;
@@ -170,21 +178,29 @@ export async function POST(req: Request) {
       .single();
 
     if (saveError) {
+      // Log the full error server-side only. It must never reach the client:
+      // Supabase errors carry constraint and schema names.
       console.error('DB save error:', saveError);
     }
 
     // 9. Return response
+    //
+    // The LLM call already succeeded and was paid for, so the output is
+    // returned either way. But a failed save is NOT a success: persisted
+    // tells the client the result is missing from history, and the status
+    // code reflects that so the hook cannot report plain success.
     return NextResponse.json({
       success: true,
+      persisted: !saveError,
+      error: saveError ? 'DATABASE_SAVE_FAILED' : undefined,
       data: transformResult,
       plain_text: plainText,
       transformation_id: saved?.id ?? null,
-      db_error: saveError || null,
       rate_limit: {
         remaining: rateCheck.remaining,
         reset_at: rateCheck.resetAt.toISOString(),
       }
-    }, { status: 200 });
+    }, { status: saveError ? 207 : 200 });
 
   } catch (err) {
     console.error(JSON.stringify({

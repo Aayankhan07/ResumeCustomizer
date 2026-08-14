@@ -29,6 +29,16 @@ export const ERROR_MESSAGES = {
     description: () => "Your session has expired or you are not authorized to perform this action. Please sign in again.",
     action: "Log back in"
   },
+  RATE_LIMIT_UNAVAILABLE: {
+    title: "Usage limits temporarily unavailable",
+    description: () => "We couldn't verify your remaining usage, so the request was stopped as a precaution. This is usually brief.",
+    action: "Try again in a minute"
+  },
+  DATABASE_SAVE_FAILED: {
+    title: "Result not saved to history",
+    description: () => "Your resume was generated successfully but couldn't be saved to your history. Download it before leaving this page.",
+    action: "Download your resume now"
+  },
   DEFAULT_ERROR: {
     title: "Analysis failed",
     description: (details) => details || "The AI response was unexpected. Please try again.",

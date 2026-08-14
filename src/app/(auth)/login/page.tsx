@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { createClient } from '../../../lib/supabase/client';
@@ -18,6 +18,18 @@ export default function Login() {
   const searchParams = useSearchParams();
   const supabase = createClient();
   const redirectTo = searchParams?.get('redirect') || '/dashboard';
+
+  // Surface failures redirected here from /auth/callback. Without this the
+  // user is bounced back to the login form with no explanation.
+  const authError = searchParams?.get('error');
+  useEffect(() => {
+    if (!authError) return;
+    const messages = {
+      auth_failed: 'Sign-in link was invalid or expired. Please try again.',
+      oauth_denied: 'Sign-in was cancelled.',
+    };
+    toast.error(messages[authError] ?? 'Sign-in failed. Please try again.');
+  }, [authError]);
 
   const handleLogin = async (e) => {
     e.preventDefault();

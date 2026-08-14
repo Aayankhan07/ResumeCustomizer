@@ -75,7 +75,7 @@ export const TransformOutputSchema = z.object({
     keywords_total: z.number().optional().nullable(),
     keywords_missing: z.array(z.string()).optional().nullable(),
     optimization_mode: z.string().optional().nullable(),
-  }).optional(),
+  }),
 });
 
 export type TransformOutput = z.infer<typeof TransformOutputSchema>;
