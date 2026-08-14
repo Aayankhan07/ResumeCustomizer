@@ -146,8 +146,10 @@ export default function TransformOutput({ result: initialResult, plainText, orig
       toast.success('Resume downloaded');
 
     } catch (err) {
+      // Reported to the user via toast and logged for Sentry. Re-throwing
+      // here would only surface as an unhandled promise rejection.
+      console.error('PDF generation failed:', err);
       toast.error('Failed to generate PDF. Try copying the plain text.');
-      throw err;
     }
   };
 
@@ -158,9 +160,8 @@ export default function TransformOutput({ result: initialResult, plainText, orig
       await generateResumeDOCX(result);
       toast.success('DOCX saved to downloads');
     } catch (err) {
-      console.error(err);
+      console.error('DOCX generation failed:', err);
       toast.error('Failed to generate Word document.');
-      throw err;
     }
   };
 

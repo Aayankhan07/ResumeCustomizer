@@ -12,32 +12,52 @@ interface AuthContextType {
 }
 
 const AuthContext = createContext<AuthContextType | null>(null);
-const supabase = createClient();
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      setLoading(false);
-    });
+  // Created lazily rather than at module scope: module-level construction runs
+  // during static prerender, where public env vars are not available, and
+  // would fail the build before any component renders.
+  const [supabase] = useState(() => createClient());
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (_event, session) => {
+  useEffect(() => {
+    // Without the catch, a Supabase outage left loading stuck at true and the
+    // entire tree unrendered (see the `!loading && children` guard below).
+    supabase.auth
+      .getSession()
+      .then(({ data: { session } }) => {
         setSession(session);
         setUser(session?.user ?? null);
-      }
-    );
+      })
+      .catch((err) => {
+        console.error('Failed to restore session:', err);
+      })
+      .finally(() => {
+        setLoading(false);
+      });
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      setSession(session);
+      setUser(session?.user ?? null);
+    });
 
     return () => subscription.unsubscribe();
-  }, []);
+  }, [supabase]);
 
   const signOut = async () => {
-    await supabase.auth.signOut();
+    try {
+      await supabase.auth.signOut();
+    } catch (err) {
+      console.error('Sign out failed:', err);
+      // Clear locally regardless so the UI does not appear signed in.
+      setSession(null);
+      setUser(null);
+    }
   };
 
   return (

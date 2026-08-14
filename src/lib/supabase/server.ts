@@ -1,31 +1,15 @@
 import { createServerClient } from '@supabase/ssr';
+import { createClient as createSupabaseClient } from '@supabase/supabase-js';
 import { cookies } from 'next/headers';
-
-const getMetaEnv = (key: string): string | undefined => {
-  try {
-    const meta = import.meta as any;
-    return meta && meta['env'] ? meta['env'][key] : undefined;
-  } catch {
-    return undefined;
-  }
-};
-
-const supabaseUrl = 
-  (typeof process !== 'undefined' && process.env ? process.env.NEXT_PUBLIC_SUPABASE_URL : undefined) || 
-  getMetaEnv('VITE_SUPABASE_URL') ||
-  'https://placeholder-project.supabase.co';
-
-const supabaseKey = 
-  (typeof process !== 'undefined' && process.env ? process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY : undefined) || 
-  getMetaEnv('VITE_SUPABASE_ANON_KEY') ||
-  'placeholder-anon-key-for-build-time-pass';
+import { getClientEnv } from '../env';
 
 export async function createClient() {
+  const env = getClientEnv();
   const cookieStore = await cookies();
-  
+
   return createServerClient(
-    supabaseUrl,
-    supabaseKey,
+    env.NEXT_PUBLIC_SUPABASE_URL,
+    env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
     {
       cookies: {
         getAll() {
@@ -45,8 +29,7 @@ export async function createClient() {
   );
 }
 
-import { createClient as createSupabaseClient } from '@supabase/supabase-js';
-
 export function createAnonClient() {
-  return createSupabaseClient(supabaseUrl, supabaseKey);
+  const env = getClientEnv();
+  return createSupabaseClient(env.NEXT_PUBLIC_SUPABASE_URL, env.NEXT_PUBLIC_SUPABASE_ANON_KEY);
 }

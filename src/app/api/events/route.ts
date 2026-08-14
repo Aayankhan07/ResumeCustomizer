@@ -1,17 +1,32 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '../../../lib/supabase/server';
+import { apiErrors } from '../../../lib/apiError';
+import { createEventSchema, eventsQuerySchema } from '../../../lib/schemas/api';
+
+export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
+
+interface ApplicationEvent {
+  id: string;
+  event_date: string | null;
+  [key: string]: unknown;
+}
 
 export async function POST(req: Request) {
   try {
-    // 1. Auth check
     const supabase = await createClient();
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
-    if (authError || !user) {
-      return NextResponse.json({ success: false, error: 'AUTH_FAILED' }, { status: 401 });
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
+    if (authError || !user) return apiErrors.unauthorized();
+
+    // Previously only 3 of 8 fields were checked; the rest were inserted raw.
+    const parsed = createEventSchema.safeParse(await req.json());
+    if (!parsed.success) {
+      return apiErrors.invalidBody(parsed.error.issues);
     }
 
-    // 2. Parse body
-    const body = await req.json();
     const {
       transformation_id,
       event_type,
@@ -20,14 +35,10 @@ export async function POST(req: Request) {
       interview_round,
       interview_format,
       interviewer_name,
-      notes
-    } = body;
+      notes,
+    } = parsed.data;
 
-    if (!transformation_id || !event_type || !title) {
-      return NextResponse.json({ success: false, error: 'MISSING_REQUIRED_FIELDS' }, { status: 400 });
-    }
-
-    // 3. Security: Check if the transformation belongs to the user
+    // The parent transformation must belong to the caller.
     const { data: transformation, error: transError } = await supabase
       .from('transformations')
       .select('id')
@@ -36,10 +47,11 @@ export async function POST(req: Request) {
       .maybeSingle();
 
     if (transError || !transformation) {
-      return NextResponse.json({ success: false, error: 'UNAUTHORIZED_OR_NOT_FOUND' }, { status: 403 });
+      return apiErrors.notFound('UNAUTHORIZED_OR_NOT_FOUND');
     }
 
-    // 4. Insert event
+    const isInterview = event_type === 'interview';
+
     const { data: event, error: eventError } = await supabase
       .from('application_events')
       .insert({
@@ -47,69 +59,69 @@ export async function POST(req: Request) {
         user_id: user.id,
         event_type,
         title,
-        event_date: event_date || null,
-        interview_round: event_type === 'interview' ? interview_round : null,
-        interview_format: event_type === 'interview' ? interview_format : null,
-        interviewer_name: event_type === 'interview' ? interviewer_name : null,
-        notes: notes || null
+        event_date: event_date ?? null,
+        interview_round: isInterview ? (interview_round ?? null) : null,
+        interview_format: isInterview ? (interview_format ?? null) : null,
+        interviewer_name: isInterview ? (interviewer_name ?? null) : null,
+        notes: notes ?? null,
       })
       .select()
       .single();
 
-    if (eventError) {
-      console.error('Error inserting event:', eventError);
-      return NextResponse.json({ success: false, error: eventError.message }, { status: 500 });
-    }
+    if (eventError) return apiErrors.database(eventError);
 
     return NextResponse.json({ success: true, data: event });
   } catch (err) {
-    console.error('Unhandled error in POST /api/events:', err);
-    return NextResponse.json({ success: false, error: 'INTERNAL_SERVER_ERROR' }, { status: 500 });
+    return apiErrors.internal(err);
   }
 }
 
 export async function GET(req: Request) {
   try {
-    // 1. Auth check
     const supabase = await createClient();
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
-    if (authError || !user) {
-      return NextResponse.json({ success: false, error: 'AUTH_FAILED' }, { status: 401 });
-    }
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
+    if (authError || !user) return apiErrors.unauthorized();
 
-    // Parse query params
+    // parseInt with no guard previously let ?days=abc through as NaN, which
+    // made every event fall outside the window.
     const { searchParams } = new URL(req.url);
-    const daysParam = searchParams.get('days');
-    const days = daysParam ? parseInt(daysParam, 10) : 14;
+    const query = eventsQuerySchema.safeParse({
+      days: searchParams.get('days') ?? undefined,
+    });
+    if (!query.success) {
+      return apiErrors.invalidBody(query.error.issues);
+    }
+    const { days } = query.data;
 
-    // Fetch all non-done events (interviews and follow-ups) for the user, joined with transformation info
     const { data: events, error } = await supabase
       .from('application_events')
-      .select(`
+      .select(
+        `
         *,
         transformations (
           detected_job_title,
           detected_company
         )
-      `)
+      `
+      )
       .eq('user_id', user.id)
       .eq('is_done', false)
       .in('event_type', ['interview', 'follow_up'])
       .order('event_date', { ascending: true });
 
-    if (error) {
-      console.error('Error fetching events:', error);
-      return NextResponse.json({ success: false, error: error.message }, { status: 500 });
-    }
+    if (error) return apiErrors.database(error);
 
     const now = new Date();
     const futureLimit = new Date();
     futureLimit.setDate(futureLimit.getDate() + days);
 
-    const overdue: any[] = [];
-    const upcoming: any[] = [];
+    const overdue: ApplicationEvent[] = [];
+    const upcoming: ApplicationEvent[] = [];
 
-    events?.forEach((event: any) => {
+    (events as ApplicationEvent[] | null)?.forEach((event) => {
       if (!event.event_date) return;
       const eventDate = new Date(event.event_date);
       if (eventDate < now) {
@@ -119,15 +131,8 @@ export async function GET(req: Request) {
       }
     });
 
-    return NextResponse.json({
-      success: true,
-      data: {
-        overdue,
-        upcoming
-      }
-    });
+    return NextResponse.json({ success: true, data: { overdue, upcoming } });
   } catch (err) {
-    console.error('Unhandled error in GET /api/events:', err);
-    return NextResponse.json({ success: false, error: 'INTERNAL_SERVER_ERROR' }, { status: 500 });
+    return apiErrors.internal(err);
   }
 }

@@ -5,10 +5,13 @@ import { callGroqWithFallback } from '../../../lib/groq';
 import { computeMatchScore } from '../../../lib/matchScore';
 import { resumeToPlainText } from '../../../lib/resumeToText';
 import { TransformOutputSchema } from '../../../lib/schemas';
+import { transformRequestSchema } from '../../../lib/schemas/api';
+import { apiErrors } from '../../../lib/apiError';
 
-const MAX_RESUME_CHARS = 10000;
-const MAX_JD_CHARS = 8000;
-const MIN_CHARS = 50;
+export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
+// Worst case is 3 models x 20s (see groq.ts) plus validation and the DB write.
+export const maxDuration = 90;
 
 export async function POST(req: Request) {
   let userId = 'anonymous';
@@ -21,34 +24,16 @@ export async function POST(req: Request) {
     }
     userId = user.id;
 
-    // 2. Parse body
-    const body = await req.json();
-    const { resume_text, job_description_text, optimization_mode = 'description' } = body;
-
-    // 3. Input validation
-    if (!resume_text || typeof resume_text !== 'string') {
-      return NextResponse.json({ success: false, error: 'MISSING_RESUME_TEXT' }, { status: 400 });
+    // 2. Parse and validate body.
+    //
+    // Replaces a hand-rolled ladder whose limits disagreed with the client's
+    // and which then silently truncated over-long input rather than rejecting
+    // it. Limits now come from lib/limits.ts, shared with the UI.
+    const parsed = transformRequestSchema.safeParse(await req.json());
+    if (!parsed.success) {
+      return apiErrors.invalidBody(parsed.error.issues);
     }
-    if (resume_text.trim().length < MIN_CHARS) {
-      return NextResponse.json({ success: false, error: 'INPUT_TOO_SHORT', field: 'resume_text' }, { status: 400 });
-    }
-    if (resume_text.length > MAX_RESUME_CHARS) {
-      return NextResponse.json({ 
-        success: false, 
-        error: 'CONTENT_TOO_LONG', 
-        field: 'resume_text',
-        max: MAX_RESUME_CHARS,
-        actual: resume_text.length
-      }, { status: 400 });
-    }
-    const minJdChars = optimization_mode === 'title' ? 3 : MIN_CHARS;
-    if (!job_description_text || job_description_text.trim().length < minJdChars) {
-      return NextResponse.json({ 
-        success: false, 
-        error: optimization_mode === 'title' ? 'INVALID_JOB_TITLE' : 'INVALID_JD', 
-        field: 'job_description_text' 
-      }, { status: 400 });
-    }
+    const { resume_text, job_description_text, optimization_mode } = parsed.data;
 
     // 4. Rate limit check
     const rateCheck = await checkRateLimit(user.id, 'transform');
@@ -103,11 +88,12 @@ export async function POST(req: Request) {
     let transformResult;
     let modelUsed = 'llama-3.3-70b-versatile';
     try {
-      const maxJdChars = optimization_mode === 'title' ? 300 : MAX_JD_CHARS;
+      // No truncation here: the schema already rejected over-long input, so
+      // trimming silently would only hide a validation gap.
       const groqRes = await callGroqWithFallback(
-        resume_text.substring(0, MAX_RESUME_CHARS),
-        job_description_text.substring(0, maxJdChars),
-        optimization_mode as 'description' | 'title'
+        resume_text,
+        job_description_text,
+        optimization_mode
       );
       transformResult = groqRes.data;
       modelUsed = groqRes.model_used;
@@ -136,8 +122,8 @@ export async function POST(req: Request) {
     transformResult = validationResult.data;
 
     // 6. Compute match score
-    const scoreResult = computeMatchScore(job_description_text, transformResult as any, {
-      optimizationMode: optimization_mode as 'description' | 'title'
+    const scoreResult = computeMatchScore(job_description_text, transformResult, {
+      optimizationMode: optimization_mode,
     });
     
     // Override Groq's self-reported score with our computed one for consistency.
@@ -150,8 +136,8 @@ export async function POST(req: Request) {
     transformResult.meta.optimization_mode = optimization_mode;
 
     // Store original texts inside transformResult for history retrieval
-    (transformResult as any).original_resume_text = resume_text;
-    (transformResult as any).original_job_description = job_description_text;
+    transformResult.original_resume_text = resume_text;
+    transformResult.original_job_description = job_description_text;
 
     // 7. Generate plain text
     const plainText = resumeToPlainText(transformResult);

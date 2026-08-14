@@ -8,7 +8,9 @@ export default defineConfig({
   },
   resolve: {
     alias: {
-      '@': path.resolve(__dirname, './src'),
+      // import.meta.dirname rather than __dirname: Vite's native config loader
+      // does not provide the CJS globals.
+      '@': path.resolve(import.meta.dirname, './src'),
     },
   },
 });

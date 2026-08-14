@@ -3,6 +3,7 @@ import { useRouter } from 'next/navigation';
 import { MoreVertical, ChevronRight } from 'lucide-react';
 import { timeAgo } from '../../utils/formatDate';
 import { trackEvent } from '../../utils/analytics';
+import { toast } from 'sonner';
 
 
 const STATUS_STYLES = {
@@ -72,13 +73,18 @@ export default function AnalysisRow({ item, onDelete, onUpdateStatus }) {
     router.push(`/transform/${item.id}`);
   };
 
-  const handleStatusChange = (e) => {
+  const handleStatusChange = async (e) => {
     const newStatus = e.target.value;
     const oldStatus = item.status || 'Saved';
     trackEvent('status_updated', { old_status: oldStatus, new_status: newStatus });
-    onUpdateStatus(item.id, newStatus);
+    try {
+      await onUpdateStatus(item.id, newStatus);
+    } catch {
+      // The hook rolls the optimistic update back; tell the user why the
+      // value snapped back.
+      toast.error('Could not update status. Please try again.');
+    }
   };
-
 
   const handleDeleteClick = (e) => {
     e.stopPropagation();
@@ -86,10 +92,14 @@ export default function AnalysisRow({ item, onDelete, onUpdateStatus }) {
     setShowConfirm(true);
   };
 
-  const confirmDelete = (e) => {
+  const confirmDelete = async (e) => {
     e.stopPropagation();
-    onDelete(item.id);
     setShowConfirm(false);
+    try {
+      await onDelete(item.id);
+    } catch {
+      toast.error('Could not delete this analysis. Please try again.');
+    }
   };
 
   const cancelDelete = (e) => {

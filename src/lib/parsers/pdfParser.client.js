@@ -1,26 +1,53 @@
 let pdfjsLib = null;
 
+/**
+ * Extracts text from a PDF in the browser.
+ *
+ * The worker is served from our own origin (see scripts/copy-pdf-worker.mjs).
+ * It was previously fetched from unpkg.com at runtime, which executed
+ * third-party code in the user's browser on every upload.
+ */
 export async function parsePDF(file) {
   if (!pdfjsLib) {
     pdfjsLib = await import('pdfjs-dist');
-    pdfjsLib.GlobalWorkerOptions.workerSrc = 
-      `https://unpkg.com/pdfjs-dist@${pdfjsLib.version}/build/pdf.worker.min.mjs`;
+    pdfjsLib.GlobalWorkerOptions.workerSrc = '/pdfjs/pdf.worker.min.mjs';
   }
 
-  const arrayBuffer = await file.arrayBuffer();
-  const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+  let pdf;
+  try {
+    const arrayBuffer = await file.arrayBuffer();
+    pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+  } catch (err) {
+    // pdf.js throws its own error shapes; map them to codes that
+    // getFileParseError knows how to explain.
+    if (err?.name === 'PasswordException') {
+      throw new Error('PDF_PASSWORD_PROTECTED');
+    }
+    if (err?.name === 'InvalidPDFException') {
+      throw new Error('PDF_CORRUPT');
+    }
+    console.error('PDF load failed:', err);
+    throw new Error('PDF_LOAD_FAILED');
+  }
+
   let fullText = '';
 
-  for (let i = 1; i <= pdf.numPages; i++) {
-    const page = await pdf.getPage(i);
-    const content = await page.getTextContent();
-    const pageText = content.items
-      .map(item => item.str)
-      .join(' ');
-    fullText += pageText + '\n';
+  try {
+    for (let i = 1; i <= pdf.numPages; i++) {
+      const page = await pdf.getPage(i);
+      const content = await page.getTextContent();
+      fullText += content.items.map((item) => item.str).join(' ') + '\n';
+    }
+  } catch (err) {
+    console.error('PDF text extraction failed:', err);
+    throw new Error('PDF_EXTRACTION_FAILED');
+  } finally {
+    // Release the worker's copy of the document rather than waiting for GC.
+    pdf.destroy?.();
   }
 
   if (fullText.trim().length < 50) {
+    // Almost always a scanned/image-only PDF with no text layer.
     throw new Error('PDF_NO_TEXT');
   }
 

@@ -236,11 +236,17 @@ export async function generateResumeDOCX(data) {
 
   const blob = await Packer.toBlob(doc);
   const url = URL.createObjectURL(blob);
-  const element = document.createElement("a");
-  element.href = url;
-  element.download = `${contact.name.replace(/\s+/g, '_')}_Tailored_Resume.docx`;
-  document.body.appendChild(element);
-  element.click();
-  document.body.removeChild(element);
-  URL.revokeObjectURL(url);
+
+  // revokeObjectURL sat after click() with no finally, so any throw in
+  // between leaked the object URL for the lifetime of the document.
+  try {
+    const element = document.createElement("a");
+    element.href = url;
+    element.download = `${(contact?.name || 'Resume').replace(/\s+/g, '_')}_Tailored_Resume.docx`;
+    document.body.appendChild(element);
+    element.click();
+    document.body.removeChild(element);
+  } finally {
+    URL.revokeObjectURL(url);
+  }
 }

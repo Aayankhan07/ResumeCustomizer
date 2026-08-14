@@ -1,8 +1,15 @@
 import { createClient } from '@supabase/supabase-js';
+import { getClientEnv, getServerEnv } from '../env';
 
+/**
+ * Service-role client. Bypasses RLS — server-side use only.
+ *
+ * The VITE_SUPABASE_URL fallback that used to sit here was a Vite-era leftover
+ * that could silently point production at a different project.
+ */
 export function createServiceClient() {
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.VITE_SUPABASE_URL || 'https://placeholder-project.supabase.co';
-  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || 'placeholder-service-key-for-build-time-pass';
-  
-  return createClient(url, serviceKey);
+  const { NEXT_PUBLIC_SUPABASE_URL } = getClientEnv();
+  const { SUPABASE_SERVICE_ROLE_KEY } = getServerEnv();
+
+  return createClient(NEXT_PUBLIC_SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 }

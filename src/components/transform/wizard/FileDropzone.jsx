@@ -1,6 +1,7 @@
 import { useState, useRef, useCallback } from 'react';
 import { Upload, CheckCircle, XCircle, Loader2 } from 'lucide-react';
 import { parseFile, getFileParseError } from '../../../lib/parsers/fileParser';
+import { RESUME_LIMITS } from '../../../lib/limits';
 
 export default function FileDropzone({ onTextExtracted, label = 'Drop your file here' }) {
   const [status, setStatus] = useState('idle'); // idle | dragging | parsing | success | error
@@ -30,7 +31,7 @@ export default function FileDropzone({ onTextExtracted, label = 'Drop your file 
       }
       
       // Max length check
-      if (text.length > 15000) {
+      if (text.length > RESUME_LIMITS.max) {
         setStatus('error');
         setMessage('Resume too long. Consider trimming older roles.');
         return;

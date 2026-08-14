@@ -76,6 +76,13 @@ export const TransformOutputSchema = z.object({
     keywords_missing: z.array(z.string()).optional().nullable(),
     optimization_mode: z.string().optional().nullable(),
   }),
+
+  // Attached server-side after validation so history and rescoring can reach
+  // the original inputs. Optional because the model never produces them; they
+  // were previously written via `as any` casts, which is why rescore could
+  // silently read undefined from older rows.
+  original_resume_text: z.string().optional(),
+  original_job_description: z.string().optional(),
 });
 
 export type TransformOutput = z.infer<typeof TransformOutputSchema>;

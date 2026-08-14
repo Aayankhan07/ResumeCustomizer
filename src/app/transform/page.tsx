@@ -12,6 +12,7 @@ import TransformOutput from '../../components/transform/TransformOutput';
 import TransformErrorPanel from '../../components/transform/workspace/TransformErrorPanel';
 import Button from '../../components/ui/Button';
 import { trackEvent } from '../../utils/analytics';
+import { RESUME_LIMITS, JD_LIMITS, JOB_TITLE_LIMITS } from '../../lib/limits';
 
 
 export default function Transform() {
@@ -84,7 +85,7 @@ export default function Transform() {
   }, [status]);
 
   const handleNext = () => {
-    if (step === 1 && resumeText.trim().length >= 50) {
+    if (step === 1 && resumeText.trim().length >= RESUME_LIMITS.min) {
       setStep(2);
     }
   };
@@ -96,8 +97,8 @@ export default function Transform() {
   };
 
   const handleTransform = () => {
-    const minLen = optimizationMode === 'title' ? 3 : 50;
-    if (resumeText.trim().length >= 50 && jobDescriptionText.trim().length >= minLen) {
+    const minLen = optimizationMode === 'title' ? JOB_TITLE_LIMITS.min : JD_LIMITS.min;
+    if (resumeText.trim().length >= RESUME_LIMITS.min && jobDescriptionText.trim().length >= minLen) {
       trackEvent('analysis_started', { optimization_mode: optimizationMode });
       transform({ resumeText, jobDescriptionText, optimizationMode });
     }
@@ -112,10 +113,14 @@ export default function Transform() {
     setOptimizationMode('description');
   };
 
-  const isStep1Valid = resumeText.trim().length >= 200 && resumeText.trim().length <= 15000;
+  const isStep1Valid =
+    resumeText.trim().length >= RESUME_LIMITS.min &&
+    resumeText.trim().length <= RESUME_LIMITS.max;
   const isStep2Valid = optimizationMode === 'title'
-    ? jobDescriptionText.trim().length >= 3 && jobDescriptionText.trim().length <= 150
-    : jobDescriptionText.trim().length >= 200 && jobDescriptionText.trim().length <= 10000;
+    ? jobDescriptionText.trim().length >= JOB_TITLE_LIMITS.min &&
+      jobDescriptionText.trim().length <= JOB_TITLE_LIMITS.max
+    : jobDescriptionText.trim().length >= JD_LIMITS.min &&
+      jobDescriptionText.trim().length <= JD_LIMITS.max;
 
   return (
     <div className="min-h-screen bg-[var(--bg-base)] text-[var(--text-primary)] flex flex-col font-sans transition-colors duration-300">
@@ -161,27 +166,27 @@ export default function Transform() {
             <div className="flex items-center justify-between max-w-sm w-full mx-auto mb-6 select-none px-4">
               <div className="flex items-center gap-2.5">
                 <div className={`w-8 h-8 rounded-md flex items-center justify-center text-xs font-bold transition-all duration-150 ${
-                  step === 1 ? 'bg-slate-900 dark:bg-indigo-650 text-white shadow-sm' : 'bg-emerald-600 text-white border border-emerald-500'
+                  step === 1 ? 'bg-slate-900 dark:bg-indigo-600 text-white shadow-sm' : 'bg-emerald-600 text-white border border-emerald-500'
                 }`}>
                   {step > 1 ? '✓' : '1'}
                 </div>
-                <span className={`text-xs font-semibold tracking-wide uppercase ${step === 1 ? 'text-slate-900 dark:text-slate-200' : 'text-slate-400 dark:text-slate-500'}`}>Resume</span>
+                <span className={`text-xs font-semibold tracking-wide uppercase ${step === 1 ? 'text-slate-900 dark:text-slate-200' : 'text-slate-600 dark:text-slate-400'}`}>Resume</span>
               </div>
               
               <div className="flex-1 h-0.5 mx-4 bg-slate-200 dark:bg-slate-800 relative rounded-full">
                 <div 
-                  className="absolute inset-y-0 left-0 bg-slate-900 dark:bg-indigo-650 transition-all duration-300 ease-in-out rounded-full" 
+                  className="absolute inset-y-0 left-0 bg-slate-900 dark:bg-indigo-600 transition-all duration-300 ease-in-out rounded-full" 
                   style={{ width: step > 1 ? '100%' : '0%' }}
                 />
               </div>
 
               <div className="flex items-center gap-2.5">
                 <div className={`w-8 h-8 rounded-md flex items-center justify-center text-xs font-bold transition-all duration-150 border ${
-                  step === 2 ? 'bg-slate-900 dark:bg-indigo-650 text-white border-transparent' : 'bg-white dark:bg-slate-900 text-slate-400 dark:text-slate-500 border-slate-200 dark:border-slate-800'
+                  step === 2 ? 'bg-slate-900 dark:bg-indigo-600 text-white border-transparent' : 'bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-800'
                 }`}>
                   2
                 </div>
-                <span className={`text-xs font-semibold tracking-wide uppercase ${step === 2 ? 'text-slate-900 dark:text-slate-200' : 'text-slate-400 dark:text-slate-500'}`}>Job description</span>
+                <span className={`text-xs font-semibold tracking-wide uppercase ${step === 2 ? 'text-slate-900 dark:text-slate-200' : 'text-slate-600 dark:text-slate-400'}`}>Job description</span>
               </div>
             </div>
 

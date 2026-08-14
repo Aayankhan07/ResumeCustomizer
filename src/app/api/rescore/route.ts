@@ -2,40 +2,53 @@ import { NextResponse } from 'next/server';
 import { createClient } from '../../../lib/supabase/server';
 import { computeMatchScore } from '../../../lib/matchScore';
 import { checkRateLimit } from '../../../lib/rateLimit';
+import { apiErrors } from '../../../lib/apiError';
+import { rescoreRequestSchema } from '../../../lib/schemas/api';
+import type { TransformOutput } from '../../../lib/schemas';
+
+export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
 
 export async function POST(req: Request) {
   try {
     // 1. Auth check
     const supabase = await createClient();
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
-    if (authError || !user) {
-      return NextResponse.json({ success: false, error: 'AUTH_FAILED' }, { status: 401 });
-    }
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
+    if (authError || !user) return apiErrors.unauthorized();
 
     // 2. Rate limit. This endpoint does a DB read plus a write per call and
     // was previously uncapped.
     const rateCheck = await checkRateLimit(user.id, 'rescore');
     if (rateCheck.unavailable) {
-      return NextResponse.json({ success: false, error: 'RATE_LIMIT_UNAVAILABLE' }, { status: 503 });
+      return NextResponse.json(
+        { success: false, error: 'RATE_LIMIT_UNAVAILABLE' },
+        { status: 503 }
+      );
     }
     if (!rateCheck.allowed) {
-      return NextResponse.json({
-        success: false,
-        error: 'RATE_LIMITED',
-        remaining: 0,
-        reset_at: rateCheck.resetAt.toISOString(),
-      }, { status: 429 });
+      return NextResponse.json(
+        {
+          success: false,
+          error: 'RATE_LIMITED',
+          remaining: 0,
+          reset_at: rateCheck.resetAt.toISOString(),
+        },
+        { status: 429 }
+      );
     }
 
-    // 3. Parse body
-    const body = await req.json();
-    const { transformation_id, weights } = body;
-
-    if (!transformation_id) {
-      return NextResponse.json({ success: false, error: 'MISSING_TRANSFORMATION_ID' }, { status: 400 });
+    // 3. Validate body. Weights are bounded: unbounded values let a client
+    // fabricate any score.
+    const parsed = rescoreRequestSchema.safeParse(await req.json());
+    if (!parsed.success) {
+      return apiErrors.invalidBody(parsed.error.issues);
     }
+    const { transformation_id, weights } = parsed.data;
 
-    // 3. Fetch original job description and transformation output
+    // 4. Fetch the stored output
     const { data: trans, error: fetchError } = await supabase
       .from('transformations')
       .select('id, output_json, output_plain_text')
@@ -45,20 +58,32 @@ export async function POST(req: Request) {
       .maybeSingle();
 
     if (fetchError || !trans) {
-      return NextResponse.json({ success: false, error: 'TRANSFORMATION_NOT_FOUND' }, { status: 404 });
+      return apiErrors.notFound('TRANSFORMATION_NOT_FOUND');
     }
 
-    const outputJson = trans.output_json as Record<string, any>;
-    const jobDescriptionText = outputJson.original_job_description || '';
-    const optimizationMode = outputJson.meta?.optimization_mode || 'description';
+    const outputJson = trans.output_json as TransformOutput;
+    const jobDescriptionText = outputJson.original_job_description;
 
-    // 4. Compute weighted match score
+    // Rows written before original_job_description existed would otherwise
+    // rescore against '' and return 0, which reads as a catastrophic match
+    // rather than missing data.
+    if (!jobDescriptionText) {
+      return NextResponse.json(
+        { success: false, error: 'RESCORE_UNAVAILABLE' },
+        { status: 409 }
+      );
+    }
+
+    const optimizationMode =
+      outputJson.meta?.optimization_mode === 'title' ? 'title' : 'description';
+
+    // 5. Compute weighted match score
     const scoreResult = computeMatchScore(jobDescriptionText, outputJson, {
       ...weights,
-      optimizationMode: optimizationMode as 'description' | 'title'
+      optimizationMode,
     });
 
-    // 5. Update output_json meta scoring fields for future retrievals
+    // 6. Update meta for future retrievals
     if (outputJson.meta) {
       outputJson.meta.match_score = scoreResult.score;
       outputJson.meta.keywords_matched = scoreResult.matched;
@@ -66,7 +91,7 @@ export async function POST(req: Request) {
       outputJson.meta.keywords_missing = scoreResult.missing;
     }
 
-    // 6. Save updated score, keywords, and output_json back to DB
+    // 7. Persist
     const { error: updateError } = await supabase
       .from('transformations')
       .update({
@@ -74,28 +99,27 @@ export async function POST(req: Request) {
         keywords_matched: scoreResult.matched,
         keywords_total: scoreResult.total,
         output_json: outputJson,
-        updated_at: new Date().toISOString()
+        updated_at: new Date().toISOString(),
       })
-      .eq('id', transformation_id);
+      .eq('id', transformation_id)
+      .eq('user_id', user.id);
 
-    if (updateError) {
-      console.error('Failed to update rescored transformation in DB:', updateError);
-      return NextResponse.json({ success: false, error: 'DATABASE_UPDATE_FAILED' }, { status: 500 });
-    }
+    if (updateError) return apiErrors.database(updateError);
 
-    return NextResponse.json({
-      success: true,
-      data: {
-        score: scoreResult.score,
-        matched: scoreResult.matched,
-        missing: scoreResult.missing,
-        total: scoreResult.total,
-        output_json: outputJson
-      }
-    }, { status: 200 });
-
+    return NextResponse.json(
+      {
+        success: true,
+        data: {
+          score: scoreResult.score,
+          matched: scoreResult.matched,
+          missing: scoreResult.missing,
+          total: scoreResult.total,
+          output_json: outputJson,
+        },
+      },
+      { status: 200 }
+    );
   } catch (err) {
-    console.error('Unhandled error in /api/rescore:', err);
-    return NextResponse.json({ success: false, error: 'INTERNAL_SERVER_ERROR' }, { status: 500 });
+    return apiErrors.internal(err);
   }
 }

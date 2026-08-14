@@ -1,9 +1,11 @@
 import FileDropzone from './FileDropzone';
 import Textarea from '../../ui/Textarea';
+import { RESUME_LIMITS } from '../../../lib/limits';
 
 export default function ResumeInput({ value, onChange }) {
-  const MIN_CHARS = 200;
-  const MAX_CHARS = 15000;
+  // Shared with the API request schema so the two cannot disagree.
+  const MIN_CHARS = RESUME_LIMITS.min;
+  const MAX_CHARS = RESUME_LIMITS.max;
 
   // The textarea enforces MAX_CHARS via maxLength, so an above-max state is
   // unreachable here.
