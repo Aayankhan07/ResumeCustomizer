@@ -3,11 +3,18 @@ import { createServiceClient } from '../../../lib/supabase/service';
 
 export async function GET(req: Request) {
   try {
-    // Cron validation check (security)
-    const { searchParams } = new URL(req.url);
-    const cronSecret = searchParams.get('secret') || req.headers.get('Authorization')?.replace('Bearer ', '');
-    
-    if (process.env.CRON_SECRET && cronSecret !== process.env.CRON_SECRET) {
+    // Cron validation check (security). Fails closed: an unconfigured secret
+    // must never leave this service-role endpoint open to anonymous callers.
+    const expectedSecret = process.env.CRON_SECRET;
+    if (!expectedSecret) {
+      console.error('Cleanup route: CRON_SECRET is not configured');
+      return NextResponse.json({ success: false, error: 'NOT_CONFIGURED' }, { status: 500 });
+    }
+
+    // Header only. Query strings land in access logs and browser history.
+    const cronSecret = req.headers.get('Authorization')?.replace('Bearer ', '');
+
+    if (cronSecret !== expectedSecret) {
       return NextResponse.json({ success: false, error: 'UNAUTHORIZED' }, { status: 401 });
     }
 
