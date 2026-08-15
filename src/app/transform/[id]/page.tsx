@@ -2,9 +2,8 @@
 
 import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import Link from 'next/link';
 import { getTransformation, updateTransformationLabel } from '../../../lib/api';
-import { ArrowLeft, Edit2, Check } from 'lucide-react';
+import { Edit2, Check } from 'lucide-react';
 import { toast } from 'sonner';
 import Navbar from '../../../components/layout/Navbar';
 import Footer from '../../../components/layout/Footer';
@@ -62,13 +61,11 @@ export default function TransformDetail() {
           </div>
         ) : (
           <div className="flex flex-col gap-6 w-full animate-fade-in">
-            {/* Back controls */}
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-              <Link href="/dashboard" className="inline-flex items-center gap-1.5 text-sm text-[var(--text-secondary)] dark:text-slate-400 hover:text-[var(--text-primary)] dark:hover:text-white transition-colors font-medium">
-                <ArrowLeft size={16} />
-                Back to Dashboard
-              </Link>
-
+            {/* Label controls. The back link that used to sit here was a second
+                copy of the one ScoreBanner already renders inside
+                TransformOutput, so this route showed "Back to Dashboard" and
+                the candidate/role title twice, stacked. */}
+            <div className="flex flex-col sm:flex-row justify-end items-start sm:items-center gap-4">
               {/* Editable Label */}
               <div className="flex items-center gap-2 w-full sm:w-auto">
                 {editingLabel ? (

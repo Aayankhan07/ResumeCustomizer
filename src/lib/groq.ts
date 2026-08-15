@@ -127,10 +127,16 @@ JSON OUTPUT SCHEMA:
       }
     ]
   },
-  "cover_letter": "string — complete formatted cover letter"
+  "cover_letter": "string — complete formatted cover letter",
+  "meta": {
+    "detected_job_title": "string — the job title from the job description, e.g. 'Senior Frontend Engineer'. If no title is stated, infer the closest one from the responsibilities.",
+    "detected_company": "string — the hiring company named in the job description. Use 'Not specified' if the description does not name one."
+  }
 }
 
-Ensure the "interview_prep" object contains exactly 10 questions in total: exactly 4 technical questions, exactly 4 behavioral questions, and exactly 2 curveball questions. All questions must be highly specific to the candidate's actual CV and the target job description.`;
+Ensure the "interview_prep" object contains exactly 10 questions in total: exactly 4 technical questions, exactly 4 behavioral questions, and exactly 2 curveball questions. All questions must be highly specific to the candidate's actual CV and the target job description.
+
+The "meta" object is required. Provide only "detected_job_title" and "detected_company" — the match score and keyword fields are computed server-side, so do not emit them.`;
 
 export interface TransformResult {
   contact: {

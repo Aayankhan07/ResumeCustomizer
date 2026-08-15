@@ -9,6 +9,20 @@ import {
   type ApplicationEvent,
 } from '../lib/api';
 
+/**
+ * Supabase rejects with a PostgrestError — a plain object whose fields are not
+ * enumerable, so `console.error('...', err)` renders it as `{}` and hides the
+ * cause entirely. Pull the fields off explicitly before logging.
+ */
+function logSupabaseError(label: string, err: unknown): void {
+  const e = err as { message?: string; code?: string; details?: string; hint?: string };
+  console.error(label, e?.message ?? String(err), {
+    code: e?.code,
+    details: e?.details,
+    hint: e?.hint,
+  });
+}
+
 export interface TransformationItem {
   id: string;
   detected_job_title: string | null;
@@ -67,7 +81,7 @@ export function useHistory() {
       setHasMore(offset + PAGE_SIZE < (histData.count ?? 0));
       if (statsData) setStats(statsData);
     } catch (err) {
-      console.error('History load error:', err);
+      logSupabaseError('History load error:', err);
       setError('Could not load your history. Please try again.');
     } finally {
       setLoading(false);
@@ -93,7 +107,7 @@ export function useHistory() {
       try {
         await deleteTransformation(id);
       } catch (err) {
-        console.error('Failed to delete transformation:', err);
+        logSupabaseError('Failed to delete transformation:', err);
         setTransformations(previous);
         setTotal(previous.length);
         setStats(previousStats);
@@ -113,7 +127,7 @@ export function useHistory() {
     try {
       await updateTransformationStatus(id, status);
     } catch (err) {
-      console.error('Failed to update status:', err);
+      logSupabaseError('Failed to update status:', err);
       // Roll back to the known-good list rather than refetching the page.
       setTransformations(previous);
       throw err;
