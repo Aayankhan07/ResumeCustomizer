@@ -1,7 +1,7 @@
 'use client';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import { Menu, X, Plus, Sun, Moon } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { toast } from 'sonner';
@@ -9,21 +9,43 @@ import { toast } from 'sonner';
 export default function Navbar() {
   const { user, signOut } = useAuth();
   const router = useRouter();
+  const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
   const [isDark, setIsDark] = useState(false);
+  const profileRef = useRef(null);
 
+  // Neither dropdown closed on Escape or on an outside click, so the profile
+  // menu stayed open until its trigger was clicked again.
   useEffect(() => {
-    const savedTheme = localStorage.getItem('theme');
-    if (savedTheme === 'dark') {
-      document.documentElement.classList.add('dark');
-      document.documentElement.setAttribute('data-theme', 'dark');
-      setIsDark(true);
-    } else {
-      document.documentElement.classList.remove('dark');
-      document.documentElement.setAttribute('data-theme', 'light');
-      setIsDark(false);
-    }
+    if (!profileOpen && !mobileOpen) return;
+
+    const handleKeyDown = (e) => {
+      if (e.key !== 'Escape') return;
+      setProfileOpen(false);
+      setMobileOpen(false);
+    };
+
+    const handleClickOutside = (e) => {
+      if (profileRef.current && !profileRef.current.contains(e.target)) {
+        setProfileOpen(false);
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [profileOpen, mobileOpen]);
+
+  // The inline script in layout.tsx has already applied the theme before first
+  // paint, including the system-preference fallback. This only syncs the toggle
+  // icon to what is on <html>; re-deriving it here would override that fallback
+  // with light whenever no explicit choice is stored.
+  useEffect(() => {
+    setIsDark(document.documentElement.classList.contains('dark'));
   }, []);
 
   const toggleTheme = () => {
@@ -32,13 +54,13 @@ export default function Navbar() {
       document.documentElement.setAttribute('data-theme', 'light');
       localStorage.setItem('theme', 'light');
       setIsDark(false);
-      toast.success('Switched to Light Theme');
+      toast.success('Switched to light theme');
     } else {
       document.documentElement.classList.add('dark');
       document.documentElement.setAttribute('data-theme', 'dark');
       localStorage.setItem('theme', 'dark');
       setIsDark(true);
-      toast.success('Switched to Black Theme');
+      toast.success('Switched to dark theme');
     }
   };
 
@@ -61,22 +83,30 @@ export default function Navbar() {
         <div className="hidden md:flex items-center gap-6">
           {user ? (
             <>
-              <Link href="/dashboard" className="text-sm font-medium text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors py-1.5 px-3 rounded-md hover:bg-[var(--bg-subtle)]">
+              <Link
+                href="/dashboard"
+                aria-current={pathname === '/dashboard' ? 'page' : undefined}
+                className="text-sm font-medium text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors py-1.5 px-3 rounded-md hover:bg-[var(--bg-subtle)] aria-[current=page]:text-[var(--text-primary)] aria-[current=page]:bg-[var(--bg-subtle)]"
+              >
                 Dashboard
               </Link>
               <Link href="/transform"
+                aria-current={pathname === '/transform' ? 'page' : undefined}
                 className="flex items-center gap-1.5 px-4 py-2 bg-[var(--text-primary)] text-[var(--bg-base)] text-xs font-medium rounded-[var(--radius-sm)] hover:opacity-90 transition-all duration-150 active:scale-[0.98]">
                 <Plus size={14} className="stroke-[2.5]" />
-                Transform CV
+                Tailor resume
               </Link>
-              <div className="relative">
+              <div className="relative" ref={profileRef}>
                 <button
                   onClick={() => setProfileOpen(o => !o)}
-                  className="w-8.5 h-8.5 rounded-full bg-[var(--bg-subtle)] border border-[var(--border-default)] text-[var(--text-secondary)] text-sm font-semibold flex items-center justify-center cursor-pointer hover:bg-[var(--bg-muted)] transition-all focus:outline-none">
+                  aria-expanded={profileOpen}
+                  aria-haspopup="menu"
+                  aria-label="Account menu"
+                  className="w-9 h-9 rounded-full bg-[var(--bg-subtle)] border border-[var(--border-default)] text-[var(--text-secondary)] text-sm font-semibold flex items-center justify-center cursor-pointer hover:bg-[var(--bg-muted)] transition-all">
                   {user.user_metadata?.full_name?.[0]?.toUpperCase() ?? user.email?.[0]?.toUpperCase() ?? '?'}
                 </button>
                 {profileOpen && (
-                  <div className="absolute right-0 top-11 w-48 bg-[var(--bg-elevated)] border border-[var(--border-default)] rounded-[var(--radius-md)] shadow-[var(--shadow-lg)] py-1.5 z-50 animate-fade-in">
+                  <div role="menu" className="absolute right-0 top-11 w-48 bg-[var(--bg-elevated)] border border-[var(--border-default)] rounded-[var(--radius-md)] shadow-[var(--shadow-lg)] py-1.5 z-50 animate-fade-in">
                     <div className="px-4 py-2 border-b border-[var(--border-subtle)]">
                       <p className="text-xs text-[var(--text-secondary)] font-semibold truncate">{user.email}</p>
                     </div>
@@ -88,7 +118,7 @@ export default function Navbar() {
             </>
           ) : (
             <>
-              <a href="#how-it-works" className="text-sm font-medium text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors py-1.5 px-3 rounded-md hover:bg-[var(--bg-subtle)]">How it works</a>
+              <Link href="/#how-it-works" className="text-sm font-medium text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors py-1.5 px-3 rounded-md hover:bg-[var(--bg-subtle)]">How it works</Link>
               <Link href="/login" className="text-sm font-medium text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors py-1.5 px-3 rounded-md hover:bg-[var(--bg-subtle)]">Sign in</Link>
               <Link href="/signup"
                 className="px-4 py-2 bg-[var(--text-primary)] text-[var(--bg-base)] text-xs font-medium rounded-[var(--radius-sm)] hover:opacity-90 transition-all duration-150 active:scale-[0.98]">
@@ -100,7 +130,7 @@ export default function Navbar() {
           {/* Theme Toggle Button */}
           <button
             onClick={toggleTheme}
-            className="p-2 text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-subtle)] rounded-lg cursor-pointer transition-colors focus:outline-none flex items-center justify-center"
+            className="p-2 text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-subtle)] rounded-lg cursor-pointer transition-colors focus-visible:outline-none flex items-center justify-center"
             aria-label="Toggle Theme"
           >
             {isDark ? <Sun size={18} className="text-amber-500" /> : <Moon size={18} />}
@@ -111,7 +141,7 @@ export default function Navbar() {
         <div className="flex items-center gap-2 md:hidden">
           <button
             onClick={toggleTheme}
-            className="p-2 text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-subtle)] rounded-lg cursor-pointer transition-colors focus:outline-none flex items-center justify-center"
+            className="p-2 text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-subtle)] rounded-lg cursor-pointer transition-colors focus-visible:outline-none flex items-center justify-center"
             aria-label="Toggle Theme"
           >
             {isDark ? <Sun size={18} className="text-amber-500" /> : <Moon size={18} />}
@@ -128,13 +158,13 @@ export default function Navbar() {
           {user ? (
             <>
               <Link href="/dashboard" className="text-sm font-medium text-[var(--text-primary)] py-2 px-3 hover:bg-[var(--bg-subtle)] rounded-md" onClick={() => setMobileOpen(false)}>Dashboard</Link>
-              <Link href="/transform"  className="text-sm font-medium text-[var(--text-primary)] py-2 px-3 hover:bg-[var(--bg-subtle)] rounded-md" onClick={() => setMobileOpen(false)}>New Transform</Link>
+              <Link href="/transform"  className="text-sm font-medium text-[var(--text-primary)] py-2 px-3 hover:bg-[var(--bg-subtle)] rounded-md" onClick={() => setMobileOpen(false)}>Tailor resume</Link>
               <Link href="/profile"    className="text-sm font-medium text-[var(--text-primary)] py-2 px-3 hover:bg-[var(--bg-subtle)] rounded-md" onClick={() => setMobileOpen(false)}>Profile Settings</Link>
               <button onClick={handleSignOut} className="text-sm font-medium text-[var(--danger)] text-left py-2 px-3 hover:bg-[var(--danger-subtle)] hover:text-[var(--danger-fg)] rounded-md cursor-pointer">Sign Out</button>
             </>
           ) : (
             <>
-              <a href="#how-it-works" className="text-sm font-medium text-[var(--text-primary)] py-2 px-3 hover:bg-[var(--bg-subtle)] rounded-md" onClick={() => setMobileOpen(false)}>How it works</a>
+              <Link href="/#how-it-works" className="text-sm font-medium text-[var(--text-primary)] py-2 px-3 hover:bg-[var(--bg-subtle)] rounded-md" onClick={() => setMobileOpen(false)}>How it works</Link>
               <Link href="/login"  className="text-sm font-medium text-[var(--text-primary)] py-2 px-3 hover:bg-[var(--bg-subtle)] rounded-md" onClick={() => setMobileOpen(false)}>Sign In</Link>
               <Link href="/signup" className="text-sm font-medium text-[var(--bg-base)] py-2.5 px-4 bg-[var(--text-primary)] text-center rounded-md font-semibold" onClick={() => setMobileOpen(false)}>Get Started</Link>
             </>

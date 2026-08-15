@@ -67,7 +67,7 @@ export default function Profile() {
   };
 
   return (
-    <div className="min-h-screen bg-[var(--bg-subtle)] dark:bg-[#030712] text-slate-900 dark:text-slate-200 flex flex-col font-sans transition-colors duration-300">
+    <div className="min-h-screen bg-[var(--bg-subtle)] text-[var(--text-primary)] flex flex-col font-sans transition-colors duration-300">
       <Navbar />
       <main className="flex-1 max-w-4xl w-full mx-auto px-4 py-12 stagger-children">
         <h1 className="font-serif text-3xl text-[var(--text-primary)] dark:text-white font-bold mb-8">My Account</h1>

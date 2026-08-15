@@ -119,14 +119,20 @@ export default function InterviewTab({ interviewPrep }) {
 
       {/* 3D Flipping Card Stage */}
       <div className="w-full max-w-xl h-80 mx-auto perspective-1000 relative select-none mt-4">
-        <div 
+        {/* A button rather than a div+onClick: flipping the card was mouse-only,
+            with no focus stop, no Enter/Space, and nothing announcing that the
+            answer is hidden behind it. aria-pressed carries the flip state. */}
+        <button
+          type="button"
           onClick={() => setIsFlipped(!isFlipped)}
+          aria-pressed={isFlipped}
+          aria-label={isFlipped ? 'Show question' : 'Show answer'}
           style={{
             transform: isFlipped ? 'rotateY(180deg)' : 'none',
             transformStyle: 'preserve-3d',
             transition: 'transform 0.6s cubic-bezier(0.4, 0, 0.2, 1)'
           }}
-          className="w-full h-full relative cursor-pointer"
+          className="w-full h-full relative cursor-pointer text-left appearance-none bg-transparent border-0 p-0 rounded-[var(--radius-lg)] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[var(--accent)]"
         >
           {/* FRONT OF THE CARD (Question) */}
           <div 
@@ -141,7 +147,7 @@ export default function InterviewTab({ interviewPrep }) {
                 {qItem.category === 'Curveball' && <AlertTriangle size={13} className="text-[var(--warning)]" />}
                 {qItem.category}
               </span>
-              <span className={`px-2 py-0.5 rounded-[var(--radius-xs)] text-[9px] font-bold uppercase tracking-wide border ${getDifficultyBadge(qItem.difficulty)}`}>
+              <span className={`px-2 py-0.5 rounded-[var(--radius-xs)] text-[11px] font-bold uppercase tracking-wide border ${getDifficultyBadge(qItem.difficulty)}`}>
                 {qItem.difficulty}
               </span>
             </div>
@@ -171,7 +177,7 @@ export default function InterviewTab({ interviewPrep }) {
             {/* Top Bar */}
             <div className="w-full flex justify-between items-center text-xs text-[var(--text-muted)] font-medium">
               <span className="uppercase tracking-wider">Suggested Response</span>
-              <span className="text-[10px] font-semibold">Question {currentIdx + 1} of {questions.length}</span>
+              <span className="text-[11px] font-semibold">Question {currentIdx + 1} of {questions.length}</span>
             </div>
 
             {/* Response Content */}
@@ -187,7 +193,7 @@ export default function InterviewTab({ interviewPrep }) {
               Click card or press Space to view question
             </div>
           </div>
-        </div>
+        </button>
       </div>
 
       {/* Navigation Controls */}

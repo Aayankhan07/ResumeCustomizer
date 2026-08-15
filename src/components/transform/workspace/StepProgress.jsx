@@ -3,17 +3,33 @@
 import { useEffect, useState } from 'react';
 import { Check, Loader2, Circle } from 'lucide-react';
 
+/**
+ * Progress display for the transform request.
+ *
+ * The server gives us no incremental progress, so these steps are still
+ * time-based — but they no longer *lie*. Previously all five completed on a
+ * 16s timer while the real request runs 20–60s, leaving the user staring at a
+ * finished checklist with nothing moving for the remaining 40s.
+ *
+ * Now the final step stays in-progress until the request actually resolves,
+ * and a long-wait message appears once we pass the typical duration.
+ */
 const STEPS = [
   { id: 1, label: 'Resume parsed', delay: 0 },
-  { id: 2, label: 'Job description read', delay: 1000 },
-  { id: 3, label: 'Rewriting content', delay: 4000 },
-  { id: 4, label: 'Scoring alignment', delay: 10000 },
-  { id: 5, label: 'Generating cover letter', delay: 16000 },
+  { id: 2, label: 'Job description read', delay: 1200 },
+  { id: 3, label: 'Rewriting content', delay: 5000 },
+  { id: 4, label: 'Scoring alignment', delay: 14000 },
+  // No delay: this one is only marked done when the response arrives.
+  { id: 5, label: 'Generating cover letter', delay: 24000 },
 ];
 
-export default function StepProgress({ jobDescriptionText, apiStatus }) {
+/** Point at which we acknowledge the wait is running long. */
+const LONG_WAIT_MS = 35000;
+
+export default function StepProgress({ jobDescriptionText, apiStatus, isRetrying }) {
   const [currentStep, setCurrentStep] = useState(1);
   const [completedSteps, setCompletedSteps] = useState([]);
+  const [longWait, setLongWait] = useState(false);
 
   // Fallback to extract a potential job title from the first line of the job description
   const getRoleTitle = () => {
@@ -36,34 +52,42 @@ export default function StepProgress({ jobDescriptionText, apiStatus }) {
       return;
     }
 
-    // Timed progression
-    const timers = STEPS.map((step) => {
-      return setTimeout(() => {
+    const timers = STEPS.map((step) =>
+      setTimeout(() => {
         setCurrentStep(step.id);
         setCompletedSteps((prev) => {
           const prevCompleted = Array.from({ length: step.id - 1 }, (_, i) => i + 1);
           return [...new Set([...prev, ...prevCompleted])];
         });
-      }, step.delay);
-    });
+      }, step.delay)
+    );
 
-    return () => timers.forEach(clearTimeout);
+    const longWaitTimer = setTimeout(() => setLongWait(true), LONG_WAIT_MS);
+
+    return () => {
+      timers.forEach(clearTimeout);
+      clearTimeout(longWaitTimer);
+    };
   }, [apiStatus]);
 
   return (
     <div className="flex flex-col items-center justify-center py-16 px-4 text-center max-w-md mx-auto select-none animate-fade-in font-sans">
       <h3 className="text-base font-medium text-[var(--text-primary)] mb-8 text-center leading-snug">
-        Analyzing your resume for {getRoleTitle()}...
+        Analyzing your resume for {getRoleTitle()}…
       </h3>
 
-      <div className="flex flex-col gap-3 w-[280px] text-left mx-auto mb-6" aria-live="polite">
+      <div
+        className="flex flex-col gap-3 w-full max-w-[280px] text-left mx-auto mb-6"
+        role="status"
+        aria-live="polite"
+      >
         {STEPS.map((step, idx) => {
           const isDone = completedSteps.includes(step.id);
           const isActive = currentStep === step.id;
-          
+
           let icon = <Circle size={14} className="text-[var(--text-disabled)]" />;
           let labelClass = 'text-[var(--text-muted)] font-normal';
-          
+
           if (isDone) {
             icon = <Check size={14} className="text-[var(--success)] stroke-[3]" />;
             labelClass = 'text-[var(--text-secondary)] font-normal';
@@ -73,8 +97,8 @@ export default function StepProgress({ jobDescriptionText, apiStatus }) {
           }
 
           return (
-            <div 
-              key={step.id} 
+            <div
+              key={step.id}
               className="flex items-center gap-3 animate-fade-in"
               style={{ animationDelay: `${idx * 100}ms` }}
             >
@@ -85,8 +109,12 @@ export default function StepProgress({ jobDescriptionText, apiStatus }) {
         })}
       </div>
 
-      <p className="text-xs text-[var(--text-muted)] mt-6">
-        Takes about 15–25 seconds.
+      <p className="text-xs text-[var(--text-secondary)] mt-6" aria-live="polite">
+        {isRetrying
+          ? 'The first attempt timed out — retrying automatically.'
+          : longWait
+            ? 'Still working. Longer resumes and detailed job descriptions take more time.'
+            : 'This usually takes 20–40 seconds.'}
       </p>
     </div>
   );

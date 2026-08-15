@@ -19,11 +19,15 @@
   --border-subtle: #f0f0f1;
   --border-strong: #a1a1aa;
 
-  /* Text */
+  /* Text.
+     --text-muted was #a1a1aa: ~2.5:1 against --bg-base, which fails WCAG AA
+     (4.5:1) and even the 3:1 large-text threshold — while being used for real
+     body copy such as timestamps, helper text and inactive tab labels.
+     #6b6b75 clears 4.5:1 and stays visibly quieter than --text-secondary. */
   --text-primary: #09090b;
   --text-secondary: #52525b;
-  --text-muted: #a1a1aa;
-  --text-disabled: #d4d4d8;
+  --text-muted: #6b6b75;
+  --text-disabled: #a1a1aa;
 
   /* Accent — Emerald Green (brand color, keep from current app) */
   --accent: #10b981;
@@ -52,6 +56,8 @@
   --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
   --shadow-md: 0 1px 3px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(0, 0, 0, 0.06);
   --shadow-lg: 0 4px 6px rgba(0, 0, 0, 0.07), 0 2px 4px rgba(0, 0, 0, 0.06);
+  /* Referenced by AddEventModal but previously undefined. */
+  --shadow-xl: 0 20px 25px rgba(0, 0, 0, 0.1), 0 8px 10px rgba(0, 0, 0, 0.04);
   --shadow-card: 0 0 0 1px var(--border-default), 0 1px 3px rgba(0, 0, 0, 0.05);
 }
 
@@ -71,11 +77,12 @@
   --border-subtle: #1c1c1f;
   --border-strong: #3f3f46;
 
-  /* Text */
+  /* Text. --text-muted was #52525b (~2.6:1 on --bg-base). Lightened to clear
+     4.5:1 while remaining subordinate to --text-secondary. */
   --text-primary: #fafafa;
   --text-secondary: #a1a1aa;
-  --text-muted: #52525b;
-  --text-disabled: #3f3f46;
+  --text-muted: #85858f;
+  --text-disabled: #52525b;
 
   /* Accent — same green, slightly brighter for dark bg readability */
   --accent: #10b981;
@@ -104,6 +111,7 @@
   --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
   --shadow-md: 0 1px 3px rgba(0, 0, 0, 0.5), 0 1px 2px rgba(0, 0, 0, 0.4);
   --shadow-lg: 0 4px 6px rgba(0, 0, 0, 0.5), 0 2px 4px rgba(0, 0, 0, 0.4);
+  --shadow-xl: 0 20px 25px rgba(0, 0, 0, 0.55), 0 8px 10px rgba(0, 0, 0, 0.4);
   --shadow-card: 0 0 0 1px var(--border-default), 0 1px 3px rgba(0, 0, 0, 0.4);
 }
 
@@ -179,7 +187,17 @@ body {
   outline-offset: 2px;
 }
 
-/* Animations */
+/* Animations
+   ---------------------------------------------------------------
+   animate-fade-in (31 call sites), animate-slide-up (4),
+   animate-scale-in, animate-spin-hover, stagger-children and
+   perspective-1000 were all referenced throughout the app but never
+   defined — every entrance animation was silently a no-op, along with
+   the paired style={{ animationDelay }} values.
+
+   Durations are deliberately short: these are entrance accents, not
+   transitions the user should wait on. All of them are disabled under
+   prefers-reduced-motion at the end of this file. */
 @keyframes shimmer {
   0%, 100% {
     opacity: 0.5;
@@ -189,8 +207,77 @@ body {
   }
 }
 
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slide-up {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes scale-in {
+  from {
+    opacity: 0;
+    transform: scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
 .animate-shimmer {
   animation: shimmer 1.5s ease-in-out infinite;
+}
+
+.animate-fade-in {
+  animation: fade-in 200ms ease-out both;
+}
+
+.animate-slide-up {
+  animation: slide-up 260ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.animate-scale-in {
+  animation: scale-in 160ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+/* Spins only while the parent is hovered — used on retry affordances. */
+.animate-spin-hover {
+  transition: transform var(--transition-base);
+}
+*:hover > .animate-spin-hover,
+*:hover .animate-spin-hover {
+  transform: rotate(180deg);
+}
+
+/* Cascades the entrance of a container's direct children. */
+.stagger-children > * {
+  animation: slide-up 260ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+.stagger-children > *:nth-child(1) { animation-delay: 0ms; }
+.stagger-children > *:nth-child(2) { animation-delay: 40ms; }
+.stagger-children > *:nth-child(3) { animation-delay: 80ms; }
+.stagger-children > *:nth-child(4) { animation-delay: 120ms; }
+.stagger-children > *:nth-child(5) { animation-delay: 160ms; }
+.stagger-children > *:nth-child(n + 6) { animation-delay: 200ms; }
+
+/* Not a Tailwind v4 utility. Without it the interview flashcard's
+   rotateY flip renders flat. */
+@utility perspective-1000 {
+  perspective: 1000px;
 }
 
 /* Reusable Button Classes */
@@ -440,5 +527,39 @@ body {
   scrollbar-width: none;
   &::-webkit-scrollbar {
     display: none;
+  }
+}
+
+/* Reduced motion
+   ---------------------------------------------------------------
+   The app had no prefers-reduced-motion handling at all, while running
+   several infinite animations unconditionally (animate-pulse in five
+   components, a perpetual landing-page interval, a 3D card flip) and
+   smooth scrolling globally.
+
+   Motion is not removed outright — that would make state changes
+   ambiguous. Durations collapse to near-zero so transitions still
+   read as instantaneous state changes, and genuinely infinite
+   decorative loops stop. */
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  /* Spinners are the exception: a frozen spinner reads as a hung app,
+     so they keep turning, just slowly enough not to provoke. */
+  .animate-spin,
+  .animate-shimmer {
+    animation-duration: 1.5s !important;
+    animation-iteration-count: infinite !important;
   }
 }

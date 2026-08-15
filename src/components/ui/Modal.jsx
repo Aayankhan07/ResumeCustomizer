@@ -94,7 +94,7 @@ export default function Modal({ isOpen, onClose, title, children, className = ''
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 8 }}
             transition={{ duration: 0.15, ease: [0.22, 1, 0.36, 1] }}
-            className={`relative w-full max-w-md bg-[var(--bg-elevated)] border border-[var(--border-default)] rounded-xl shadow-[var(--shadow-lg)] p-6 z-10 focus:outline-none ${className}`}
+            className={`relative w-full max-w-md bg-[var(--bg-elevated)] border border-[var(--border-default)] rounded-xl shadow-[var(--shadow-lg)] p-6 z-10 focus-visible:outline-none ${className}`}
           >
             <div className="flex items-center justify-between mb-4">
               <h3

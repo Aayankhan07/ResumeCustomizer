@@ -72,7 +72,7 @@ export default function ScoreRing({ score, size = 88, strokeWidth = 6, duration 
       {/* Centered text */}
       <div className="absolute flex flex-col items-center justify-center">
         <span className="text-[26px] font-bold text-[var(--text-primary)] font-sans leading-none">{currentScore}%</span>
-        <span className="text-[10px] font-medium uppercase tracking-wider text-[var(--text-muted)] font-sans mt-0.5">ATS Match</span>
+        <span className="text-[11px] font-medium uppercase tracking-wider text-[var(--text-muted)] font-sans mt-0.5">ATS Match</span>
       </div>
     </div>
   );

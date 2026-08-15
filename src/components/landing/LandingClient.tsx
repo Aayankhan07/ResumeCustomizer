@@ -93,13 +93,13 @@ export default function LandingClient({ initialStats }) {
           </h1>
 
           <p className="text-sm sm:text-base text-[var(--text-secondary)] mt-6 max-w-md leading-relaxed font-medium">
-            Upload your resume and a target job description. We rewrite and format it to align with applicant tracking systems and keywords in under 30 seconds.
+            Upload your resume and a target job description. We rewrite and format it to align with applicant tracking systems and keywords in about a minute.
           </p>
 
           <div className="flex flex-col sm:flex-row items-center gap-3 mt-10 w-full sm:w-auto">
             <Link href={user ? '/transform' : '/signup'} className="w-full sm:w-auto">
               <button className="btn-primary w-full flex items-center justify-center gap-2 py-3 px-8 text-sm">
-                Optimize My Resume
+                Tailor my resume
                 <ArrowRight size={14} className="stroke-[2.5]" />
               </button>
             </Link>
@@ -110,7 +110,7 @@ export default function LandingClient({ initialStats }) {
             </a>
           </div>
 
-          <span className="text-[12px] text-[var(--text-muted)] mt-5 font-mono">
+          <span className="text-xs text-[var(--text-muted)] mt-5 font-mono">
             No credit card required. Up to 10 free optimizations per hour.
           </span>
         </div>
@@ -124,10 +124,10 @@ export default function LandingClient({ initialStats }) {
                 <span className="w-2.5 h-2.5 rounded-full bg-neutral-800" />
                 <span className="w-2.5 h-2.5 rounded-full bg-neutral-800" />
               </div>
-              <span className="text-[10px] font-mono text-neutral-500 font-semibold tracking-wider">
+              <span className="text-[11px] font-mono text-neutral-500 font-semibold tracking-wider">
                 optimizer_diff.py
               </span>
-              <span className="px-2 py-0.5 text-[9px] font-mono font-medium rounded border text-neutral-400 bg-neutral-900 border-neutral-800">
+              <span className="px-2 py-0.5 text-[11px] font-mono font-medium rounded border text-neutral-400 bg-neutral-900 border-neutral-800">
                 Line-by-line comparison
               </span>
             </div>
@@ -135,8 +135,8 @@ export default function LandingClient({ initialStats }) {
             <div className="p-6 font-mono text-xs sm:text-sm leading-relaxed grid grid-cols-1 md:grid-cols-2 gap-6 min-h-[160px] relative select-text bg-[#0d0d0d]">
               <div className="flex flex-col gap-2 border-b md:border-b-0 md:border-r border-[#2a2a2a] pb-6 md:pb-0 pr-0 md:pr-4">
                 <div className="flex items-center justify-between pb-1.5 border-b border-[#2a2a2a]">
-                  <span className="text-[10px] text-neutral-500 uppercase tracking-wider font-bold">Original Bullet</span>
-                  <span className="text-[9px] px-1.5 py-0.5 rounded bg-red-950/20 text-red-400 border border-red-900/30 font-semibold uppercase">Before</span>
+                  <span className="text-[11px] text-neutral-500 uppercase tracking-wider font-bold">Original Bullet</span>
+                  <span className="text-[11px] px-1.5 py-0.5 rounded bg-red-950/20 text-red-400 border border-red-900/30 font-semibold uppercase">Before</span>
                 </div>
                 <div className="text-neutral-400 flex items-start gap-1.5 mt-2 animate-fade-in" key={`before-${exampleIdx}`}>
                   <span className="text-red-500 font-bold select-none">-</span>
@@ -146,8 +146,8 @@ export default function LandingClient({ initialStats }) {
 
               <div className="flex flex-col gap-2 pl-0 md:pl-2">
                 <div className="flex items-center justify-between pb-1.5 border-b border-[#2a2a2a]">
-                  <span className="text-[10px] text-neutral-500 uppercase tracking-wider font-bold">AI Tailored Bullet</span>
-                  <span className="text-[9px] px-1.5 py-0.5 rounded bg-emerald-955/20 text-emerald-400 border border-emerald-900/30 font-semibold uppercase">After</span>
+                  <span className="text-[11px] text-neutral-500 uppercase tracking-wider font-bold">AI Tailored Bullet</span>
+                  <span className="text-[11px] px-1.5 py-0.5 rounded bg-emerald-950/20 text-emerald-400 border border-emerald-900/30 font-semibold uppercase">After</span>
                 </div>
                 <div className="text-emerald-400 flex items-start gap-1.5 mt-2 animate-fade-in" key={`after-${exampleIdx}`}>
                   <span className="text-emerald-500 font-bold select-none">+</span>
@@ -167,7 +167,7 @@ export default function LandingClient({ initialStats }) {
 
         <div className="max-w-5xl mx-auto px-6 text-center relative z-10">
           <h2 className="font-serif text-3xl sm:text-4xl font-bold mb-4 text-[var(--text-primary)]">Three steps. One perfect resume.</h2>
-          <p className="text-sm text-[var(--text-secondary)] mb-20 max-w-md mx-auto font-medium">Get your documents optimized and ready in less than 2 minutes.</p>
+          <p className="text-sm text-[var(--text-secondary)] mb-20 max-w-md mx-auto font-medium">Three steps from raw resume to a tailored, ATS-ready document.</p>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {[

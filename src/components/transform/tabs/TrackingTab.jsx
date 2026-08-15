@@ -143,7 +143,7 @@ export default function TrackingTab({ transformation }) {
                 type="date"
                 value={appliedAt}
                 onChange={(e) => setAppliedAt(e.target.value)}
-                className="w-full bg-[var(--bg-base)] border border-[var(--border-default)] rounded-lg px-3 py-2 font-sans text-sm text-[var(--text-primary)] focus:outline-none focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent)]/10 transition-all"
+                className="w-full bg-[var(--bg-base)] border border-[var(--border-default)] rounded-lg px-3 py-2 font-sans text-sm text-[var(--text-primary)] focus-visible:outline-none focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent)]/10 transition-all"
               />
             </div>
             <div className="flex flex-col gap-1.5">
@@ -155,7 +155,7 @@ export default function TrackingTab({ transformation }) {
                 type="date"
                 value={deadline}
                 onChange={(e) => setDeadline(e.target.value)}
-                className="w-full bg-[var(--bg-base)] border border-[var(--border-default)] rounded-lg px-3 py-2 font-sans text-sm text-[var(--text-primary)] focus:outline-none focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent)]/10 transition-all"
+                className="w-full bg-[var(--bg-base)] border border-[var(--border-default)] rounded-lg px-3 py-2 font-sans text-sm text-[var(--text-primary)] focus-visible:outline-none focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent)]/10 transition-all"
               />
             </div>
           </div>
@@ -185,7 +185,7 @@ export default function TrackingTab({ transformation }) {
               <select
                 value={priority}
                 onChange={(e) => setPriority(e.target.value)}
-                className="w-full bg-[var(--bg-base)] border border-[var(--border-default)] rounded-lg px-3 py-2 font-sans text-sm text-[var(--text-primary)] focus:outline-none focus:border-[var(--accent)] transition-all cursor-pointer"
+                className="w-full bg-[var(--bg-base)] border border-[var(--border-default)] rounded-lg px-3 py-2 font-sans text-sm text-[var(--text-primary)] focus-visible:outline-none focus:border-[var(--accent)] transition-all cursor-pointer"
               >
                 <option value="High">High</option>
                 <option value="Medium">Medium</option>
@@ -320,7 +320,7 @@ export default function TrackingTab({ transformation }) {
                             {event.title}
                           </h5>
                           {event.event_type === 'interview' && (
-                            <span className="px-1.5 py-0.5 rounded-full text-[9px] font-bold bg-indigo-50 text-indigo-600 dark:bg-indigo-500/10 dark:text-indigo-400 border border-indigo-200/20 uppercase tracking-tight">
+                            <span className="px-1.5 py-0.5 rounded-full text-[11px] font-bold bg-indigo-50 text-indigo-600 dark:bg-indigo-500/10 dark:text-indigo-400 border border-indigo-200/20 uppercase tracking-tight">
                               {event.interview_round}
                             </span>
                           )}
@@ -328,7 +328,7 @@ export default function TrackingTab({ transformation }) {
 
                         {/* Date/Time */}
                         {event.event_date && (
-                          <div className="text-[10px] text-[var(--text-muted)] font-medium mt-0.5 flex items-center gap-1">
+                          <div className="text-[11px] text-[var(--text-muted)] font-medium mt-0.5 flex items-center gap-1">
                             <Clock size={10} />
                             <span>{formatEventDate(event.event_date)}</span>
                             {event.event_type === 'interview' && event.interview_format && (
@@ -342,7 +342,7 @@ export default function TrackingTab({ transformation }) {
 
                         {/* Interviewer */}
                         {event.event_type === 'interview' && event.interviewer_name && (
-                          <div className="text-[10px] text-[var(--text-secondary)] font-normal mt-1 flex items-center gap-1">
+                          <div className="text-[11px] text-[var(--text-secondary)] font-normal mt-1 flex items-center gap-1">
                             <User size={10} />
                             <span>Interviewer: {event.interviewer_name}</span>
                           </div>
@@ -358,11 +358,11 @@ export default function TrackingTab({ transformation }) {
                         {/* Interview Outcome Dropdown */}
                         {event.event_type === 'interview' && (
                           <div className="mt-2 flex items-center gap-1.5">
-                            <span className="text-[10px] text-[var(--text-muted)] font-medium">Outcome:</span>
+                            <span className="text-[11px] text-[var(--text-muted)] font-medium">Outcome:</span>
                             <select
                               value={event.outcome || 'Pending'}
                               onChange={(e) => handleEventOutcomeChange(event, e.target.value)}
-                              className="bg-[var(--bg-subtle)] border border-[var(--border-default)] rounded px-1.5 py-0.5 text-[10px] font-medium text-[var(--text-primary)] focus:outline-none transition-all cursor-pointer"
+                              className="bg-[var(--bg-subtle)] border border-[var(--border-default)] rounded px-1.5 py-0.5 text-[11px] font-medium text-[var(--text-primary)] focus-visible:outline-2 focus-visible:outline-[var(--accent)] transition-all cursor-pointer"
                             >
                               <option value="Pending">Pending</option>
                               <option value="Completed">Completed</option>

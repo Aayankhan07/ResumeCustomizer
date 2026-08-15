@@ -8,13 +8,13 @@ import { toast } from 'sonner';
 /** Errors worth one automatic retry: transient rather than caused by input. */
 const RETRY_ERRORS = ['AI_TIMEOUT', 'INTERNAL_SERVER_ERROR', 'NETWORK_ERROR'];
 
-/** Codes whose UI already explains itself, so a generic toast would be noise. */
-const SILENT_ERRORS = ['RATE_LIMIT_EXCEEDED', 'RATE_LIMITED', 'DATABASE_SAVE_FAILED'];
 
 type Status = 'idle' | 'loading' | 'success' | 'error';
 
 interface TransformState {
   status: Status;
+  /** true while the automatic second attempt is in flight. */
+  isRetrying: boolean;
   /** false when the result was generated but never saved to history. */
   persisted: boolean;
   result: TransformOutput | null;
@@ -27,6 +27,7 @@ interface TransformState {
 
 const INITIAL_STATE: TransformState = {
   status: 'idle',
+  isRetrying: false,
   persisted: true,
   result: null,
   plainText: null,
@@ -49,7 +50,7 @@ export function useTransform() {
       jobDescriptionText: string;
       optimizationMode?: 'description' | 'title';
     }) => {
-      setState((s) => ({ ...s, status: 'loading', error: null }));
+      setState((s) => ({ ...s, status: 'loading', isRetrying: false, error: null }));
 
       const attemptTransform = async (attempt = 1): Promise<void> => {
         try {
@@ -61,6 +62,7 @@ export function useTransform() {
 
           setState({
             status: 'success',
+            isRetrying: false,
             persisted,
             result: data.data,
             plainText: data.plain_text,
@@ -83,6 +85,10 @@ export function useTransform() {
           const resetAt = err instanceof ApiError ? err.resetAt : undefined;
 
           if (attempt === 1 && RETRY_ERRORS.includes(code)) {
+            // The retry used to be entirely silent, so a timeout could double
+            // the perceived wait with no explanation. Flag it so the progress
+            // UI can say what is happening.
+            setState((s) => ({ ...s, isRetrying: true }));
             await new Promise((r) => setTimeout(r, 2000));
             return attemptTransform(2);
           }
@@ -90,14 +96,15 @@ export function useTransform() {
           setState((s) => ({
             ...s,
             status: 'error',
+            isRetrying: false,
             error: code,
             errorDetails: details,
             rateLimit: resetAt ? { resetAt } : s.rateLimit,
           }));
 
-          if (!SILENT_ERRORS.includes(code)) {
-            toast.error('Transform failed. Please try again.');
-          }
+          // No generic toast here: TransformErrorPanel already renders a
+          // specific, actionable message for every code. Firing both gave the
+          // user a vague toast contradicting a precise panel.
         }
       };
 

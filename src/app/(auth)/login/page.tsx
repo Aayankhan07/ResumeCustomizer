@@ -98,7 +98,7 @@ export default function Login() {
         </div>
 
         <div className="flex items-center justify-between border-t border-[var(--border-default)] pt-6">
-          <p className="text-xs text-[var(--text-muted)] font-mono">ResumOrph Engine v1.2</p>
+          <p className="text-xs text-[var(--text-secondary)] font-mono">ResumOrph</p>
           <span className="text-xs text-[var(--text-muted)] font-mono">&copy; {new Date().getFullYear()}</span>
         </div>
       </div>

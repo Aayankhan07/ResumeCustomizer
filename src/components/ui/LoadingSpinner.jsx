@@ -10,11 +10,13 @@ export default function LoadingSpinner({
     xl: 'w-12 h-12 stroke-[2]'
   };
 
+  // Token-based so the spinner follows the theme; the raw palette values
+  // here previously ignored it.
   const colorClasses = {
-    primary: 'text-slate-900 dark:text-white',
-    emerald: 'text-emerald-500 dark:text-emerald-400',
-    white: 'text-white',
-    slate: 'text-slate-400 dark:text-slate-500'
+    primary: 'text-[var(--text-primary)]',
+    emerald: 'text-[var(--accent)]',
+    white: 'text-[var(--accent-fg)]',
+    slate: 'text-[var(--text-secondary)]',
   };
 
   return (

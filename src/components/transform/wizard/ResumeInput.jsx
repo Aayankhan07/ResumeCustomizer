@@ -5,54 +5,54 @@ import Textarea from '../../ui/Textarea';
 import { RESUME_LIMITS } from '../../../lib/limits';
 
 export default function ResumeInput({ value, onChange }) {
-  // Shared with the API request schema so the two cannot disagree.
-  const MIN_CHARS = RESUME_LIMITS.min;
-  const MAX_CHARS = RESUME_LIMITS.max;
+ // Shared with the API request schema so the two cannot disagree.
+ const MIN_CHARS = RESUME_LIMITS.min;
+ const MAX_CHARS = RESUME_LIMITS.max;
 
-  // The textarea enforces MAX_CHARS via maxLength, so an above-max state is
-  // unreachable here.
-  const isBelowMin = value.length > 0 && value.length < MIN_CHARS;
+ // The textarea enforces MAX_CHARS via maxLength, so an above-max state is
+ // unreachable here.
+ const isBelowMin = value.length > 0 && value.length < MIN_CHARS;
 
-  return (
-    <div className="flex flex-col gap-5 text-left font-sans">
-      <div>
-        <span className="font-mono text-xs font-semibold text-slate-500 uppercase tracking-widest">Step 1 of 2</span>
-        <h3 className="font-serif text-2xl text-slate-900 dark:text-white font-bold mt-1">Add Your Resume</h3>
-        <p className="text-sm text-slate-505 dark:text-slate-400">Upload your current resume or paste the raw text below.</p>
-      </div>
+ return (
+ <div className="flex flex-col gap-5 text-left font-sans">
+ <div>
+ <span className="font-mono text-xs font-semibold text-[var(--text-secondary)] uppercase tracking-widest">Step 1 of 2</span>
+ <h3 className="font-serif text-2xl text-[var(--text-primary)] font-bold mt-1">Add Your Resume</h3>
+ <p className="text-sm text-[var(--text-secondary)]">Upload your current resume or paste the raw text below.</p>
+ </div>
 
-      <FileDropzone
-        label="Upload your resume (PDF, DOCX, or TXT)"
-        onTextExtracted={onChange}
-      />
+ <FileDropzone
+ label="Upload your resume (PDF, DOCX, or TXT)"
+ onTextExtracted={onChange}
+ />
 
-      <div className="relative select-none">
-        <div className="absolute inset-0 flex items-center">
-          <span className="w-full border-t border-slate-200 dark:border-slate-800"></span>
-        </div>
-        <div className="relative flex justify-center text-xs uppercase">
-          <span className="bg-[var(--bg-subtle)] dark:bg-[#030712] px-3 text-slate-400 font-bold font-mono">Or paste text</span>
-        </div>
-      </div>
+ <div className="relative select-none">
+ <div className="absolute inset-0 flex items-center">
+ <span className="w-full border-t border-[var(--border-default)]"></span>
+ </div>
+ <div className="relative flex justify-center text-xs uppercase">
+ <span className="bg-[var(--bg-subtle)] px-3 text-[var(--text-secondary)] font-bold font-mono">Or paste text</span>
+ </div>
+ </div>
 
-      <div className="relative">
-        <Textarea
-          placeholder="Paste your current resume details here..."
-          value={value}
-          onChange={(e) => onChange(e.target.value)}
-          maxLength={MAX_CHARS}
-          className={isBelowMin ? 'border-amber-500 focus:border-amber-500 focus:ring-amber-500/10' : ''}
-        />
-        <div className="absolute bottom-3 right-3 text-[10px] font-mono text-slate-400 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800/80 px-2 py-0.5 rounded shadow-sm select-none">
-          {value.length.toLocaleString()} / {MAX_CHARS.toLocaleString()} max chars
-        </div>
-      </div>
+ <div className="relative">
+ <Textarea
+ placeholder="Paste your current resume details here..."
+ value={value}
+ onChange={(e) => onChange(e.target.value)}
+ maxLength={MAX_CHARS}
+ className={isBelowMin ? 'border-[var(--warning)] focus:border-[var(--warning)] focus:ring-[var(--warning)]/20' : ''}
+ />
+ <div className="absolute bottom-3 right-3 text-[11px] font-mono text-[var(--text-secondary)] bg-[var(--bg-elevated)] border border-[var(--border-default)] px-2 py-0.5 rounded shadow-sm select-none">
+ {value.length.toLocaleString()} / {MAX_CHARS.toLocaleString()} max chars
+ </div>
+ </div>
 
-      {isBelowMin && (
-        <div className="text-xs text-amber-600 dark:text-amber-500 font-semibold -mt-2 select-none">
-          Resume too short to analyze. Paste more content (minimum 200 characters).
-        </div>
-      )}
-    </div>
-  );
+ {isBelowMin && (
+ <div className="text-xs text-[var(--warning-fg)] font-semibold -mt-2 select-none">
+ Resume too short to analyze. Paste more content (minimum 200 characters).
+ </div>
+ )}
+ </div>
+ );
 }

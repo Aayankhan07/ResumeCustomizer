@@ -13,22 +13,18 @@ export default function OverviewTab({
   atsQuality
 }) {
   
-  // Fallbacks for older data records
+  // These are rendered under an "AI Analysis" heading, so a fabricated
+  // fallback reads to the user as genuine model output. Where the model
+  // returned nothing, show nothing — `quality` is the one exception, since
+  // keyword density is genuinely derived from the computed score.
   const quality = atsQuality || {
     keyword_density: currentScore >= 60 ? 'Optimal' : 'Low',
-    section_headings: 'Standard',
-    formatting_risk: 'Clean'
+    section_headings: null,
+    formatting_risk: null,
   };
 
-  const scan = recruiterScan || {
-    strong_yes: `Robust hands-on experience and a strong project portfolio makes this candidate a competitive fit for the ${jobTitle || 'target'} role.`,
-    completely_missed: `Limited direct production-level focus on advanced scalability or specialized infrastructure tools.`
-  };
-
-  const tasks = roadmapData?.tasks || [
-    { task: 'Highlight personal projects focusing on cloud scaling or containerization', impact: 'HIGH IMPACT', points: 5 },
-    { task: 'Incorporate missing technical keywords from the job description', impact: 'MEDIUM IMPACT', points: 3 }
-  ];
+  const scan = recruiterScan ?? null;
+  const tasks = roadmapData?.tasks ?? [];
 
   // Helper for badge colors
   const getBadgeStyle = (val) => {
@@ -78,42 +74,49 @@ export default function OverviewTab({
           <div className="flex flex-col gap-2.5">
             <div className="flex items-center justify-between text-xs font-semibold py-1.5 border-b border-[var(--border-subtle)]">
               <span className="text-[var(--text-secondary)] font-normal">Keyword Density</span>
-              <span className={`border rounded-[var(--radius-xs)] px-2 py-0.5 font-semibold text-[10px] uppercase tracking-wider ${getBadgeStyle(quality.keyword_density)}`}>
+              <span className={`border rounded-[var(--radius-xs)] px-2 py-0.5 font-semibold text-[11px] uppercase tracking-wider ${getBadgeStyle(quality.keyword_density)}`}>
                 {quality.keyword_density}
               </span>
             </div>
-            <div className="flex items-center justify-between text-xs font-semibold py-1.5 border-b border-[var(--border-subtle)]">
-              <span className="text-[var(--text-secondary)] font-normal">Section Headings</span>
-              <span className={`border rounded-[var(--radius-xs)] px-2 py-0.5 font-semibold text-[10px] uppercase tracking-wider ${getBadgeStyle(quality.section_headings)}`}>
-                {quality.section_headings}
-              </span>
-            </div>
-            <div className="flex items-center justify-between text-xs font-semibold py-1.5 border-b border-[var(--border-subtle)] last:border-0 last:pb-0">
-              <span className="text-[var(--text-secondary)] font-normal">Formatting Risk</span>
-              <span className={`border rounded-[var(--radius-xs)] px-2 py-0.5 font-semibold text-[10px] uppercase tracking-wider ${getBadgeStyle(quality.formatting_risk)}`}>
-                {quality.formatting_risk}
-              </span>
-            </div>
+            {quality.section_headings && (
+              <div className="flex items-center justify-between text-xs font-semibold py-1.5 border-b border-[var(--border-subtle)]">
+                <span className="text-[var(--text-secondary)] font-normal">Section Headings</span>
+                <span className={`border rounded-[var(--radius-xs)] px-2 py-0.5 font-semibold text-[11px] uppercase tracking-wider ${getBadgeStyle(quality.section_headings)}`}>
+                  {quality.section_headings}
+                </span>
+              </div>
+            )}
+            {quality.formatting_risk && (
+              <div className="flex items-center justify-between text-xs font-semibold py-1.5 border-b border-[var(--border-subtle)] last:border-0 last:pb-0">
+                <span className="text-[var(--text-secondary)] font-normal">Formatting Risk</span>
+                <span className={`border rounded-[var(--radius-xs)] px-2 py-0.5 font-semibold text-[11px] uppercase tracking-wider ${getBadgeStyle(quality.formatting_risk)}`}>
+                  {quality.formatting_risk}
+                </span>
+              </div>
+            )}
           </div>
         </div>
       </div>
 
-      {/* 2. AI Analysis Panel */}
-      <div className="border border-[var(--border-default)] border-l-[3px] border-l-[var(--accent)] rounded-[var(--radius-md)] p-4 sm:p-5 shadow-[var(--shadow-sm)] bg-[var(--bg-elevated)]">
-        <h4 className="text-[11px] font-semibold uppercase tracking-wider text-[var(--accent)] flex items-center gap-1.5 select-none">
-          <Sparkles size={13} />
-          AI Analysis
-        </h4>
-        <p className="text-sm text-[var(--text-secondary)] leading-relaxed font-normal mt-2.5">
-          {scan.strong_yes}
-        </p>
-        {scan.completely_missed && scan.completely_missed.trim().length > 0 && (
-          <div className="flex items-start gap-1.5 border-t border-[var(--border-subtle)] pt-3 mt-3 text-xs text-[var(--warning-fg)] font-medium leading-relaxed">
-            <AlertTriangle size={14} className="shrink-0 mt-0.5 text-[var(--warning-fg)]" />
-            <span>{scan.completely_missed}</span>
-          </div>
-        )}
-      </div>
+      {/* 2. AI Analysis Panel — omitted entirely when the model returned no
+             scan, rather than filling it with invented commentary. */}
+      {scan?.strong_yes && (
+        <div className="border border-[var(--border-default)] border-l-[3px] border-l-[var(--accent)] rounded-[var(--radius-md)] p-4 sm:p-5 shadow-[var(--shadow-sm)] bg-[var(--bg-elevated)]">
+          <h4 className="text-[11px] font-semibold uppercase tracking-wider text-[var(--accent)] flex items-center gap-1.5 select-none">
+            <Sparkles size={13} />
+            AI Analysis
+          </h4>
+          <p className="text-sm text-[var(--text-secondary)] leading-relaxed font-normal mt-2.5">
+            {scan.strong_yes}
+          </p>
+          {scan.completely_missed && scan.completely_missed.trim().length > 0 && (
+            <div className="flex items-start gap-1.5 border-t border-[var(--border-subtle)] pt-3 mt-3 text-xs text-[var(--warning-fg)] font-medium leading-relaxed">
+              <AlertTriangle size={14} className="shrink-0 mt-0.5 text-[var(--warning-fg)]" />
+              <span>{scan.completely_missed}</span>
+            </div>
+          )}
+        </div>
+      )}
 
       {/* 3. Next Steps (Roadmap tasks) */}
       {tasks.length > 0 && (
@@ -128,7 +131,7 @@ export default function OverviewTab({
                   <span className="flex-1 leading-normal">{item.task}</span>
                   
                   <div className="flex items-center gap-3 shrink-0 ml-4 select-none">
-                    <span className={`text-[10px] font-semibold uppercase px-2 py-0.5 rounded-[var(--radius-xs)] border tracking-wider ${
+                    <span className={`text-[11px] font-semibold uppercase px-2 py-0.5 rounded-[var(--radius-xs)] border tracking-wider ${
                       isHigh 
                         ? 'bg-[var(--warning-subtle)] text-[var(--warning-fg)] border-[var(--warning-fg)]/10' 
                         : 'bg-[var(--bg-subtle)] text-[var(--text-secondary)] border-[var(--border-default)]'
@@ -159,10 +162,27 @@ export default function OverviewTab({
             <span className="text-[11px] uppercase font-bold text-[var(--text-muted)] tracking-wider">Keywords Matched</span>
             <span className="text-xs font-semibold text-[var(--text-primary)] mt-1">{keywordsMatchedCount} / {keywordsTotalCount}</span>
           </div>
-          <div className="flex flex-col">
-            <span className="text-[11px] uppercase font-bold text-[var(--text-muted)] tracking-wider">Layout Safety</span>
-            <span className="text-xs font-semibold text-[var(--success)] mt-1">ATS Compliant</span>
-          </div>
+          {/* Was a hardcoded green "ATS Compliant" that never reflected the
+              actual resume. Now derived from the model's formatting_risk
+              assessment, and omitted when it did not provide one. */}
+          {quality.formatting_risk && (
+            <div className="flex flex-col">
+              <span className="text-[11px] uppercase font-bold text-[var(--text-secondary)] tracking-wider">
+                Layout Safety
+              </span>
+              <span
+                className={`text-xs font-semibold mt-1 ${
+                  quality.formatting_risk === 'Zero Flags'
+                    ? 'text-[var(--success-fg)]'
+                    : quality.formatting_risk === 'At Risk'
+                      ? 'text-[var(--danger-fg)]'
+                      : 'text-[var(--warning-fg)]'
+                }`}
+              >
+                {quality.formatting_risk}
+              </span>
+            </div>
+          )}
         </div>
       </div>
     </div>

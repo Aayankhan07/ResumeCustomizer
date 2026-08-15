@@ -35,6 +35,24 @@ export const metadata: Metadata = {
   description: 'ATS-optimized resumes tailored to any job description in seconds.',
 };
 
+// Applied before first paint. The theme was previously read from localStorage
+// in a Navbar effect, which had two consequences: the five auth routes render
+// no Navbar and so ignored the saved theme entirely (a dark-mode user got a
+// white login page), and every other route painted light before the effect
+// corrected it. Runs synchronously in <head>, ahead of hydration.
+const THEME_INIT = `
+(function () {
+  try {
+    var t = localStorage.getItem('theme');
+    if (t !== 'dark' && t !== 'light') {
+      t = matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    }
+    document.documentElement.classList.toggle('dark', t === 'dark');
+    document.documentElement.setAttribute('data-theme', t);
+  } catch (e) {}
+})();
+`;
+
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html
@@ -42,19 +60,26 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       suppressHydrationWarning
       className={`${inter.variable} ${dmSerif.variable} ${jetbrainsMono.variable}`}
     >
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: THEME_INIT }} />
+      </head>
       <body suppressHydrationWarning>
         <AuthProvider>
-          <div className="min-h-screen bg-[var(--bg-subtle)] dark:bg-[#030712] transition-colors duration-300">
+          <div className="min-h-screen bg-[var(--bg-subtle)] transition-colors duration-300">
             {children}
           </div>
-          <Toaster 
+          {/* Toasts were hardcoded to a near-black background with an inline
+              'Inter' font stack, so they rendered as a black box in light mode
+              and bypassed the --font-sans variable set on <html>. */}
+          <Toaster
             position="bottom-right"
             toastOptions={{
               style: {
-                background: '#0F0F0F',
-                color: '#FFFFFF',
-                borderRadius: '10px',
-                fontFamily: 'Inter, sans-serif',
+                background: 'var(--bg-elevated)',
+                color: 'var(--text-primary)',
+                border: '1px solid var(--border-default)',
+                borderRadius: 'var(--radius-md)',
+                fontFamily: 'var(--font-sans)',
                 fontSize: '14px',
               },
             }}

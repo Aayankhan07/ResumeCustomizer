@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { MoreVertical, ChevronRight } from 'lucide-react';
 import { timeAgo } from '../../utils/formatDate';
 import { trackEvent } from '../../utils/analytics';
@@ -18,7 +18,6 @@ const STATUS_STYLES = {
 };
 
 export default function AnalysisRow({ item, onDelete, onUpdateStatus }) {
-  const router = useRouter();
   const [menuOpen, setMenuOpen] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
   const menuRef = useRef(null);
@@ -71,9 +70,6 @@ export default function AnalysisRow({ item, onDelete, onUpdateStatus }) {
     return 'bg-[var(--danger-subtle)] text-[var(--danger-fg)]';
   };
 
-  const handleRowClick = () => {
-    router.push(`/transform/${item.id}`);
-  };
 
   const handleStatusChange = async (e) => {
     const newStatus = e.target.value;
@@ -110,14 +106,16 @@ export default function AnalysisRow({ item, onDelete, onUpdateStatus }) {
   };
 
   return (
-    <div
-      onClick={handleRowClick}
-      className="flex flex-col sm:flex-row sm:items-center justify-between p-[14px] px-[18px] bg-[var(--bg-elevated)] hover:bg-[var(--bg-subtle)] border border-[var(--border-default)] rounded-[var(--radius-md)] cursor-pointer transition-colors duration-150 select-none group gap-4 relative mb-2"
-    >
+    // The row was a <div onClick> navigating to the detail page: not
+    // focusable, not activatable by keyboard, and announced as nothing. It
+    // cannot become a <button> because it contains a <select> and its own
+    // buttons, so the title is a real link and a stretched overlay makes the
+    // whole row clickable without nesting interactive elements.
+    <div className="flex flex-col sm:flex-row sm:items-center justify-between p-3.5 px-4 bg-[var(--bg-elevated)] hover:bg-[var(--bg-subtle)] border border-[var(--border-default)] rounded-[var(--radius-md)] transition-colors duration-150 select-none group gap-4 relative mb-2 focus-within:ring-2 focus-within:ring-[var(--accent)] focus-within:ring-offset-1">
       {/* Inline Deletion Confirmation Panel */}
       {showConfirm ? (
         <div 
-          className="absolute inset-0 bg-[var(--bg-elevated)] flex items-center justify-between px-6 z-20 animate-fade-in rounded-[var(--radius-md)]"
+          className="absolute inset-0 bg-[var(--bg-elevated)] flex items-center justify-between px-6 z-30 animate-fade-in rounded-[var(--radius-md)]"
           onClick={(e) => e.stopPropagation()}
         >
           <span className="text-xs font-bold text-[var(--text-secondary)]">
@@ -143,7 +141,15 @@ export default function AnalysisRow({ item, onDelete, onUpdateStatus }) {
       {/* Left Column: Job Info */}
       <div className="flex-1 min-w-0">
         <h4 className="font-semibold text-sm text-[var(--text-primary)]">
-          {item.label || item.detected_job_title || 'Resume Optimization'}
+          {/* The stretched pseudo-element makes the whole row clickable while
+              keeping a single real link for keyboard and screen-reader users.
+              Sibling controls sit above it via z-index. */}
+          <Link
+            href={`/transform/${item.id}`}
+            className="after:absolute after:inset-0 after:content-[''] after:rounded-[var(--radius-md)] focus-visible:outline-none"
+          >
+            {item.label || item.detected_job_title || 'Resume Optimization'}
+          </Link>
         </h4>
         <div className="text-xs text-[var(--text-secondary)] truncate mt-1 flex items-center gap-1.5 font-normal">
           <span>{item.detected_company || '—'}</span>
@@ -151,14 +157,16 @@ export default function AnalysisRow({ item, onDelete, onUpdateStatus }) {
           <span className="font-mono text-[11px] text-[var(--text-muted)]">{timeAgo(item.created_at)}</span>
         </div>
         {showFollowUpNudge && (
-          <div className="mt-1.5 text-[10px] font-semibold text-amber-600 dark:text-amber-400 flex items-center gap-1 bg-amber-500/[0.03] border border-amber-500/10 px-2 py-0.5 rounded w-max animate-pulse">
+          <div className="mt-1.5 text-[11px] font-semibold text-amber-600 dark:text-amber-400 flex items-center gap-1 bg-amber-500/[0.03] border border-amber-500/10 px-2 py-0.5 rounded w-max animate-pulse">
             ⚠️ Applied over a week ago — consider following up!
           </div>
         )}
       </div>
 
-      {/* Right Column: Score, Status & Actions */}
-      <div className="flex items-center justify-between sm:justify-end gap-3 sm:gap-4 w-full sm:w-auto pt-3 sm:pt-0 border-t sm:border-t-0 border-[var(--border-subtle)]">
+      {/* Right Column: Score, Status & Actions.
+          relative + z-10 keeps these above the stretched link overlay so they
+          remain independently clickable. */}
+      <div className="relative z-10 flex items-center justify-between sm:justify-end gap-3 sm:gap-4 w-full sm:w-auto pt-3 sm:pt-0 border-t sm:border-t-0 border-[var(--border-subtle)]">
         
         {/* Score Badge: small circle (36px) showing match score */}
         <div 
@@ -171,12 +179,12 @@ export default function AnalysisRow({ item, onDelete, onUpdateStatus }) {
         {/* Badges */}
         <div className="hidden md:flex items-center gap-2">
           {nextInterview && (
-            <span className="px-2 py-0.5 border text-[10px] font-semibold rounded-[var(--radius-xs)] bg-indigo-50 text-indigo-600 border-indigo-100 dark:bg-indigo-500/10 dark:text-indigo-400 dark:border-indigo-500/20 flex items-center gap-1 shrink-0">
+            <span className="px-2 py-0.5 border text-[11px] font-semibold rounded-[var(--radius-xs)] bg-indigo-50 text-indigo-600 border-indigo-100 dark:bg-indigo-500/10 dark:text-indigo-400 dark:border-indigo-500/20 flex items-center gap-1 shrink-0">
               🎤 {formatBadgeDate(nextInterview.event_date)}
             </span>
           )}
           {item.application_deadline && !['Offer', 'Rejected', 'Withdrawn'].includes(item.status || '') && (
-            <span className={`px-2 py-0.5 border text-[10px] font-semibold rounded-[var(--radius-xs)] flex items-center gap-1 shrink-0 ${getDeadlineBadgeStyle()}`}>
+            <span className={`px-2 py-0.5 border text-[11px] font-semibold rounded-[var(--radius-xs)] flex items-center gap-1 shrink-0 ${getDeadlineBadgeStyle()}`}>
               📅 Due {formatBadgeDate(item.application_deadline)}
             </span>
           )}
@@ -190,7 +198,7 @@ export default function AnalysisRow({ item, onDelete, onUpdateStatus }) {
           <select
             value={item.status || 'Saved'}
             onChange={handleStatusChange}
-            className={`px-2.5 py-1 text-[11px] font-medium border rounded-[var(--radius-xs)] cursor-pointer transition-all outline-none text-center appearance-none ${STATUS_STYLES[item.status || 'Saved']}`}
+            className={`px-2.5 py-1 text-[11px] font-medium border rounded-[var(--radius-xs)] cursor-pointer transition-all focus-visible:outline-2 focus-visible:outline-[var(--accent)] focus-visible:outline-offset-1 text-center appearance-none ${STATUS_STYLES[item.status || 'Saved']}`}
           >
             <option value="Saved">Saved</option>
             <option value="Applied">Applied</option>

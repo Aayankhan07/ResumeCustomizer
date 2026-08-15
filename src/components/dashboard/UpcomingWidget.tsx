@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { Calendar, Clock, AlertCircle } from 'lucide-react';
 import { getEvents } from '../../lib/api';
 import { TransformationItem } from '../../hooks/useHistory';
+import SkeletonBlock from '../ui/SkeletonBlock';
 
 interface UpcomingWidgetProps {
   transformations?: TransformationItem[];
@@ -14,6 +15,7 @@ export default function UpcomingWidget({ transformations = [] }: UpcomingWidgetP
   const router = useRouter();
   const [events, setEvents] = useState<{ overdue: any[]; upcoming: any[] }>({ overdue: [], upcoming: [] });
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(false);
 
   useEffect(() => {
     async function fetchEvents() {
@@ -21,7 +23,10 @@ export default function UpcomingWidget({ transformations = [] }: UpcomingWidgetP
         const data = await getEvents(14);
         setEvents(data || { overdue: [], upcoming: [] });
       } catch (err) {
+        // Was swallowed entirely, so a failed fetch was indistinguishable
+        // from having nothing scheduled.
         console.error('Failed to load upcoming events for widget:', err);
+        setLoadError(true);
       } finally {
         setLoading(false);
       }
@@ -32,10 +37,9 @@ export default function UpcomingWidget({ transformations = [] }: UpcomingWidgetP
   useEffect(() => {
     if (typeof window === 'undefined' || !('Notification' in window)) return;
     
-    if (Notification.permission === 'default') {
-      Notification.requestPermission();
-    }
-    
+    // Only notify if permission was already granted. Requesting it
+    // unprompted on dashboard mount — with no explanation of why — is the
+    // classic permission anti-pattern and gets denied permanently.
     if (Notification.permission !== 'granted') return;
 
     const todayStr = new Date().toDateString();
@@ -90,7 +94,30 @@ export default function UpcomingWidget({ transformations = [] }: UpcomingWidgetP
     });
   }, [events, transformations]);
 
-  if (loading) return null;
+  // Rendering nothing while loading caused the widget to pop in and shift
+  // the dashboard layout; reserve the space instead.
+  if (loading) {
+    return (
+      <div className="mb-6 rounded-[var(--radius-lg)] border border-[var(--border-default)] bg-[var(--bg-elevated)] p-4">
+        <SkeletonBlock variant="heading" className="w-40" />
+        <div className="mt-3 flex flex-col gap-2">
+          <SkeletonBlock variant="line" />
+          <SkeletonBlock variant="line" className="w-3/4" />
+        </div>
+      </div>
+    );
+  }
+
+  if (loadError) {
+    return (
+      <div
+        role="alert"
+        className="mb-6 rounded-[var(--radius-lg)] border border-[var(--border-default)] bg-[var(--bg-elevated)] p-4 text-xs text-[var(--text-secondary)]"
+      >
+        Couldn&apos;t load your upcoming interviews and deadlines.
+      </div>
+    );
+  }
 
   // Process deadlines from transformations list
   const now = new Date();

@@ -21,26 +21,26 @@ export default function StatsRow({ stats, transformations = [] }: StatsRowProps)
     {
       label: 'Resumes Optimized',
       value: stats?.total ?? 0,
-      icon: <BarChart2 className="text-slate-600 dark:text-indigo-400" size={18} />,
-      bgClass: 'bg-slate-100/80 border-slate-200 dark:bg-slate-950/40 dark:border-slate-800',
+      icon: <BarChart2 className="text-[var(--text-secondary)]" size={18} />,
+      bgClass: 'bg-[var(--bg-subtle)] border-[var(--border-default)]',
     },
     {
       label: 'Best Match Score',
       value: stats?.bestScore !== null && stats?.bestScore !== undefined ? `${stats.bestScore}%` : '—',
-      icon: <Star className="text-slate-600 dark:text-emerald-400" size={18} />,
-      bgClass: 'bg-slate-100/80 border-slate-200 dark:bg-slate-950/40 dark:border-slate-800',
+      icon: <Star className="text-[var(--text-secondary)]" size={18} />,
+      bgClass: 'bg-[var(--bg-subtle)] border-[var(--border-default)]',
     },
     {
       label: 'Optimized This Week',
       value: stats?.thisWeek ?? 0,
-      icon: <Clock className="text-slate-600 dark:text-amber-400" size={18} />,
-      bgClass: 'bg-slate-100/80 border-slate-200 dark:bg-slate-950/40 dark:border-slate-800',
+      icon: <Clock className="text-[var(--text-secondary)]" size={18} />,
+      bgClass: 'bg-[var(--bg-subtle)] border-[var(--border-default)]',
     },
     {
       label: responseRateLabel,
       value: responseRateValue,
-      icon: <TrendingUp className="text-slate-600 dark:text-sky-400" size={18} />,
-      bgClass: 'bg-slate-100/80 border-slate-200 dark:bg-slate-950/40 dark:border-slate-800',
+      icon: <TrendingUp className="text-[var(--text-secondary)]" size={18} />,
+      bgClass: 'bg-[var(--bg-subtle)] border-[var(--border-default)]',
     },
   ];
 
@@ -52,8 +52,8 @@ export default function StatsRow({ stats, transformations = [] }: StatsRowProps)
             {item.icon}
           </div>
           <div>
-            <p className="text-2xl font-serif text-slate-900 dark:text-white font-bold tracking-tight">{item.value}</p>
-            <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mt-1 font-mono">{item.label}</p>
+            <p className="text-2xl font-serif text-[var(--text-primary)] font-bold tracking-tight">{item.value}</p>
+            <p className="text-[11px] font-bold text-[var(--text-secondary)] uppercase tracking-wider mt-1 font-mono">{item.label}</p>
           </div>
         </GlassPanel>
       ))}

@@ -1,4 +1,11 @@
-export default function SkeletonBlock({ className = '', variant = 'line', width, height }) {
+// width/height default to undefined explicitly: without the defaults,
+// TypeScript infers them as required props for .tsx consumers.
+export default function SkeletonBlock({
+  className = '',
+  variant = 'line',
+  width = undefined,
+  height = undefined,
+}) {
   const getVariantStyles = () => {
     switch (variant) {
       case 'heading':

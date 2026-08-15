@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useHistory } from '../../hooks/useHistory';
 import Link from 'next/link';
@@ -16,7 +16,8 @@ import UpcomingWidget from '../../components/dashboard/UpcomingWidget';
 export default function Dashboard() {
   useDocumentTitle('Dashboard');
   const { user } = useAuth();
-  const { transformations, stats, loading, hasMore, loadMore, deleteItem, updateStatus } = useHistory();
+  const { transformations, stats, loading, error, hasMore, loadMore, reload, deleteItem, updateStatus } =
+    useHistory();
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('All');
 
@@ -30,7 +31,10 @@ export default function Dashboard() {
 
   const displayName = user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'User';
 
-  const filteredTransformations = transformations.filter((item) => {
+  // Memoized: this runs a full filter with per-item Date allocations, and was
+  // recomputed on every keystroke in the search box — then fed to unmemoized
+  // rows that each re-attach a document listener.
+  const filteredTransformations = useMemo(() => transformations.filter((item) => {
     const labelText = (item.label || '').toLowerCase();
     const jobTitleText = (item.detected_job_title || '').toLowerCase();
     const companyText = (item.detected_company || '').toLowerCase();
@@ -69,7 +73,7 @@ export default function Dashboard() {
     }
     
     return matchesSearch && matchesStatus;
-  });
+  }), [transformations, searchTerm, statusFilter]);
 
   return (
     <div className="min-h-screen bg-[var(--bg-base)] text-[var(--text-primary)] flex flex-col font-sans select-none relative overflow-hidden transition-colors duration-300">
@@ -122,7 +126,7 @@ export default function Dashboard() {
                   placeholder="Filter optimizations..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full pl-9.5 pr-4 py-2 bg-[var(--bg-elevated)] border border-[var(--border-default)] rounded-[var(--radius-md)] text-sm text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none focus:border-[var(--accent)] transition-all font-normal"
+                  className="w-full pl-10 pr-4 py-2 bg-[var(--bg-elevated)] border border-[var(--border-default)] rounded-[var(--radius-md)] text-sm text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus-visible:outline-none focus:border-[var(--accent)] transition-all font-normal"
                 />
               </div>
             )}
@@ -154,12 +158,40 @@ export default function Dashboard() {
             <div className="flex justify-center items-center py-24">
               <div className="w-8 h-8 border-2 border-[var(--text-primary)] border-t-transparent rounded-full animate-spin" />
             </div>
+          ) : error && transformations.length === 0 ? (
+            /* A failed load previously fell through to EmptyDashboard, telling
+               a user with 40 saved resumes that they had none. */
+            <div
+              role="alert"
+              className="flex flex-col items-center justify-center gap-3 p-12 text-center border border-[var(--border-default)] bg-[var(--bg-elevated)] rounded-[var(--radius-lg)] shadow-[var(--shadow-sm)]"
+            >
+              <p className="text-sm font-semibold text-[var(--text-primary)]">{error}</p>
+              <p className="text-xs text-[var(--text-secondary)]">
+                Your saved resumes are safe — we just couldn&apos;t load them right now.
+              </p>
+              <button onClick={reload} className="btn-ghost text-xs px-6 py-2 mt-1">
+                Try again
+              </button>
+            </div>
           ) : transformations.length === 0 ? (
             <EmptyDashboard />
           ) : filteredTransformations.length === 0 ? (
-            /* No Search Results */
-            <div className="flex flex-col items-center justify-center p-12 text-center border border-[var(--border-default)] bg-[var(--bg-elevated)] rounded-[var(--radius-lg)] shadow-[var(--shadow-sm)]">
-              <p className="text-sm text-[var(--text-muted)] font-normal">No optimizations match your search term.</p>
+            /* No results for the active search/filter */
+            <div className="flex flex-col items-center justify-center gap-3 p-12 text-center border border-[var(--border-default)] bg-[var(--bg-elevated)] rounded-[var(--radius-lg)] shadow-[var(--shadow-sm)]">
+              <p className="text-sm text-[var(--text-secondary)] font-normal">
+                {searchTerm
+                  ? `No resumes match “${searchTerm}”.`
+                  : `No resumes with status “${statusFilter}”.`}
+              </p>
+              <button
+                onClick={() => {
+                  setSearchTerm('');
+                  setStatusFilter('All');
+                }}
+                className="btn-ghost text-xs px-6 py-2"
+              >
+                Clear filters
+              </button>
             </div>
           ) : (
             /* List View */

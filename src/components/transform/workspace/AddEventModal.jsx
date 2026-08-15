@@ -1,9 +1,15 @@
 'use client';
 
 import { useState } from 'react';
-import { X } from 'lucide-react';
 import Button from '../../ui/Button';
 import Input from '../../ui/Input';
+import Modal from '../../ui/Modal';
+
+const DEFAULT_TITLES = {
+  interview: '',
+  follow_up: 'Follow up with recruiter',
+  note: 'Note',
+};
 
 export default function AddEventModal({ isOpen, onClose, onSubmit }) {
   const [eventType, setEventType] = useState('interview'); // interview | follow_up | note
@@ -14,8 +20,6 @@ export default function AddEventModal({ isOpen, onClose, onSubmit }) {
   const [interviewerName, setInterviewerName] = useState('');
   const [notes, setNotes] = useState('');
   const [loading, setLoading] = useState(false);
-
-  if (!isOpen) return null;
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -49,23 +53,12 @@ export default function AddEventModal({ isOpen, onClose, onSubmit }) {
     }
   };
 
+  // Uses the shared Modal rather than a hand-rolled overlay: this dialog
+  // previously had no focus trap, no Escape handling, no role="dialog" and
+  // no scroll lock, none of which are worth reimplementing per-modal.
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm animate-fade-in p-4">
-      <div className="w-full max-w-md bg-[var(--bg-elevated)] border border-[var(--border-default)] rounded-[var(--radius-lg)] shadow-[var(--shadow-xl)] overflow-hidden flex flex-col max-h-[90vh] animate-scale-in">
-        {/* Header */}
-        <div className="flex items-center justify-between px-5 py-4 border-b border-[var(--border-default)]">
-          <h3 className="text-sm font-semibold text-[var(--text-primary)] uppercase tracking-wider font-mono">
-            Add Timeline Event
-          </h3>
-          <button
-            onClick={onClose}
-            className="p-1 hover:bg-[var(--bg-subtle)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] rounded-full transition-all cursor-pointer"
-          >
-            <X size={16} />
-          </button>
-        </div>
-
-        <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto p-5 space-y-4">
+    <Modal isOpen={isOpen} onClose={onClose} title="Add timeline event" className="max-h-[90vh] overflow-y-auto">
+        <form onSubmit={handleSubmit} className="space-y-4">
           {/* Tab Switcher */}
           <div className="flex bg-[var(--bg-base)] border border-[var(--border-default)] rounded-[var(--radius-md)] p-1">
             {['interview', 'follow_up', 'note'].map((type) => (
@@ -73,11 +66,14 @@ export default function AddEventModal({ isOpen, onClose, onSubmit }) {
                 key={type}
                 type="button"
                 onClick={() => {
+                  const previousDefault = DEFAULT_TITLES[eventType];
                   setEventType(type);
-                  // Set default titles for convenience
-                  if (type === 'interview') setTitle('');
-                  else if (type === 'follow_up') setTitle('Follow up with recruiter');
-                  else if (type === 'note') setTitle('Note');
+                  // Only replace the title if the user has not typed their
+                  // own. Switching type previously overwrote whatever they
+                  // had entered.
+                  setTitle((current) =>
+                    current === '' || current === previousDefault ? DEFAULT_TITLES[type] : current
+                  );
                 }}
                 className={`flex-1 text-center py-1.5 text-xs font-semibold rounded-[var(--radius-sm)] transition-all cursor-pointer capitalize ${
                   eventType === type
@@ -116,7 +112,7 @@ export default function AddEventModal({ isOpen, onClose, onSubmit }) {
                 type="datetime-local"
                 value={eventDate}
                 onChange={(e) => setEventDate(e.target.value)}
-                className="w-full bg-[var(--bg-base)] border border-[var(--border-default)] rounded-lg px-3.5 py-2.5 font-sans text-sm text-[var(--text-primary)] focus:outline-none focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent)]/10 transition-all"
+                className="w-full bg-[var(--bg-base)] border border-[var(--border-default)] rounded-lg px-3.5 py-2.5 font-sans text-sm text-[var(--text-primary)] focus-visible:outline-none focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent)]/10 transition-all"
                 required={eventType === 'interview'}
               />
             </div>
@@ -133,7 +129,7 @@ export default function AddEventModal({ isOpen, onClose, onSubmit }) {
                   <select
                     value={interviewRound}
                     onChange={(e) => setInterviewRound(e.target.value)}
-                    className="w-full bg-[var(--bg-base)] border border-[var(--border-default)] rounded-lg px-3 py-2 font-sans text-sm text-[var(--text-primary)] focus:outline-none focus:border-[var(--accent)] transition-all cursor-pointer"
+                    className="w-full bg-[var(--bg-base)] border border-[var(--border-default)] rounded-lg px-3 py-2 font-sans text-sm text-[var(--text-primary)] focus-visible:outline-none focus:border-[var(--accent)] transition-all cursor-pointer"
                   >
                     <option value="Phone Screen">Phone Screen</option>
                     <option value="Technical">Technical</option>
@@ -149,7 +145,7 @@ export default function AddEventModal({ isOpen, onClose, onSubmit }) {
                   <select
                     value={interviewFormat}
                     onChange={(e) => setInterviewFormat(e.target.value)}
-                    className="w-full bg-[var(--bg-base)] border border-[var(--border-default)] rounded-lg px-3 py-2 font-sans text-sm text-[var(--text-primary)] focus:outline-none focus:border-[var(--accent)] transition-all cursor-pointer"
+                    className="w-full bg-[var(--bg-base)] border border-[var(--border-default)] rounded-lg px-3 py-2 font-sans text-sm text-[var(--text-primary)] focus-visible:outline-none focus:border-[var(--accent)] transition-all cursor-pointer"
                   >
                     <option value="Remote">Remote</option>
                     <option value="Onsite">Onsite</option>
@@ -178,7 +174,7 @@ export default function AddEventModal({ isOpen, onClose, onSubmit }) {
               onChange={(e) => setNotes(e.target.value)}
               placeholder="Provide extra details, interview links, preparation tips, or conversation summaries..."
               rows={3}
-              className="w-full bg-[var(--bg-base)] border border-[var(--border-default)] rounded-lg px-3.5 py-2.5 font-sans text-sm text-[var(--text-primary)] placeholder:text-[var(--text-secondary)]/50 focus:outline-none focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent)]/10 transition-all resize-none"
+              className="w-full bg-[var(--bg-base)] border border-[var(--border-default)] rounded-lg px-3.5 py-2.5 font-sans text-sm text-[var(--text-primary)] placeholder:text-[var(--text-secondary)]/50 focus-visible:outline-none focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent)]/10 transition-all resize-none"
             />
           </div>
 
@@ -203,7 +199,6 @@ export default function AddEventModal({ isOpen, onClose, onSubmit }) {
             </Button>
           </div>
         </form>
-      </div>
-    </div>
+    </Modal>
   );
 }

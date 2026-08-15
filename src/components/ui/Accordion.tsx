@@ -28,7 +28,7 @@ export default function Accordion({ items = [] }: AccordionProps) {
           <div key={idx} className="py-4 first:pt-0 last:pb-0">
             <button
               onClick={() => toggle(idx)}
-              className="w-full flex items-center justify-between text-left font-sans text-sm sm:text-base font-medium text-[var(--text-primary)] hover:text-[var(--accent)] transition-colors focus:outline-none cursor-pointer group"
+              className="w-full flex items-center justify-between text-left font-sans text-sm sm:text-base font-medium text-[var(--text-primary)] hover:text-[var(--accent)] transition-colors focus-visible:outline-none cursor-pointer group"
             >
               <span>{item.question}</span>
               <motion.span

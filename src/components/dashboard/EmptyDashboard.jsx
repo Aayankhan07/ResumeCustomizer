@@ -9,7 +9,7 @@ export default function EmptyDashboard() {
       </p>
       <Link href="/transform">
         <button className="btn-primary mt-6 py-2.5 px-6 text-sm">
-          Optimize My Resume
+          Tailor my resume
         </button>
       </Link>
     </div>

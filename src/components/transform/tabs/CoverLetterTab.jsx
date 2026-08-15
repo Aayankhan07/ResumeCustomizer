@@ -142,12 +142,12 @@ ${cleanBody}`;
         <div className="flex flex-col gap-3">
           <div className="border border-[var(--border-default)] border-l-[3px] border-l-[var(--accent)] bg-[var(--bg-elevated)] rounded-[var(--radius-md)] p-5 relative shadow-[var(--shadow-sm)]">
             <div className="flex justify-between items-center mb-2.5 select-none">
-              <span className="text-[10px] font-semibold uppercase tracking-widest text-[var(--text-muted)]">
+              <span className="text-[11px] font-semibold uppercase tracking-widest text-[var(--text-muted)]">
                 YOUR 30-SECOND PITCH
               </span>
               <button
                 onClick={handleCopyPitch}
-                className="btn-default py-1 px-2.5 text-[10px] font-medium rounded-[var(--radius-xs)]"
+                className="btn-default py-1 px-2.5 text-[11px] font-medium rounded-[var(--radius-xs)]"
               >
                 {copiedPitch ? 'Copied Pitch' : 'Copy Pitch'}
               </button>

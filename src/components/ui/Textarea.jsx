@@ -25,13 +25,13 @@ const Textarea = forwardRef(({ className = '', label, error, id, ...props }, ref
         id={textareaId}
         aria-invalid={error ? true : undefined}
         aria-describedby={error ? errorId : undefined}
-        className={`w-full min-h-[220px] bg-[var(--bg-base)] border border-[var(--border-default)] rounded-lg px-3.5 py-2.5 font-mono text-sm text-[var(--text-primary)] placeholder:text-[var(--text-secondary)]/50 focus:outline-none focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent)]/10 transition-all duration-150 resize-y leading-relaxed ${
-          error ? 'border-red-500 focus:border-red-500 focus:ring-red-500/10' : ''
+        className={`w-full min-h-[220px] bg-[var(--bg-base)] border border-[var(--border-default)] rounded-lg px-3.5 py-2.5 font-mono text-sm text-[var(--text-primary)] placeholder:text-[var(--text-secondary)]/50 focus-visible:outline-none focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent)]/10 transition-all duration-150 resize-y leading-relaxed ${
+          error ? 'border-[var(--danger)] focus:border-[var(--danger)] focus:ring-[var(--danger)]/20' : ''
         } ${className}`}
         {...props}
       />
       {error && (
-        <span id={errorId} role="alert" className="text-xs text-red-600 font-medium">
+        <span id={errorId} role="alert" className="text-xs text-[var(--danger-fg)] font-medium">
           {error}
         </span>
       )}

@@ -6,11 +6,22 @@ import GlassPanel from '../../ui/GlassPanel';
 import Button from '../../ui/Button';
 import { ERROR_MESSAGES } from '../../../utils/errors';
 
-export default function TransformErrorPanel({ 
-  errorCode, 
-  errorDetails, 
-  rateLimit, 
-  onRetry 
+/** Errors the user can only resolve by editing their input. */
+const INPUT_ERRORS = [
+  'CONTENT_TOO_LONG',
+  'INVALID_JD',
+  'INVALID_JOB_TITLE',
+  'INPUT_TOO_SHORT',
+  'MISSING_RESUME_TEXT',
+  'INVALID_REQUEST',
+];
+
+export default function TransformErrorPanel({
+  errorCode,
+  errorDetails,
+  rateLimit,
+  onRetry,
+  onBackToEditor,
 }) {
   const [timeLeft, setTimeLeft] = useState('');
 
@@ -22,8 +33,16 @@ export default function TransformErrorPanel({
   useEffect(() => {
     if (normalizedErrorCode !== 'RATE_LIMITED') return;
 
-    const resetTime = rateLimit?.resetAt ? new Date(rateLimit.resetAt).getTime() : Date.now() + 3600 * 1000; // default 1 hour ahead
-    
+    // No fabricated fallback: this used to invent `now + 1 hour` and count
+    // down from a number it made up. If the server did not tell us when the
+    // limit resets, we say so instead of guessing.
+    if (!rateLimit?.resetAt) {
+      setTimeLeft('');
+      return;
+    }
+    const resetTime = new Date(rateLimit.resetAt).getTime();
+
+
     const updateTimer = () => {
       const now = Date.now();
       const diff = resetTime - now;
@@ -55,53 +74,37 @@ export default function TransformErrorPanel({
       case 'RATE_LIMITED':
         return <Clock className="w-7 h-7 text-amber-500 animate-pulse" />;
       case 'CONTENT_TOO_LONG':
-        return <FileText className="w-7 h-7 text-rose-500" />;
+        return <FileText className="w-7 h-7 text-[var(--danger)]" />;
       case 'AI_TIMEOUT':
-        return <WifiOff className="w-7 h-7 text-blue-400" />;
+      case 'NETWORK_ERROR':
+        return <WifiOff className="w-7 h-7 text-[var(--text-secondary)]" />;
       case 'AUTH_FAILED':
       case 'UNAUTHORIZED':
-        return <ShieldAlert className="w-7 h-7 text-red-500" />;
+        return <ShieldAlert className="w-7 h-7 text-[var(--danger)]" />;
       case 'INVALID_JD':
-        return <AlertTriangle className="w-7 h-7 text-amber-500" />;
+      case 'INVALID_JOB_TITLE':
+        return <AlertTriangle className="w-7 h-7 text-[var(--warning)]" />;
       case 'PARSE_FAILED':
       default:
-        return <AlertOctagon className="w-7 h-7 text-slate-400" />;
+        return <AlertOctagon className="w-7 h-7 text-[var(--text-secondary)]" />;
     }
   };
 
-  // Determine border color and glows
+  // Border tint by severity. Tokenized so it works in both themes — the
+  // previous values were hardcoded for a dark background only, which made
+  // this panel a dark card floating on a white page in light mode.
   const getPanelClass = () => {
     switch (normalizedErrorCode) {
       case 'RATE_LIMITED':
-        return "border-amber-500/20 shadow-[0_0_40px_-12px_rgba(245,158,11,0.15)]";
+      case 'INVALID_JD':
+      case 'INVALID_JOB_TITLE':
+        return 'border-[var(--warning)]/30';
       case 'CONTENT_TOO_LONG':
       case 'AUTH_FAILED':
       case 'UNAUTHORIZED':
-        return "border-red-500/20 shadow-[0_0_40px_-12px_rgba(239,68,68,0.15)]";
-      case 'AI_TIMEOUT':
-        return "border-blue-500/20 shadow-[0_0_40px_-12px_rgba(59,130,246,0.15)]";
-      case 'INVALID_JD':
-        return "border-amber-500/20 shadow-[0_0_40px_-12px_rgba(245,158,11,0.15)]";
+        return 'border-[var(--danger)]/30';
       default:
-        return "border-slate-700/80";
-    }
-  };
-
-  // Determine badge background and text colors
-  const getBadgeClass = () => {
-    switch (normalizedErrorCode) {
-      case 'RATE_LIMITED':
-        return "text-amber-600 bg-amber-50 border-amber-100";
-      case 'CONTENT_TOO_LONG':
-      case 'AUTH_FAILED':
-      case 'UNAUTHORIZED':
-        return "text-red-400 bg-red-950/40 border-red-800/55";
-      case 'AI_TIMEOUT':
-        return "text-blue-400 bg-blue-950/40 border-blue-800/55";
-      case 'INVALID_JD':
-        return "text-amber-600 bg-amber-50 border-amber-100";
-      default:
-        return "text-slate-400 bg-slate-950/40 border-slate-800";
+        return 'border-[var(--border-default)]';
     }
   };
 
@@ -119,60 +122,76 @@ export default function TransformErrorPanel({
     return errorObj.description(errorDetails);
   };
 
-  // Action button redirect or retry trigger
-  const handleActionButton = () => {
-    if (normalizedErrorCode === 'AUTH_FAILED' || normalizedErrorCode === 'UNAUTHORIZED') {
-      window.location.href = '/login';
-    } else if (onRetry) {
-      onRetry();
-    } else {
-      window.location.reload();
-    }
-  };
+  const isAuthError =
+    normalizedErrorCode === 'AUTH_FAILED' || normalizedErrorCode === 'UNAUTHORIZED';
+  const isInputError = INPUT_ERRORS.includes(normalizedErrorCode);
+  const isRateLimited = normalizedErrorCode === 'RATE_LIMITED';
+
+  // Rate limiting cannot be retried away — offering "retry" there just
+  // re-trips the same limit.
+  const canRetry = !isRateLimited && !isInputError && !isAuthError;
 
   return (
     <div className="w-full flex items-center justify-center p-4 min-h-[400px]">
-      <GlassPanel className={`max-w-md w-full text-center p-6 sm:p-8 bg-slate-900/60 dark:bg-slate-900/40 ${getPanelClass()}`}>
-        <div className="mx-auto w-14 h-14 bg-slate-800/65 border border-slate-700/60 rounded-full flex items-center justify-center mb-5">
+      <GlassPanel
+        role="alert"
+        className={`max-w-md w-full text-center p-6 sm:p-8 ${getPanelClass()}`}
+      >
+        <div className="mx-auto w-14 h-14 bg-[var(--bg-subtle)] border border-[var(--border-default)] rounded-full flex items-center justify-center mb-5">
           {getIcon()}
         </div>
-        
-        <span className={`inline-flex items-center px-2.5 py-0.5 text-[10px] font-mono font-bold uppercase tracking-wider border rounded-md mb-3 ${getBadgeClass()}`}>
-          {normalizedErrorCode}
-        </span>
 
-        <h3 className="text-xl font-bold text-slate-100 mb-2">
-          {errorObj.title}
-        </h3>
-        
-        <p className="text-xs text-slate-400 leading-relaxed mb-6 font-semibold">
+        <h3 className="text-xl font-bold text-[var(--text-primary)] mb-2">{errorObj.title}</h3>
+
+        <p className="text-sm text-[var(--text-secondary)] leading-relaxed mb-6">
           {getDescription()}
         </p>
 
-        {normalizedErrorCode === 'RATE_LIMITED' && (
-          <div className="py-4 px-6 bg-slate-950/70 border border-slate-800 rounded-xl mb-6 flex flex-col items-center justify-center">
-            <span className="text-[9px] font-bold font-mono uppercase tracking-widest text-slate-500 mb-1">
-              Limit Resets In
+        {isRateLimited && timeLeft && (
+          <div className="py-4 px-6 bg-[var(--bg-subtle)] border border-[var(--border-default)] rounded-[var(--radius-lg)] mb-6 flex flex-col items-center justify-center">
+            <span className="text-[11px] font-semibold font-mono uppercase tracking-wider text-[var(--text-secondary)] mb-1">
+              Limit resets in
             </span>
-            <span className="text-3xl font-mono font-bold text-amber-400 tracking-wider">
-              {timeLeft || 'Calculating...'}
+            <span className="text-3xl font-mono font-bold text-[var(--warning-fg)] tracking-wider">
+              {timeLeft}
             </span>
           </div>
         )}
 
-        <div className="flex gap-3">
-          <Button 
-            onClick={handleActionButton}
-            className="flex-1 flex items-center justify-center gap-2 bg-slate-200 hover:bg-slate-100 text-slate-900 border-0 font-bold"
-          >
-            {normalizedErrorCode === 'RATE_LIMITED' ? 'Check Status' : errorObj.action}
-          </Button>
-          <Button 
+        <div className="flex flex-col sm:flex-row gap-3">
+          {/* Input errors can only be fixed by editing, so the primary action
+              returns to the wizard with the user's text intact rather than
+              re-submitting the same rejected input. */}
+          {isInputError && onBackToEditor && (
+            <Button onClick={onBackToEditor} className="flex-1">
+              Edit and try again
+            </Button>
+          )}
+
+          {isAuthError && (
+            <Button onClick={() => (window.location.href = '/login')} className="flex-1">
+              Sign in
+            </Button>
+          )}
+
+          {canRetry && onRetry && (
+            <Button onClick={onRetry} className="flex-1">
+              Try again
+            </Button>
+          )}
+
+          {!isInputError && onBackToEditor && (
+            <Button variant="outline" onClick={onBackToEditor} className="flex-1">
+              Back to editor
+            </Button>
+          )}
+
+          <Button
             variant="outline"
-            onClick={() => window.location.href = '/dashboard'}
-            className="flex-1 border-slate-700/80 hover:bg-slate-800/40 text-slate-300"
+            onClick={() => (window.location.href = '/dashboard')}
+            className="flex-1"
           >
-            Go Dashboard
+            Dashboard
           </Button>
         </div>
       </GlassPanel>

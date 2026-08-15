@@ -88,7 +88,7 @@ export default function Signup() {
             Professional AI Tailoring
           </span>
           <h1 className="font-serif text-3xl sm:text-4xl leading-snug font-bold mb-5 text-[var(--text-primary)]">
-            "Get more callbacks in under 60 seconds."
+            "Tailor your resume to every job you apply for."
           </h1>
           <div className="h-1 w-12 bg-[var(--accent)] mb-6 rounded-full" />
           <p className="text-sm text-[var(--text-secondary)] leading-relaxed font-medium">
@@ -97,7 +97,7 @@ export default function Signup() {
         </div>
 
         <div className="flex items-center justify-between border-t border-[var(--border-default)] pt-6">
-          <p className="text-xs text-[var(--text-muted)] font-mono">ResumOrph Engine v1.2</p>
+          <p className="text-xs text-[var(--text-secondary)] font-mono">ResumOrph</p>
           <span className="text-xs text-[var(--text-muted)] font-mono">&copy; {new Date().getFullYear()}</span>
         </div>
       </div>

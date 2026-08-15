@@ -40,46 +40,44 @@ export default class ErrorBoundary extends React.Component {
       }
 
       const isGlobal = this.props.variant === 'global';
-      const errorMsg = this.state.error?.message || "An unexpected error occurred.";
+
+      // The raw exception message is deliberately not rendered. It was shown
+      // to users in a mono block ("Cannot read properties of undefined…"),
+      // which tells them nothing and leaks internals. It still reaches the
+      // console and Sentry in componentDidCatch.
 
       if (isGlobal) {
         return (
-          <div className="min-h-screen w-full flex items-center justify-center bg-[#0B0F19] bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-slate-900 via-[#0B0F19] to-black p-4 text-slate-200">
-            <div className="absolute inset-0 bg-[linear-gradient(to_right,#1f29370a_1px,transparent_1px),linear-gradient(to_bottom,#1f29370a_1px,transparent_1px)] bg-[size:4rem_4rem]" />
-            <div className="absolute top-0 left-0 right-0 h-96 bg-gradient-to-b from-blue-500/10 via-transparent to-transparent blur-3xl pointer-events-none" />
-            
-            <GlassPanel className="relative z-10 max-w-lg w-full text-center border-red-500/20 dark:border-red-500/20 shadow-[0_0_50px_-12px_rgba(239,68,68,0.15)] bg-slate-900/60 dark:bg-slate-900/40 p-8 sm:p-10">
-              <div className="mx-auto w-16 h-16 bg-red-500/10 dark:bg-red-900/20 border border-red-500/30 rounded-full flex items-center justify-center mb-6 animate-pulse">
-                <AlertTriangle className="w-8 h-8 text-red-500 dark:text-red-400" />
+          <div
+            role="alert"
+            className="min-h-screen w-full flex items-center justify-center bg-[var(--bg-base)] p-4 text-[var(--text-primary)]"
+          >
+            <GlassPanel className="relative z-10 max-w-lg w-full text-center border-[var(--danger)]/25 p-8 sm:p-10">
+              <div className="mx-auto w-16 h-16 bg-[var(--danger-subtle)] border border-[var(--danger)]/30 rounded-full flex items-center justify-center mb-6">
+                <AlertTriangle className="w-8 h-8 text-[var(--danger-fg)]" />
               </div>
 
-              <h1 className="text-2xl sm:text-3xl font-bold text-slate-100 mb-3">
-                Workspace Encountered a Crash
+              <h1 className="text-2xl sm:text-3xl font-bold text-[var(--text-primary)] mb-3">
+                Something went wrong
               </h1>
-              
-              <p className="text-sm sm:text-base text-slate-400 mb-6">
-                Our core engine caught an unexpected runtime crash. No worries, your session is intact. Try reloading the workspace or navigating back home.
+
+              <p className="text-sm sm:text-base text-[var(--text-secondary)] mb-8">
+                This page stopped working unexpectedly. Your saved resumes are
+                safe — reloading usually fixes it.
               </p>
 
-              <div className="p-4 bg-black/40 dark:bg-black/60 border border-slate-800 rounded-lg text-left font-mono text-xs text-red-400/90 mb-8 max-h-32 overflow-y-auto custom-scrollbar break-all">
-                {errorMsg}
-              </div>
-
               <div className="flex flex-col sm:flex-row gap-3 justify-center">
-                <Button 
-                  onClick={() => window.location.reload()}
-                  className="flex items-center justify-center gap-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white shadow-lg shadow-blue-500/20 border-0"
-                >
-                  <RefreshCw className="w-4 h-4 animate-spin-hover" />
-                  Reload Workspace
+                <Button onClick={() => window.location.reload()} className="flex items-center justify-center gap-2">
+                  <RefreshCw className="w-4 h-4" />
+                  Reload page
                 </Button>
-                <Button 
-                  variant="outline" 
-                  onClick={() => window.location.href = '/dashboard'}
-                  className="flex items-center justify-center gap-2 border-slate-700/80 hover:bg-slate-800/40 text-slate-300"
+                <Button
+                  variant="outline"
+                  onClick={() => (window.location.href = '/dashboard')}
+                  className="flex items-center justify-center gap-2"
                 >
                   <Home className="w-4 h-4" />
-                  Go to Dashboard
+                  Go to dashboard
                 </Button>
               </div>
             </GlassPanel>
@@ -87,25 +85,26 @@ export default class ErrorBoundary extends React.Component {
         );
       }
 
-      // Tab or Section specific Error Boundary
+      // Tab or section-level fallback
       return (
-        <GlassPanel className="w-full border-red-500/10 dark:border-red-500/10 bg-red-500/[0.02] dark:bg-red-950/[0.01] p-6 text-center shadow-[inset_0_1px_1px_rgba(239,68,68,0.05)]">
-          <div className="mx-auto w-12 h-12 bg-red-500/10 dark:bg-red-900/20 border border-red-500/20 rounded-full flex items-center justify-center mb-4">
-            <AlertTriangle className="w-6 h-6 text-red-500 dark:text-red-400" />
+        <GlassPanel role="alert" className="w-full border-[var(--danger)]/20 p-6 text-center">
+          <div className="mx-auto w-12 h-12 bg-[var(--danger-subtle)] border border-[var(--danger)]/20 rounded-full flex items-center justify-center mb-4">
+            <AlertTriangle className="w-6 h-6 text-[var(--danger-fg)]" />
           </div>
-          <h3 className="text-base font-semibold text-slate-100 mb-1">
-            Section Failed to Load
+          <h3 className="text-base font-semibold text-[var(--text-primary)] mb-1">
+            This section couldn&apos;t load
           </h3>
-          <p className="text-xs text-slate-400 mb-4 max-w-md mx-auto">
-            {errorMsg}
+          <p className="text-xs text-[var(--text-secondary)] mb-4 max-w-md mx-auto">
+            The rest of the page still works. Try loading this section again.
           </p>
-          <Button 
+          <Button
             onClick={this.handleReset}
             size="sm"
-            className="inline-flex items-center gap-1.5 py-1.5 px-3.5 text-xs bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700"
+            variant="secondary"
+            className="inline-flex items-center gap-1.5"
           >
             <RefreshCw className="w-3.5 h-3.5" />
-            Reload Section
+            Try again
           </Button>
         </GlassPanel>
       );
