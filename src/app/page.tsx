@@ -62,5 +62,13 @@ export default async function LandingPage() {
     console.error('Failed to load global stats on server:', err);
   }
 
-  return <LandingClient initialStats={stats} />;
+  return (
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(buildJsonLd(siteUrl())) }}
+      />
+      <LandingClient initialStats={stats} />
+    </>
+  );
 }
