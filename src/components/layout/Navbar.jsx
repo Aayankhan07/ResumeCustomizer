@@ -7,7 +7,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { toast } from 'sonner';
 
 export default function Navbar() {
-  const { user, signOut } = useAuth();
+  const { user, signOut, loading: authLoading } = useAuth();
   const router = useRouter();
   const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -81,7 +81,7 @@ export default function Navbar() {
 
         {/* Desktop Nav */}
         <div className="hidden md:flex items-center gap-6">
-          {user ? (
+          {authLoading ? null : user ? (
             <>
               <Link
                 href="/dashboard"
@@ -155,7 +155,7 @@ export default function Navbar() {
       {/* Mobile Menu */}
       {mobileOpen && (
         <div className="md:hidden absolute top-14 left-0 right-0 bg-[var(--bg-base)] border-b border-[var(--border-default)] px-4 py-4 flex flex-col gap-3 shadow-[var(--shadow-lg)] animate-fade-in z-50">
-          {user ? (
+          {authLoading ? null : user ? (
             <>
               <Link href="/dashboard" className="text-sm font-medium text-[var(--text-primary)] py-2 px-3 hover:bg-[var(--bg-subtle)] rounded-md" onClick={() => setMobileOpen(false)}>Dashboard</Link>
               <Link href="/transform"  className="text-sm font-medium text-[var(--text-primary)] py-2 px-3 hover:bg-[var(--bg-subtle)] rounded-md" onClick={() => setMobileOpen(false)}>Tailor resume</Link>

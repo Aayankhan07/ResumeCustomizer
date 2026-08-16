@@ -11,12 +11,12 @@ import {
   Mail,
   ClipboardList
 } from 'lucide-react';
-import { toast } from 'sonner';
-// pdfGenerator pulls in jsPDF (~350KB). It is imported dynamically at the
-// point of use so it no longer ships in the initial chunk of every route
-// that renders a result, whether or not the user ever exports.
 import { trackEvent } from '../../utils/analytics';
 import useMediaQuery, { DESKTOP_QUERY } from '../../hooks/useMediaQuery';
+// Owns PDF/DOCX/clipboard export and their loading state. The generators
+// (jsPDF ~350KB, docx ~200KB) are imported dynamically at the point of use, so
+// neither ships in the initial chunk of a route that renders a result.
+import useExport from '../../hooks/useExport';
 
 
 // UI components
@@ -147,10 +147,16 @@ export default function TransformOutput({ result: initialResult, plainText, orig
   // Shared preview styles configurations
   const [selectedTemplate, setSelectedTemplate] = useState('classic');
   const [pageBudget, setPageBudget] = useState('standard');
-  const [copying, setCopying] = useState(false);
-  // Owned here so the sidebar and the in-tab export bar stay in sync.
-  const [isDownloading, setIsDownloading] = useState(false);
-  const [isDownloadingDocx, setIsDownloadingDocx] = useState(false);
+  // Export state and the three handlers live in useExport. Owned in one place
+  // so the sidebar and the in-tab export bar cannot show contradictory states.
+  const {
+    isDownloading,
+    isDownloadingDocx,
+    copying,
+    downloadPDF: handleDownloadPDF,
+    downloadDOCX: handleDownloadDOCX,
+    copyText: handleCopyText,
+  } = useExport({ result, plainText, selectedTemplate, pageBudget });
 
   // The score count-up lives in ScoreRing, which runs its own rAF loop.
   // Duplicating it here with a 16ms setInterval re-rendered this entire
@@ -182,58 +188,6 @@ export default function TransformOutput({ result: initialResult, plainText, orig
   // Same reasoning as recruiterScan: an invented roadmap task is worse than
   // no roadmap, because the user cannot tell it apart from real advice.
   const roadmapData = result.roadmap ?? null;
-
-  // The artificial 1s delay that used to precede each export ("premium
-  // rendering feel") is gone — it added a full second to every download for
-  // no benefit. The spinner now reflects real generation time.
-  const handleDownloadPDF = async () => {
-    if (isDownloading || isDownloadingDocx) return;
-    setIsDownloading(true);
-    try {
-      const { generateResumePDF } = await import('../../lib/pdfGenerator');
-      generateResumePDF(result, selectedTemplate, pageBudget);
-      trackEvent('pdf_downloaded', { template: selectedTemplate });
-      toast.success('Resume downloaded');
-    } catch (err) {
-      // Reported to the user via toast and logged for Sentry. Re-throwing
-      // here would only surface as an unhandled promise rejection.
-      console.error('PDF generation failed:', err);
-      toast.error('Failed to generate PDF. Try copying the plain text.');
-    } finally {
-      setIsDownloading(false);
-    }
-  };
-
-  const handleDownloadDOCX = async () => {
-    if (isDownloading || isDownloadingDocx) return;
-    setIsDownloadingDocx(true);
-    try {
-      const { generateResumeDOCX } = await import('../../lib/docxGenerator');
-      await generateResumeDOCX(result);
-      trackEvent('docx_downloaded');
-      toast.success('DOCX saved to downloads');
-    } catch (err) {
-      console.error('DOCX generation failed:', err);
-      toast.error('Failed to generate Word document.');
-    } finally {
-      setIsDownloadingDocx(false);
-    }
-  };
-
-  const handleCopyText = async () => {
-    try {
-      await navigator.clipboard.writeText(plainText);
-      // Only flag success after the write resolves: `copying` was previously
-      // set before the await and cleared on a timer regardless of outcome, so
-      // a failed copy still flashed "Copied" next to its own error toast.
-      setCopying(true);
-      setTimeout(() => setCopying(false), 1500);
-      toast.success('Resume text copied');
-    } catch (err) {
-      console.error('Clipboard write failed:', err);
-      toast.error('Failed to copy text.');
-    }
-  };
 
   // 15. KEYBOARD SHORTCUTS
   useEffect(() => {
@@ -309,8 +263,9 @@ export default function TransformOutput({ result: initialResult, plainText, orig
 
             {activeTab === 'overview' && (
               <ErrorBoundary>
-                <OverviewTab 
+                <OverviewTab
                   currentScore={localScore}
+                  baselineScore={result.meta?.baseline_score ?? null}
                   jobTitle={jobTitle}
                   company={company}
                   keywordsMatchedCount={localMatched.length}

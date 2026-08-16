@@ -2,40 +2,59 @@
 
 import { useEffect, useState, useRef } from 'react';
 
-export default function ScoreRing({ score, size = 88, strokeWidth = 6, duration = 900 }) {
+export interface ScoreRingProps {
+  /** 0-100. Null or undefined is treated as 0. */
+  score: number | null | undefined;
+  /** Diameter of the ring in pixels. */
+  size?: number;
+  strokeWidth?: number;
+  /** Count-up duration in milliseconds. */
+  duration?: number;
+}
+
+/** Score bands: >=70 success, 40-69 warning, <40 danger. */
+function getStrokeColor(val: number): string {
+  if (val >= 70) return 'var(--success)';
+  if (val >= 40) return 'var(--warning)';
+  return 'var(--danger)';
+}
+
+export default function ScoreRing({
+  score,
+  size = 88,
+  strokeWidth = 6,
+  duration = 900,
+}: ScoreRingProps) {
   const [currentScore, setCurrentScore] = useState(0);
   const prevScoreRef = useRef(0);
 
   useEffect(() => {
-    let startTimestamp = null;
+    let startTimestamp: number | null = null;
     const startScore = prevScoreRef.current;
     const endScore = score ?? 0;
     prevScoreRef.current = endScore;
 
-    const step = (timestamp) => {
-      if (!startTimestamp) startTimestamp = timestamp;
+    let frame = 0;
+    const step = (timestamp: number) => {
+      if (startTimestamp === null) startTimestamp = timestamp;
       const progress = Math.min((timestamp - startTimestamp) / duration, 1);
-      const val = Math.floor(progress * (endScore - startScore) + startScore);
-      setCurrentScore(val);
+      setCurrentScore(Math.floor(progress * (endScore - startScore) + startScore));
       if (progress < 1) {
-        window.requestAnimationFrame(step);
+        frame = window.requestAnimationFrame(step);
       }
     };
-    window.requestAnimationFrame(step);
+    frame = window.requestAnimationFrame(step);
+
+    // The loop used to run unguarded, so unmounting mid-animation left it
+    // calling setState on a dead component.
+    return () => window.cancelAnimationFrame(frame);
   }, [score, duration]);
 
+  const safeScore = score ?? 0;
   const radius = (size - strokeWidth) / 2;
   const circumference = radius * 2 * Math.PI;
   const strokeDashoffset = circumference - (currentScore / 100) * circumference;
-
-  // Score color ranges: ≥70 → success, 40–69 → warning, <40 → danger
-  const getStrokeColor = (val) => {
-    if (val >= 70) return 'var(--success)';
-    if (val >= 40) return 'var(--warning)';
-    return 'var(--danger)';
-  };
-
-  const strokeColor = getStrokeColor(score ?? 0);
+  const strokeColor = getStrokeColor(safeScore);
 
   return (
     <div
@@ -45,7 +64,9 @@ export default function ScoreRing({ score, size = 88, strokeWidth = 6, duration 
       // clipped; a floor of 72px keeps "ATS MATCH" inside the element while
       // the ring itself still renders at `size`.
       style={{ width: Math.max(size, 72) }}
-      aria-label={`ATS Match Score: ${score}%`}
+      // safeScore, not score: a null previously rendered "ATS Match Score: null%"
+      // to screen readers.
+      aria-label={`ATS Match Score: ${safeScore}%`}
     >
       <svg width={size} height={size} className="transform -rotate-90 mx-auto block">
         {/* Background track circle */}
@@ -59,9 +80,9 @@ export default function ScoreRing({ score, size = 88, strokeWidth = 6, duration 
         />
         {/* Animated fill circle */}
         <circle
-          style={{ 
+          style={{
             transitionDuration: `${duration}ms`,
-            stroke: strokeColor
+            stroke: strokeColor,
           }}
           className="transition-all ease-out"
           fill="transparent"
@@ -87,8 +108,8 @@ export default function ScoreRing({ score, size = 88, strokeWidth = 6, duration 
           {currentScore}%
         </span>
         {/* Held at 11px — the project's minimum legible size — rather than
-            scaled down to fit the ring. The wrapper below is widened instead,
-            so the label has room at any ring size. */}
+            scaled down to fit the ring. The wrapper is widened instead, so the
+            label has room at any ring size. */}
         <span className="text-[11px] font-medium uppercase tracking-wide text-[var(--text-muted)] font-sans mt-0.5 leading-none whitespace-nowrap">
           ATS Match
         </span>

@@ -2,11 +2,12 @@ import React from 'react';
 import { Sparkles, AlertTriangle } from 'lucide-react';
 import { getScoreToken } from '../../../lib/scoring';
 
-export default function OverviewTab({ 
-  currentScore, 
-  jobTitle, 
-  company, 
-  keywordsMatchedCount, 
+export default function OverviewTab({
+  currentScore,
+  baselineScore,
+  jobTitle,
+  company,
+  keywordsMatchedCount,
   keywordsTotalCount,
   recruiterScan,
   roadmapData,
@@ -63,9 +64,31 @@ export default function OverviewTab({
               }} 
             />
           </div>
-          <p className="text-xs text-[var(--text-secondary)] mt-4 leading-relaxed font-normal">
-            Your resume has been optimized for the <strong>{jobTitle}</strong> position. We integrated critical keywords and raised your overall match score to <strong>{currentScore}%</strong>.
-          </p>
+          {/* The improvement, where we can measure it. A single number gives
+              the user nothing to judge it against; the delta against their
+              own original resume is the claim that actually means something. */}
+          {typeof baselineScore === 'number' && baselineScore < currentScore ? (
+            <>
+              <div className="flex items-baseline gap-2 mt-3.5 text-xs font-medium">
+                <span className="text-[var(--text-muted)] line-through">{baselineScore}%</span>
+                <span aria-hidden="true" className="text-[var(--text-muted)]">→</span>
+                <span style={{ color: scoreColor }} className="font-bold">{currentScore}%</span>
+                <span className="text-[var(--success)] font-semibold">
+                  +{currentScore - baselineScore} points
+                </span>
+              </div>
+              <p className="text-xs text-[var(--text-secondary)] mt-3 leading-relaxed font-normal">
+                Your original resume matched <strong>{baselineScore}%</strong> of the keywords for
+                this <strong>{jobTitle}</strong> role. After tailoring it matches{' '}
+                <strong>{currentScore}%</strong>.
+              </p>
+            </>
+          ) : (
+            <p className="text-xs text-[var(--text-secondary)] mt-4 leading-relaxed font-normal">
+              Your resume has been optimized for the <strong>{jobTitle}</strong> position, matching{' '}
+              <strong>{currentScore}%</strong> of the keywords in this job description.
+            </p>
+          )}
         </div>
         
         {/* Right Column: ATS Scan Quality */}

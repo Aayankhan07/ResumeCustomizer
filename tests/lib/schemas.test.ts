@@ -60,4 +60,62 @@ describe('TransformOutputSchema', () => {
     });
     expect(result.success).toBe(false);
   });
+
+  describe('partial-result salvage', () => {
+    // A malformed enrichment used to discard the whole result, throwing away a
+    // complete tailored resume that cost a 20-60s paid model call. The resume
+    // body still fails hard; the extras degrade to null.
+    it('salvages the resume when roadmap is malformed', () => {
+      const result = TransformOutputSchema.safeParse({
+        ...validTransformOutput,
+        roadmap: { tasks: [{ task: 'x', type: 'skill', impact: 'high', points: 'ten' }] },
+      });
+      expect(result.success).toBe(true);
+      expect(result.data?.roadmap).toBeNull();
+      expect(result.data?.experience).toHaveLength(1);
+    });
+
+    it('salvages the resume when ats_quality is outside the enum', () => {
+      const result = TransformOutputSchema.safeParse({
+        ...validTransformOutput,
+        ats_quality: { keyword_density: 'Excellent', section_headings: 'Standard', formatting_risk: 'Zero Flags' },
+      });
+      expect(result.success).toBe(true);
+      expect(result.data?.ats_quality).toBeNull();
+    });
+
+    it('salvages the resume when interview_prep is malformed', () => {
+      const result = TransformOutputSchema.safeParse({
+        ...validTransformOutput,
+        interview_prep: { technical: 'not an array' },
+      });
+      expect(result.success).toBe(true);
+      expect(result.data?.interview_prep).toBeNull();
+    });
+
+    it('salvages the resume when the cover letter is the wrong type', () => {
+      const result = TransformOutputSchema.safeParse({
+        ...validTransformOutput,
+        cover_letter: { body: 'object instead of string' },
+      });
+      expect(result.success).toBe(true);
+      expect(result.data?.cover_letter).toBeNull();
+      expect(result.data?.summary).toBe(validTransformOutput.summary);
+    });
+
+    it('still rejects a malformed resume body', () => {
+      // The tailored resume is the product. It must not degrade silently.
+      const result = TransformOutputSchema.safeParse({
+        ...validTransformOutput,
+        experience: 'not an array',
+      });
+      expect(result.success).toBe(false);
+    });
+
+    it('still rejects a missing meta object', () => {
+      const { meta: _meta, ...withoutMeta } = validTransformOutput;
+      const result = TransformOutputSchema.safeParse(withoutMeta);
+      expect(result.success).toBe(false);
+    });
+  });
 });

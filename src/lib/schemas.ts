@@ -38,11 +38,21 @@ export const TransformOutputSchema = z.object({
     description: z.string(),
     bullets: z.array(z.string()),
   })).optional().nullable(),
+  // ── Enrichments below.
+  //
+  // These were all strictly required, so one malformed field — a roadmap task
+  // with a string "points", an ats_quality value outside the enum — threw away
+  // an otherwise complete resume that cost 20-60s and a paid model call. The
+  // tailored resume above is the product; these are extras.
+  //
+  // `.catch(null)` degrades a malformed enrichment to null instead of failing
+  // the whole parse. Every consumer already renders an absent state for these,
+  // since fabricated fallbacks were removed earlier.
   recruiter_scan: z.object({
     strong_yes: z.string(),
     completely_missed: z.string(),
     elevator_pitch: z.string(),
-  }),
+  }).nullable().catch(null),
   roadmap: z.object({
     tasks: z.array(z.object({
       task: z.string(),
@@ -50,27 +60,30 @@ export const TransformOutputSchema = z.object({
       impact: z.string(),
       points: z.number(),
     })),
-  }),
+  }).nullable().catch(null),
   ats_quality: z.object({
     keyword_density: z.enum(['Optimal', 'Low', 'High']),
     section_headings: z.enum(['Standard', 'Non-standard']),
     formatting_risk: z.enum(['Zero Flags', 'Minor Issues', 'At Risk']),
-  }),
+  }).nullable().catch(null),
   rewrites: z.array(z.object({
     section: z.string(),
     before: z.string(),
     after: z.string(),
-  })),
+  })).nullable().catch(null),
   interview_prep: z.object({
     technical: z.array(z.object({ question: z.string(), difficulty: z.string(), expectation: z.string() })),
     behavioral: z.array(z.object({ question: z.string(), difficulty: z.string(), expectation: z.string() })),
     curveball: z.array(z.object({ question: z.string(), difficulty: z.string(), expectation: z.string() })),
-  }),
-  cover_letter: z.string(),
+  }).nullable().catch(null),
+  cover_letter: z.string().nullable().catch(null),
   meta: z.object({
     detected_job_title: z.string(),
     detected_company: z.string(),
     match_score: z.number().optional().nullable(),
+    // The original resume's score against the same JD, attached server-side.
+    // Optional because the model never produces it and older rows predate it.
+    baseline_score: z.number().optional().nullable(),
     keywords_matched: z.array(z.string()).optional().nullable(),
     keywords_total: z.number().optional().nullable(),
     keywords_missing: z.array(z.string()).optional().nullable(),

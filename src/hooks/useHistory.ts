@@ -55,14 +55,23 @@ export function useHistory() {
   // showed an empty state indistinguishable from "you have no history".
   const [error, setError] = useState<string | null>(null);
 
-  // Held in a ref so `load` does not depend on the list length. That
+  // Held in a ref so `load` does not depend on the list itself. That
   // dependency recreated the callback on every data change, which is why the
   // mount effect needed an eslint-disable to avoid refetch loops. Written in
   // an effect rather than during render, which React forbids.
+  //
+  // The optimistic handlers also read the pre-change list from here, so they
+  // never have to snapshot state from inside a setState updater.
+  const itemsRef = useRef<TransformationItem[]>([]);
   const countRef = useRef(0);
+  const statsRef = useRef<UserStats | null>(null);
   useEffect(() => {
+    itemsRef.current = transformations;
     countRef.current = transformations.length;
-  }, [transformations.length]);
+  }, [transformations]);
+  useEffect(() => {
+    statsRef.current = stats;
+  }, [stats]);
 
   const load = useCallback(async (reset = true) => {
     setLoading(true);
@@ -97,8 +106,11 @@ export function useHistory() {
       // Snapshot for rollback: the row used to be removed before the request
       // resolved, with no catch, so a failure left the UI claiming a deletion
       // that never happened and produced an unhandled rejection.
-      const previous = transformations;
-      const previousStats = stats;
+      //
+      // Read from the ref rather than closed-over state, so this callback does
+      // not have to be rebuilt on every data change.
+      const previous = itemsRef.current;
+      const previousStats = statsRef.current;
 
       setTransformations((prev) => prev.filter((t) => t.id !== id));
       setTotal((n) => Math.max(0, n - 1));
@@ -114,15 +126,21 @@ export function useHistory() {
         throw err;
       }
     },
-    [transformations, stats]
+    // Reads its rollback snapshot from refs, so it never needs rebuilding —
+    // which previously handed every AnalysisRow a new callback identity on
+    // every data change.
+    []
   );
 
   const updateStatus = useCallback(async (id: string, status: string) => {
-    let previous: TransformationItem[] = [];
-    setTransformations((prev) => {
-      previous = prev;
-      return prev.map((t) => (t.id === id ? { ...t, status } : t));
-    });
+    // The pre-change list is read from a ref rather than captured inside the
+    // setState updater. React may invoke an updater more than once (StrictMode
+    // does so deliberately), and the second call receives the already-updated
+    // list — so the "previous" snapshot became the optimistic state and a
+    // failed update rolled back to the wrong data.
+    const previous = itemsRef.current;
+
+    setTransformations((prev) => prev.map((t) => (t.id === id ? { ...t, status } : t)));
 
     try {
       await updateTransformationStatus(id, status);

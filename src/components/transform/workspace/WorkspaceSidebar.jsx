@@ -60,7 +60,12 @@ export default function WorkspaceSidebar({
     const listNode = e.currentTarget;
     const nextId = isDesktop ? `tab-desktop-${nextTab.id}` : `tab-${nextTab.id}`;
     requestAnimationFrame(() => {
-      listNode?.querySelector(`#${CSS.escape(nextId)}`)?.focus();
+      // getElementById-style lookup via an attribute selector rather than
+      // `#${CSS.escape(id)}`: CSS.escape is absent in older Safari and in
+      // non-DOM test environments, where it threw a TypeError on every arrow
+      // keypress. Tab ids are built from known slugs, so no escaping is
+      // needed — only a selector that cannot throw.
+      listNode?.querySelector(`[id="${nextId}"]`)?.focus();
     });
   };
 

@@ -319,25 +319,29 @@ export async function getEvents(days = 14): Promise<EventBuckets> {
   return body.data ?? { overdue: [], upcoming: [] };
 }
 
-export async function createEvent(eventData: Record<string, unknown>) {
+export async function createEvent(eventData: Record<string, unknown>): Promise<ApplicationEvent> {
   const headers = await getAuthHeaders();
-  const body = await request('/events', {
+  const body = await request<ApplicationEvent>('/events', {
     method: 'POST',
     headers,
     fallbackCode: 'EVENT_CREATE_FAILED',
     body: JSON.stringify(eventData),
   });
+  // A 2xx with no payload would otherwise be spliced into the timeline as
+  // `undefined` and crash the first render that read a field off it.
+  if (!body.data) throw new ApiError('EVENT_CREATE_FAILED', 502);
   return body.data;
 }
 
-export async function updateEvent(id: string, eventData: Record<string, unknown>) {
+export async function updateEvent(id: string, eventData: Record<string, unknown>): Promise<ApplicationEvent> {
   const headers = await getAuthHeaders();
-  const body = await request(`/events/${id}`, {
+  const body = await request<ApplicationEvent>(`/events/${id}`, {
     method: 'PATCH',
     headers,
     fallbackCode: 'EVENT_UPDATE_FAILED',
     body: JSON.stringify(eventData),
   });
+  if (!body.data) throw new ApiError('EVENT_UPDATE_FAILED', 502);
   return body.data;
 }
 

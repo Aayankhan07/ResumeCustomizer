@@ -53,19 +53,85 @@ describe('callGroqWithFallback', () => {
     expect(fetchMock).toHaveBeenCalledTimes(2);
   });
 
-  it('throws INVALID_JSON without burning another model on an unparseable body', async () => {
-    // Parsing sits outside the retry loop: a malformed body is not a transport
-    // failure, and the raw SyntaxError never matched the INVALID_JSON check in
-    // the route, so users saw a generic 500.
+  it('falls through to the next model on an unparseable body', async () => {
+    // A malformed body is treated as a failed attempt rather than aborting the
+    // chain. Previously it threw immediately, leaving healthy fallback models
+    // untried for what is often a transient formatting slip.
     fetchMock.mockResolvedValueOnce(
       new Response(JSON.stringify({ choices: [{ message: { content: 'not json{' } }] }), {
         status: 200,
         headers: { 'content-type': 'application/json' },
       })
     );
+    fetchMock.mockResolvedValueOnce(
+      new Response(JSON.stringify({ choices: [{ message: { content: '{"summary":"ok"}' } }] }), {
+        status: 200,
+        headers: { 'content-type': 'application/json' },
+      })
+    );
+
+    const result = await callGroqWithFallback('resume', 'jd');
+    expect(result.model_used).toBe('llama-3.1-8b-instant');
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+  });
+
+  it('throws INVALID_JSON when every model returns an unparseable body', async () => {
+    fetchMock.mockImplementation(
+      async () =>
+        new Response(JSON.stringify({ choices: [{ message: { content: 'not json{' } }] }), {
+          status: 200,
+          headers: { 'content-type': 'application/json' },
+        })
+    );
 
     await expect(callGroqWithFallback('resume', 'jd')).rejects.toThrow('INVALID_JSON');
-    expect(fetchMock).toHaveBeenCalledTimes(1);
+    expect(fetchMock).toHaveBeenCalledTimes(3);
+  });
+
+  describe('schema validation inside the fallback loop', () => {
+    // The missing `meta` object failed on the first model and returned 422
+    // while two healthy models went untried. Validation now runs per attempt.
+    const okBody = (content: string) =>
+      new Response(JSON.stringify({ choices: [{ message: { content } }] }), {
+        status: 200,
+        headers: { 'content-type': 'application/json' },
+      });
+
+    it('advances to the next model when the response fails validation', async () => {
+      fetchMock.mockResolvedValueOnce(okBody('{"summary":"missing meta"}'));
+      fetchMock.mockResolvedValueOnce(okBody('{"summary":"ok","meta":{"detected_job_title":"Dev"}}'));
+
+      const validate = (parsed: unknown) => {
+        const p = parsed as { meta?: unknown };
+        return p?.meta
+          ? ({ ok: true, data: parsed } as const)
+          : ({ ok: false, reason: 'meta' } as const);
+      };
+
+      const result = await callGroqWithFallback('resume', 'jd', 'description', validate);
+      expect(result.model_used).toBe('llama-3.1-8b-instant');
+      expect(fetchMock).toHaveBeenCalledTimes(2);
+    });
+
+    it('throws PARSE_FAILED when no model satisfies the schema', async () => {
+      fetchMock.mockImplementation(async () => okBody('{"summary":"never valid"}'));
+
+      const validate = () => ({ ok: false, reason: 'meta' }) as const;
+
+      await expect(
+        callGroqWithFallback('resume', 'jd', 'description', validate)
+      ).rejects.toThrow('PARSE_FAILED');
+      expect(fetchMock).toHaveBeenCalledTimes(3);
+    });
+
+    it('returns the validated data, not the raw parse', async () => {
+      fetchMock.mockResolvedValueOnce(okBody('{"summary":"raw","extra":"stripped"}'));
+
+      const validate = () => ({ ok: true, data: { summary: 'cleaned' } }) as const;
+
+      const result = await callGroqWithFallback('resume', 'jd', 'description', validate);
+      expect(result.data).toEqual({ summary: 'cleaned' });
+    });
   });
 
   it('surfaces the last transport error when every model fails', async () => {

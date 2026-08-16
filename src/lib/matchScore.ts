@@ -117,6 +117,15 @@ export function computeMatchScore(
 
   const jdKeywords = [...new Set(words)];
 
+  // How often each keyword appears in the JD. A term repeated across the
+  // responsibilities and requirements is a genuine signal; one mentioned once
+  // in passing is not, and previously they counted the same. Capped at 3 so a
+  // single term repeated a dozen times cannot dominate the whole score.
+  const frequency = new Map<string, number>();
+  for (const w of words) {
+    frequency.set(w, Math.min((frequency.get(w) ?? 0) + 1, 3));
+  }
+
   // Recursively extract all string values from structured JSON
   // to check keyword matching against only actual content values.
   const extractText = (obj: any): string => {
@@ -127,8 +136,29 @@ export function computeMatchScore(
     }
     return '';
   };
-  
-  const outputText = extractText(outputJson);
+
+  // Score the resume itself, not the whole payload.
+  //
+  // This used to flatten every string in the output — cover_letter, all ten
+  // interview_prep questions, recruiter_scan, roadmap — into one ~4000-word
+  // blob. Every one of those fields is written by the model *from the job
+  // description*, so the score asked "did the model reuse the JD's vocabulary
+  // somewhere in its own output?" The answer was almost always yes, which is
+  // why real transforms returned 100%.
+  //
+  // Only the sections a recruiter or ATS actually reads count toward the
+  // match. A plain string (the original resume text) is scored as-is.
+  const outputText =
+    typeof outputJson === 'string'
+      ? (outputJson as string).toLowerCase()
+      : extractText({
+          summary: (outputJson as Record<string, unknown>)?.summary,
+          skills: (outputJson as Record<string, unknown>)?.skills,
+          experience: (outputJson as Record<string, unknown>)?.experience,
+          projects: (outputJson as Record<string, unknown>)?.projects,
+          education: (outputJson as Record<string, unknown>)?.education,
+          certifications: (outputJson as Record<string, unknown>)?.certifications,
+        });
 
   // Tokenized rather than substring-matched. `outputText.includes(kw)` had no
   // word boundaries, so "ai" matched inside "maintained" and "go" inside
@@ -173,19 +203,23 @@ export function computeMatchScore(
   // O(keywords x setSize) and classified by substring — so "airflow" counted
   // as technical because it contains "ai".
   const getKeywordWeight = (kw: string) => {
-    if (!weights) return 1.0;
+    // Repetition in the JD scales every keyword, independent of the slider
+    // weights below, so emphasis in the posting is reflected in the score.
+    const significance = frequency.get(kw) ?? 1;
+
+    if (!weights) return significance;
     const techDepth = weights.techDepth ?? 50;
     const industryFocus = weights.industryFocus ?? 80;
 
     if (PROCESS_WORDS.has(kw)) {
-      return Math.max(0.1, (100 - techDepth) / 50);
+      return Math.max(0.1, (100 - techDepth) / 50) * significance;
     }
 
     if (TECH_WORDS.has(kw)) {
-      return Math.max(0.1, (techDepth / 50) * (industryFocus / 80));
+      return Math.max(0.1, (techDepth / 50) * (industryFocus / 80)) * significance;
     }
 
-    return 1.0;
+    return significance;
   };
 
   let matchedWeightSum = 0;
@@ -212,4 +246,23 @@ export function computeMatchScore(
     total,
     missing: capitalizedMissing.slice(0, 12)
   };
+}
+
+/**
+ * Scores the candidate's *original* resume against the same job description,
+ * using the identical keyword pool and weighting as the optimized result.
+ *
+ * A single number ("88% match") is unfalsifiable — the user has nothing to
+ * compare it against, and because the optimized resume is generated from the
+ * job description it will always score well. The honest, defensible claim is
+ * the delta: "we raised your match from 47% to 78%". That is what this
+ * enables, and it costs one extra pass over text already in memory.
+ */
+export function computeBaselineScore(
+  jobDescText: string,
+  originalResumeText: string,
+  weights?: Parameters<typeof computeMatchScore>[2]
+): number {
+  if (!originalResumeText?.trim()) return 0;
+  return computeMatchScore(jobDescText, originalResumeText as unknown as Record<string, unknown>, weights).score;
 }

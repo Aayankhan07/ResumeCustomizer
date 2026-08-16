@@ -221,10 +221,19 @@ const MODELS = [
   'openai/gpt-oss-120b',
 ];
 
+/**
+ * Result of checking one model's response against the output schema.
+ * Injected by the caller so this module stays independent of zod.
+ */
+export type ValidateFn = (
+  parsed: unknown
+) => { ok: true; data: unknown } | { ok: false; reason: string };
+
 export async function callGroqWithFallback(
   resumeText: string,
   jobDescText: string,
-  optimizationMode: 'description' | 'title' = 'description'
+  optimizationMode: 'description' | 'title' = 'description',
+  validate?: ValidateFn
 ): Promise<{ data: TransformResult; model_used: string }> {
   const { GROQ_API_KEY: apiKey } = getServerEnv();
 
@@ -307,19 +316,41 @@ ${instruction}`;
       continue;
     }
 
-    // Parsing sits outside the retry block on purpose. A malformed body is not
-    // a transport failure, so retrying another model wastes a call; and when
-    // the parse threw inside the loop the raw SyntaxError propagated, whose
-    // message never contains INVALID_JSON — so the check in
-    // api/transform/route.ts never matched and users saw a generic 500.
+    // Parse and validate as part of the attempt, not after the loop.
+    //
+    // These used to abort the whole chain: a model that returned a well-formed
+    // HTTP response containing bad JSON — or valid JSON missing a required
+    // field — failed outright while two healthy models went untried. That is
+    // exactly how the missing `meta` object behaved: every transform returned
+    // 422 from the first model and the fallbacks never ran.
+    //
+    // A bad body is a failed attempt like any other, so it advances to the
+    // next model. `validate` is injected rather than imported to keep this
+    // module free of a dependency on the response schema.
+    let parsed: unknown;
     try {
-      return { data: JSON.parse(rawContent) as TransformResult, model_used: model };
+      parsed = JSON.parse(rawContent);
     } catch {
-      console.error(`Model ${model} returned unparseable JSON`);
-      throw new Error('INVALID_JSON');
+      console.error(`Model ${model} returned unparseable JSON. Trying next fallback...`);
+      lastError = new Error('INVALID_JSON');
+      continue;
     }
+
+    if (validate) {
+      const result = validate(parsed);
+      if (!result.ok) {
+        console.error(
+          `Model ${model} returned JSON failing schema validation (${result.reason}). Trying next fallback...`
+        );
+        lastError = new Error('PARSE_FAILED');
+        continue;
+      }
+      return { data: result.data as TransformResult, model_used: model };
+    }
+
+    return { data: parsed as TransformResult, model_used: model };
   }
 
-  // Reached when every model failed at the transport level.
+  // Reached when every model failed — transport, parse, or validation.
   throw lastError ?? new Error('All Groq models exhausted');
 }

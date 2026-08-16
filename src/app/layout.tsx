@@ -4,6 +4,7 @@ import { Toaster } from 'sonner';
 import { Analytics } from '@vercel/analytics/next';
 import { SpeedInsights } from '@vercel/speed-insights/next';
 import { AuthProvider } from '../contexts/AuthContext';
+import { siteUrl } from '../lib/siteUrl';
 import './globals.css';
 
 // Self-hosted via next/font rather than a render-blocking <link> to Google
@@ -30,9 +31,33 @@ const jetbrainsMono = JetBrains_Mono({
   display: 'swap',
 });
 
+const DESCRIPTION =
+  'Tailor your resume to any job description. ResumOrph rewrites your existing ' +
+  'experience to match the role, scores it against the posting, and exports an ' +
+  'ATS-ready PDF or DOCX.';
+
 export const metadata: Metadata = {
+  // Required for Open Graph: relative image and canonical URLs are resolved
+  // against this, and without it social previews render with no image at all.
+  metadataBase: new URL(siteUrl()),
   title: { template: '%s | ResumOrph', default: 'ResumOrph — AI Resume Tailoring' },
-  description: 'ATS-optimized resumes tailored to any job description in seconds.',
+  description: DESCRIPTION,
+  applicationName: 'ResumOrph',
+  keywords: ['resume', 'ATS', 'job application', 'CV', 'cover letter', 'resume optimization'],
+  alternates: { canonical: '/' },
+  openGraph: {
+    type: 'website',
+    siteName: 'ResumOrph',
+    title: 'ResumOrph — AI Resume Tailoring',
+    description: DESCRIPTION,
+    url: '/',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'ResumOrph — AI Resume Tailoring',
+    description: DESCRIPTION,
+  },
+  robots: { index: true, follow: true },
 };
 
 // Applied before first paint. The theme was previously read from localStorage

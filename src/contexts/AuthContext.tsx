@@ -61,8 +61,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   return (
+    // Children render unconditionally.
+    //
+    // This provider wraps the entire app, and `loading` starts true and is only
+    // cleared in an effect — which never runs on the server. Gating children on
+    // it meant *every* route server-rendered as an empty shell: the homepage
+    // shipped no <h1>, no body copy, nothing for a crawler to index, and the
+    // content only appeared after the client-side session check resolved.
+    //
+    // Route protection lives in middleware, not here, so nothing is exposed by
+    // rendering early. Consumers that want to avoid a flash of signed-out UI
+    // read `loading` from the context themselves.
     <AuthContext.Provider value={{ user, session, loading, signOut }}>
-      {!loading && children}
+      {children}
     </AuthContext.Provider>
   );
 }

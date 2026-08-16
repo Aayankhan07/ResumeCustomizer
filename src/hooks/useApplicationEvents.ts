@@ -1,12 +1,13 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { toast } from 'sonner';
 import {
   getTransformationEvents,
   createEvent,
   updateEvent,
   deleteEvent,
+  type ApplicationEvent,
 } from '../lib/api';
 
 /**
@@ -15,9 +16,17 @@ import {
  * Extracted from TrackingTab, which held this alongside nine form fields, the
  * status selector, and a modal in a single 480-line component.
  */
-export function useApplicationEvents(transformationId) {
-  const [events, setEvents] = useState([]);
+export function useApplicationEvents(transformationId: string | null | undefined) {
+  const [events, setEvents] = useState<ApplicationEvent[]>([]);
   const [loading, setLoading] = useState(true);
+
+  // Mirrors `events` so the optimistic handlers can read the pre-change list
+  // without closing over it — a dependency that rebuilt the callback on every
+  // data change and handed the tab a new identity each time.
+  const eventsRef = useRef<ApplicationEvent[]>([]);
+  useEffect(() => {
+    eventsRef.current = events;
+  }, [events]);
 
   const load = useCallback(async () => {
     if (!transformationId) return;
@@ -38,8 +47,11 @@ export function useApplicationEvents(transformationId) {
   }, [load]);
 
   const add = useCallback(
-    async (eventData) => {
-      const created = await createEvent({ transformation_id: transformationId, ...eventData });
+    async (eventData: Partial<ApplicationEvent>) => {
+      const created = await createEvent({
+        transformation_id: transformationId,
+        ...eventData,
+      });
       setEvents((prev) => [created, ...prev]);
       toast.success('Event logged successfully');
       return created;
@@ -47,10 +59,10 @@ export function useApplicationEvents(transformationId) {
     [transformationId]
   );
 
-  const toggleDone = useCallback(async (event) => {
+  const toggleDone = useCallback(async (event: ApplicationEvent) => {
     // Optimistic, with rollback: the previous version awaited the round trip
     // before showing any change.
-    const previous = events;
+    const previous = eventsRef.current;
     setEvents((prev) =>
       prev.map((e) => (e.id === event.id ? { ...e, is_done: !e.is_done } : e))
     );
@@ -62,9 +74,9 @@ export function useApplicationEvents(transformationId) {
       setEvents(previous);
       toast.error('Failed to update event status.');
     }
-  }, [events]);
+  }, []);
 
-  const setOutcome = useCallback(async (event, outcome) => {
+  const setOutcome = useCallback(async (event: ApplicationEvent, outcome: string) => {
     try {
       const updated = await updateEvent(event.id, { outcome });
       setEvents((prev) => prev.map((e) => (e.id === event.id ? updated : e)));
@@ -75,7 +87,7 @@ export function useApplicationEvents(transformationId) {
     }
   }, []);
 
-  const remove = useCallback(async (id) => {
+  const remove = useCallback(async (id: string) => {
     try {
       await deleteEvent(id);
       setEvents((prev) => prev.filter((e) => e.id !== id));
@@ -88,3 +100,5 @@ export function useApplicationEvents(transformationId) {
 
   return { events, loading, add, toggleDone, setOutcome, remove, reload: load };
 }
+
+export default useApplicationEvents;
