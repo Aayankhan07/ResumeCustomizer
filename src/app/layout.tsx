@@ -24,11 +24,17 @@ const dmSerif = DM_Serif_Display({
   display: 'swap',
 });
 
+// Not preloaded: this is used only for small decorative labels (badges, the
+// footer wordmark), never for above-the-fold content. Preloading it put a
+// third font file in the critical path, competing for bandwidth with the two
+// that actually render the LCP element and body copy. It still loads on
+// demand, with `swap` so text is never invisible while it arrives.
 const jetbrainsMono = JetBrains_Mono({
   subsets: ['latin'],
   weight: ['400', '700'],
   variable: '--font-jetbrains',
   display: 'swap',
+  preload: false,
 });
 
 const DESCRIPTION =
