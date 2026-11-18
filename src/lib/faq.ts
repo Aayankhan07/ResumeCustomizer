@@ -38,4 +38,29 @@ export const FAQ_ITEMS: FaqItem[] = [
     answer:
       'Free account holders are allowed up to 10 resume optimizations per hour. This rolling rate limit keeps AI operations within healthy margins.',
   },
+  {
+    question: 'What do I get as a result?',
+    answer:
+      'A full, tailored resume — summary, skills, experience bullets, projects, and education — rewritten to match the job description. You also get a match score, a list of the keywords you are missing, before/after rewrites of your summary and bullets, a recruiter scan, interview prep questions, and a cover letter. Export as PDF, DOCX, or plain text.',
+  },
+  {
+    question: 'What formats can I download?',
+    answer:
+      'You can download the tailored resume as a PDF, a Word (.docx) file, or plain text. The PDF and DOCX use clean, ATS-safe layouts — no columns, tables, graphics, or icons.',
+  },
+  {
+    question: 'Is it free?',
+    answer:
+      'Yes. The free tier lets any account holder tailor up to 10 resumes per hour, with no credit card required. There is no trial and no hidden paywall for the core tailoring flow.',
+  },
+  {
+    question: 'How is the match score calculated?',
+    answer:
+      'The match score is computed server-side, not reported by the AI. We extract the meaningful keywords from the job description, weight them by how often they appear, and check how many of those keywords actually appear in your tailored resume. That gives a real percentage — and we also score your original resume the same way so you can see the improvement, not just the final number.',
+  },
+  {
+    question: 'Who is this for?',
+    answer:
+      'Anyone applying to jobs with a written description: engineers, designers, product managers, data roles, operations, and career-changers. We support both technical and non-technical roles because the tailoring is based on the actual job description, not a fixed template.',
+  },
 ];

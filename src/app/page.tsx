@@ -13,30 +13,70 @@ export const revalidate = 60; // Revalidate stats every 60 seconds (ISR)
  * without this the answers appear nowhere in the markup, and it is the format
  * both Google rich results and AI assistants read question-and-answer content
  * from.
+ *
+ * The graph also includes Organization and WebSite so the brand, its social
+ * profiles, and the homepage itself are tied together for crawlers and for the
+ * sitelinks/search shortcut surface.
  */
 function buildJsonLd(base: string) {
+  const appUrl = base;
+  const appNodeId = `${base}/#app`;
+  const faqNodeId = `${base}/#faq`;
+  const siteNodeId = `${base}/#website`;
+  const orgNodeId = `${base}/#organization`;
+
   return {
     '@context': 'https://schema.org',
     '@graph': [
       {
+        '@type': 'Organization',
+        '@id': orgNodeId,
+        name: 'ResumOrph',
+        url: appUrl,
+        description:
+          'AI resume tailoring for any job description. ResumOrph rewrites your experience to match the role, scores it against the posting, and exports an ATS-ready PDF or DOCX.',
+        sameAs: [
+          'https://github.com/resumorph',
+          'https://linkedin.com/company/resumorph',
+        ],
+      },
+      {
+        '@type': 'WebSite',
+        '@id': siteNodeId,
+        url: appUrl,
+        name: 'ResumOrph',
+        description:
+          'Tailor your resume to any job description. ResumOrph rewrites your existing experience to match the role, scores it against the posting, and exports an ATS-ready PDF or DOCX.',
+        publisher: { '@id': orgNodeId },
+        potentialAction: {
+          '@type': 'SearchAction',
+          target: { 
+            '@type': 'EntryPoint',
+            urlTemplate: `${appUrl}/?q={search_term_string}`,
+          },
+          'query-input': 'required name=search_term_string',
+        },
+      },
+      {
         '@type': 'SoftwareApplication',
-        '@id': `${base}/#app`,
+        '@id': appNodeId,
         name: 'ResumOrph',
         applicationCategory: 'BusinessApplication',
         operatingSystem: 'Web',
-        url: base,
+        url: appUrl,
         description:
           'Tailor your resume to any job description. ResumOrph rewrites your existing experience to match the role, scores it against the posting, and exports an ATS-ready PDF or DOCX.',
         offers: {
           '@type': 'Offer',
           price: '0',
           priceCurrency: 'USD',
-          description: 'Free plan includes up to 10 resume optimizations per hour.',
+          description: 'Free tier includes up to 10 resume optimizations per hour.',
         },
+        publisher: { '@id': orgNodeId },
       },
       {
         '@type': 'FAQPage',
-        '@id': `${base}/#faq`,
+        '@id': faqNodeId,
         mainEntity: FAQ_ITEMS.map((item) => ({
           '@type': 'Question',
           name: item.question,

@@ -11,13 +11,19 @@ interface AccordionItem {
 
 interface AccordionProps {
   items: AccordionItem[];
+  /** Called when a FAQ item is opened; receives the index of the item. */
+  onItemToggle?: (index: number) => void;
 }
 
-export default function Accordion({ items = [] }: AccordionProps) {
+export default function Accordion({ items = [], onItemToggle }: AccordionProps) {
   const [openIndex, setOpenIndex] = useState<number | null>(null);
 
   const toggle = (index: number) => {
     setOpenIndex(openIndex === index ? null : index);
+    if (openIndex === null || openIndex !== index) {
+      // Report only the moment an item is opened, not when it's closed.
+      onItemToggle?.(index);
+    }
   };
 
   return (
