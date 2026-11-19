@@ -30,7 +30,7 @@ export default function IdNavbar() {
           {/* Center: Resume Tailoring Segmented Pill Navigation */}
           <nav className="hidden md:flex items-center gap-1 text-[13px] font-medium text-slate-600 bg-slate-100/70 p-1 rounded-full border border-slate-200/50">
             <a
-              href="#approach"
+              href="#technology"
               className="px-4 py-1.5 rounded-full hover:text-slate-950 hover:bg-white transition-all"
             >
               How it Works
@@ -47,9 +47,9 @@ export default function IdNavbar() {
             >
               Match Scores
             </a>
-            <a
-              href="#insights"
-              className="px-4 py-1.5 rounded-full hover:text-slate-950 hover:bg-white transition-all"
+                          <a
+                href="#metrics"
+                className="px-4 py-1.5 rounded-full hover:text-slate-950 hover:bg-white transition-all"
             >
               Resume Guides
             </a>
@@ -104,7 +104,7 @@ export default function IdNavbar() {
           {mobileMenuOpen && (
             <div className="md:hidden absolute top-16 left-4 right-4 bg-white/95 backdrop-blur-xl border border-slate-200 rounded-3xl p-5 shadow-2xl flex flex-col gap-3 animate-in fade-in slide-in-from-top-2 duration-200">
               <a
-                href="#approach"
+                href="#technology"
                 onClick={() => setMobileMenuOpen(false)}
                 className="text-sm font-medium text-slate-700 hover:text-blue-600 py-1"
               >
@@ -125,7 +125,7 @@ export default function IdNavbar() {
                 Match Scores
               </a>
               <a
-                href="#insights"
+                href="#metrics"
                 onClick={() => setMobileMenuOpen(false)}
                 className="text-sm font-medium text-slate-700 hover:text-blue-600 py-1"
               >

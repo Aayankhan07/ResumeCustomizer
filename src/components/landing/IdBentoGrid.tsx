@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
-import { Shield, Sparkles, Check, ArrowRight, Zap, RefreshCw, FileCheck } from 'lucide-react';
+import { Shield, Sparkles, Check, Zap, FileCheck } from 'lucide-react';
 import { ClayJack } from './ClayJack';
 
 export default function IdBentoGrid() {
@@ -102,11 +102,11 @@ export default function IdBentoGrid() {
               <div className="w-12 h-12 rounded-2xl bg-orange-50 border border-orange-100 flex items-center justify-center text-orange-500 shadow-sm">
                 <Sparkles size={20} />
               </div>
-              <div className="text-slate-300">⇄</div>
-                <div className="w-12 h-12 rounded-2xl bg-blue-50 border border-blue-100 flex items-center justify-center text-blue-600 shadow-sm">
-                  <Shield size={20} />
-                </div>
+              <div className="text-slate-300 text-lg">&#8644;</div>
+              <div className="w-12 h-12 rounded-2xl bg-blue-50 border border-blue-100 flex items-center justify-center text-blue-600 shadow-sm">
+                <Shield size={20} />
               </div>
+            </div>
 
               <div>
                 <h3 className="text-xl font-semibold text-slate-900">Zero Hallucination</h3>
@@ -126,47 +126,43 @@ export default function IdBentoGrid() {
           >
             <div className="bg-slate-50 border border-slate-200/80 rounded-2xl p-4 shadow-sm">
               <span className="text-[11px] text-slate-500 font-medium block mb-3">
-                Server-calculated ATS score vs posting keywords
+                Example: how the score compares before and after tailoring
               </span>
 
-                  {/* 3 Digit Interactive Boxes */ }
-                  < div className = "grid grid-cols-3 gap-2 mb-4" >
-                  {
-                    matchScore.map((digit, idx) => (
-                      <div
-                        key={idx}
-                        className="h-14 bg-white border border-slate-200 rounded-xl flex items-center justify-center text-2xl font-bold text-slate-900 shadow-inner"
-                      >
-                        {digit}
-                      </div>
-                    ))
-                  }
-            </div>
+              <div className="grid grid-cols-3 gap-2 mb-4">
+                {matchScore.map((digit, idx) => (
+                  <div
+                    key={idx}
+                    className="h-14 bg-white border border-slate-200 rounded-xl flex items-center justify-center text-2xl font-bold text-slate-900 shadow-inner"
+                  >
+                    {digit}
+                  </div>
+                ))}
+              </div>
 
               <div className="flex items-center gap-2">
                 <button
                   onClick={() => setMatchScore(['6', '2', '%'])}
                   className="flex-1 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-medium rounded-lg transition-colors"
                 >
-                  Raw CV
+                  Before
                 </button>
                 <button
                   onClick={handleRescore}
                   className="flex-1 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold rounded-lg transition-colors shadow-sm"
                 >
-                  {verified ? 'Scoring...' : 'Rescore AI'}
+                  {verified ? 'Scoring...' : 'Tailored'}
                 </button>
               </div>
             </div>
 
             <div className="mt-4">
-              <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Algorithmic Validation</span>
+              <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">See the gap before you export</span>
             </div>
           </motion.div>
 
           {/* ============================================================== */}
-          {/* ROW 2 - CARD 4: Export Deliverables (PDF, DOCX, Cover Letter)  */}
-          {/* ============================================================== */}
+          {/* ROW 2 - CARD 4: Export Deliverables */}
           <motion.div
             whileHover={{ y: -4 }}
             transition={{ duration: 0.3 }}
@@ -176,23 +172,21 @@ export default function IdBentoGrid() {
               <div className="absolute -top-4 -right-2 pointer-events-none">
                 <ClayJack color="coral" size={48} delay={0.4} rotateOffset={-18} />
               </div>
-
               <div className="bg-slate-50 border border-slate-200 rounded-2xl p-4 shadow-sm max-w-[240px]">
                 <div className="flex items-center justify-between text-xs font-semibold text-slate-800">
-                    <span className="flex items-center gap-1.5 text-blue-600">
-                      <FileCheck size={14} />
-                      Export Bundle
-                    </span>
-                    <span className="text-[10px] text-emerald-600 font-bold bg-emerald-50 px-2 py-0.5 rounded-full">Ready</span>
+                  <span className="flex items-center gap-1.5 text-blue-600">
+                    <FileCheck size={14} />
+                    Export Bundle
+                  </span>
+                  <span className="text-[10px] text-emerald-600 font-bold bg-emerald-50 px-2 py-0.5 rounded-full">Ready</span>
                 </div>
-                <p className="text-[11px] text-slate-500 mt-1">ATS PDF, DOCX file, Interview Prep, Cover Letter.</p>
+                <p className="text-[11px] text-slate-500 mt-1">ATS-safe PDF, DOCX, interview prep, and a cover letter.</p>
               </div>
             </div>
-
             <div>
-              <h3 className="text-xl font-semibold text-slate-900">Full Application Suite</h3>
+              <h3 className="text-xl font-semibold text-slate-900">One tailoring, everything it needs</h3>
               <p className="text-sm text-slate-500 mt-2 leading-relaxed">
-                Every transformation produces a cleanly formatted ATS resume, keyword delta analysis, and a customized cover letter.
+                Each transformation produces a resume, the keyword delta behind it, interview prep, and a cover letter in one pass.
               </p>
             </div>
           </motion.div>
@@ -208,10 +202,10 @@ export default function IdBentoGrid() {
             <div className="bg-slate-50/80 border border-slate-200/90 rounded-2xl p-4 mb-4">
               <div className="flex items-center gap-2 mb-3">
                 <span className="px-2.5 py-0.5 bg-orange-50 text-orange-600 border border-orange-200 rounded-full text-[10px] font-semibold flex items-center gap-1">
-                  <Zap size={10} /> Fast
+                  <Zap size={10} /> Tailoring mode
                 </span>
                 <span className="px-2.5 py-0.5 bg-blue-50 text-blue-600 rounded-full text-[10px] font-medium flex items-center gap-1">
-                  <Check size={10} /> Tailoring profile saved
+                  <Check size={10} /> Profile saved
                 </span>
               </div>
 
@@ -248,14 +242,14 @@ export default function IdBentoGrid() {
                 <button className="px-3 py-1 bg-blue-600 text-white text-[11px] font-semibold rounded-lg hover:bg-blue-700 transition-colors">
                   Apply mode
                 </button>
-                <span className="text-[10px] text-slate-400 font-medium">Safe Mode 🔒</span>
+                <span className="text-[10px] text-slate-400 font-medium">Safe mode</span>
               </div>
             </div>
 
             <div>
               <h3 className="text-xl font-semibold text-slate-900">Model Customization</h3>
               <p className="text-sm text-slate-500 mt-2 leading-relaxed">
-                Powered by Groq LLaMA 3.3 70B, tuned specifically for applicant tracking systems and recruiter skimming patterns.
+                Tuned for applicant tracking systems and the way recruiters actually skim a resume.
               </p>
             </div>
           </motion.div>
