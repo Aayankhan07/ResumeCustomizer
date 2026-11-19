@@ -91,7 +91,7 @@ export default function IdCaseStudies() {
                       </div>
 
                       <div>
-                        <span className="text-[11px] font-semibold text-blue-600 tracking-wide uppercase">
+                        <span className="text-xs font-semibold text-blue-600 tracking-wide uppercase">
                           {item.category}
                         </span>
                         <h3 className="text-base sm:text-lg font-medium text-slate-900 group-hover:text-blue-600 transition-colors mt-0.5 leading-snug">

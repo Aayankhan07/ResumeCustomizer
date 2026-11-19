@@ -48,7 +48,7 @@ export default function IdInlineStatement() {
               className="h-full bg-blue-600 rounded-full"
             />
           </div>
-          <p className="text-[10px] text-slate-400 mt-2 font-mono">React · Next.js · TypeScript</p>
+          <p className="text-xs text-slate-400 mt-2 font-mono">React · Next.js · TypeScript</p>
         </motion.div>
 
         {/* Top-Right Tilted Status Tag: Tailoring Engine */}

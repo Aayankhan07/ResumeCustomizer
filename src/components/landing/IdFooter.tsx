@@ -27,21 +27,21 @@ export default function IdFooter() {
           {/* Clean Link Columns Grounded in ResumOrph Features */}
           <div className="flex flex-wrap gap-10 sm:gap-16 text-xs font-medium text-slate-600">
             <div className="flex flex-col gap-2.5">
-              <span className="font-semibold text-slate-900 uppercase tracking-wider text-[11px]">Product</span>
+              <span className="font-semibold text-slate-900 uppercase tracking-wider text-xs">Product</span>
               <Link href="/transform" className="hover:text-blue-600 transition-colors">Resume Tailor</Link>
               <Link href="/transform" className="hover:text-blue-600 transition-colors">ATS Keyword Scanner</Link>
               <Link href="/transform" className="hover:text-blue-600 transition-colors">Cover Letter Generator</Link>
               <Link href="/transform" className="hover:text-blue-600 transition-colors">Interview Prep</Link>
             </div>
             <div className="flex flex-col gap-2.5">
-              <span className="font-semibold text-slate-900 uppercase tracking-wider text-[11px]">Solutions</span>
+              <span className="font-semibold text-slate-900 uppercase tracking-wider text-xs">Solutions</span>
               <a href="#approach" className="hover:text-blue-600 transition-colors">How It Works</a>
               <a href="#technology" className="hover:text-blue-600 transition-colors">ATS Engine</a>
               <a href="#metrics" className="hover:text-blue-600 transition-colors">Match Scoring</a>
               <a href="#insights" className="hover:text-blue-600 transition-colors">Guides</a>
             </div>
             <div className="flex flex-col gap-2.5">
-              <span className="font-semibold text-slate-900 uppercase tracking-wider text-[11px]">Legal & Privacy</span>
+              <span className="font-semibold text-slate-900 uppercase tracking-wider text-xs">Legal & Privacy</span>
               <Link href="/profile" className="hover:text-blue-600 transition-colors">Privacy Guarantee</Link>
               <Link href="/profile" className="hover:text-blue-600 transition-colors">Data Retention Policy</Link>
               <Link href="/profile" className="hover:text-blue-600 transition-colors">Zero-Fabrication Terms</Link>

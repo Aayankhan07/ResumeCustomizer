@@ -151,7 +151,7 @@ export default function IdHero() {
           </motion.div>
 
           {/* Proof line under the capsule */}
-          <p className="mt-4 text-[11px] text-slate-400 font-sans tracking-wide">
+          <p className="mt-4 text-xs text-slate-400 font-sans tracking-wide">
             Free tier: up to 10 resume optimizations per hour · no credit card required.
           </p>
         </div>
@@ -160,7 +160,7 @@ export default function IdHero() {
         {/* ATS-safe systems strip */}
         {/* ============================================================== */}
         <div className="w-full max-w-5xl mx-auto mt-16 md:mt-24 px-6 pt-6 border-t border-slate-100 flex flex-wrap items-center justify-center gap-x-10 sm:gap-x-14 gap-y-6 opacity-65">
-          <span className="text-[11px] font-sans uppercase text-slate-400 tracking-widest w-full text-center mb-1">
+          <span className="text-xs font-sans uppercase text-slate-400 tracking-widest w-full text-center mb-1">
             ATS-safe output for the systems that parse most resumes
           </span>
           {ATS_SYSTEMS.map((system, idx) => (

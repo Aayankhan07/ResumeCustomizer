@@ -74,7 +74,7 @@ export default function IdBentoGrid() {
                         className="w-full bg-blue-100 rounded-md transition-all duration-500 hover:bg-blue-600"
                         style={{ height: bar.height }}
                       />
-                      <span className="text-[10px] text-slate-400 font-mono">{bar.label}</span>
+                      <span className="text-xs text-slate-400 font-mono">{bar.label}</span>
                     </div>
                   ))}
                 </div>
@@ -125,7 +125,7 @@ export default function IdBentoGrid() {
             className="bg-white rounded-3xl p-8 border border-slate-200/80 shadow-[0_10px_30px_rgba(0,0,0,0.03)] flex flex-col justify-between"
           >
             <div className="bg-slate-50 border border-slate-200/80 rounded-2xl p-4 shadow-sm">
-              <span className="text-[11px] text-slate-500 font-medium block mb-3">
+              <span className="text-xs text-slate-500 font-medium block mb-3">
                 Example: how the score compares before and after tailoring
               </span>
 
@@ -157,7 +157,7 @@ export default function IdBentoGrid() {
             </div>
 
             <div className="mt-4">
-              <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">See the gap before you export</span>
+              <span className="text-xs font-semibold text-slate-400 tracking-wider">See the gap before you export</span>
             </div>
           </motion.div>
 
@@ -180,7 +180,7 @@ export default function IdBentoGrid() {
                   </span>
                   <span className="text-[10px] text-emerald-600 font-bold bg-emerald-50 px-2 py-0.5 rounded-full">Ready</span>
                 </div>
-                <p className="text-[11px] text-slate-500 mt-1">ATS-safe PDF, DOCX, interview prep, and a cover letter.</p>
+                <p className="text-xs text-slate-500 mt-1">ATS-safe PDF, DOCX, interview prep, and a cover letter.</p>
               </div>
             </div>
             <div>
@@ -239,7 +239,7 @@ export default function IdBentoGrid() {
               </div>
 
               <div className="mt-3 pt-2.5 border-t border-slate-200/60 flex items-center justify-between">
-                <button className="px-3 py-1 bg-blue-600 text-white text-[11px] font-semibold rounded-lg hover:bg-blue-700 transition-colors">
+                <button className="px-3 py-1 bg-blue-600 text-white text-xs font-semibold rounded-lg hover:bg-blue-700 transition-colors">
                   Apply mode
                 </button>
                 <span className="text-[10px] text-slate-400 font-medium">Safe mode</span>
