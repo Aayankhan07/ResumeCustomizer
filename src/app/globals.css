@@ -29,12 +29,18 @@
   --text-muted: #6b6b75;
   --text-disabled: #a1a1aa;
 
-  /* Accent — Emerald Green (brand color, keep from current app) */
-  --accent: #10b981;
-  --accent-hover: #059669;
+  /* Accent — Vibrant Royal Blue (Inspired by the luxury ID Finance aesthetic) */
+  --accent: #2563eb;
+  --accent-hover: #1d4ed8;
   --accent-fg: #ffffff; /* text ON the accent color */
-  --accent-subtle: #d1fae5; /* tinted background */
-  --accent-border: #6ee7b7;
+  --accent-subtle: #dbeafe; /* tinted background */
+  --accent-border: #93c5fd;
+
+  /* Additional Inspo Palette Tokens */
+  --accent-coral: #f97316;
+  --accent-coral-subtle: #ffedd5;
+  --canvas-outer: #e6e7eb;
+  --stage-bg: #ffffff;
 
   /* Semantic */
   --success: #10b981;
@@ -342,6 +348,169 @@ body {
 }
 
 /* =============================================
+   Claymorphic / floating widget layer (landing)
+   ============================================= */
+
+/* Subtle dot-grid surface, used as an optional landing background texture.
+   Kept very faint so it reads as paper, not as graph paper. */
+.dot-grid {
+  background-image: radial-gradient(circle, var(--border-default) 1px, transparent 1px);
+  background-size: 24px 24px;
+}
+
+.dot-grid-fine {
+  background-image: radial-gradient(circle, var(--border-default) 1px, transparent 1px);
+  background-size: 12px 12px;
+}
+
+[data-theme="dark"] .dot-grid,
+.dark .dot-grid,
+[data-theme="dark"] .dot-grid-fine,
+.dark .dot-grid-fine {
+  background-image: radial-gradient(circle, var(--border-default) 1px, transparent 1px);
+}
+
+/* Soft claymorphic shadow presets. The "inset" variant gives the concave
+   pressed look; the standard one gives the floating pill/card lift. */
+.shadow-clay {
+  box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.12), 0 0 0 1px color-mix(in srgb, var(--border-default) 40%, transparent);
+}
+
+.shadow-clay-subtle {
+  box-shadow: 0 12px 24px -12px rgba(0, 0, 0, 0.10), 0 0 0 1px color-mix(in srgb, var(--border-default) 30%, transparent);
+}
+
+.shadow-clay-inset {
+  box-shadow: inset 0 3px 6px rgba(0, 0, 0, 0.04), inset 0 1px 0 color-mix(in srgb, var(--border-strong) 12%, transparent);
+}
+
+[data-theme="dark"] .shadow-clay,
+.dark .shadow-clay {
+  box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.55), 0 0 0 1px color-mix(in srgb, var(--border-default) 50%, transparent);
+}
+
+[data-theme="dark"] .shadow-clay-subtle,
+.dark .shadow-clay-subtle {
+  box-shadow: 0 12px 24px -12px rgba(0, 0, 0, 0.5), 0 0 0 1px color-mix(in srgb, var(--border-default) 40%, transparent);
+}
+
+[data-theme="dark"] .shadow-clay-inset,
+.dark .shadow-clay-inset {
+  box-shadow: inset 0 3px 6px rgba(0, 0, 0, 0.35), inset 0 1px 0 color-mix(in srgb, var(--border-strong) 18%, transparent);
+}
+
+/* Soft ambient glow behind a floating accent group. */
+.shadow-accent-glow {
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--accent) 18%, transparent), 0 20px 40px -16px color-mix(in srgb, var(--accent) 22%, transparent);
+}
+
+/* Floating, slightly tilted decorative tiles. The gentle keyframe float is
+   applied only when it is safe to animate; under prefers-reduced-motion the
+   tiles stay still. */
+.animate-float {
+  animation: float 7s ease-in-out infinite;
+}
+
+.animate-float-delayed {
+  animation: float 9s ease-in-out infinite;
+}
+
+.animate-float-slow {
+  animation: float 11s ease-in-out infinite;
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0px) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-8px) rotate(0.6deg);
+  }
+}
+
+/* Rotate-only drift for scattered tiles that should not bob up and down. */
+.animate-drift {
+  animation: drift 10s ease-in-out infinite;
+}
+
+@keyframes drift {
+  0%, 100% {
+    transform: translateX(0px) rotate(0deg);
+  }
+  50% {
+    transform: translateX(4px) rotate(1deg);
+  }
+}
+
+/* Dashed sticker outline for the pinned-note style card. */
+.sticker-outline {
+  border: 1.5px dashed color-mix(in srgb, var(--border-strong) 55%, transparent);
+}
+
+/* Hidden from assistive tech where an element is purely decorative (pin,
+   3D cube outlines, scattered tiles). */
+.aria-hidden-decorative {
+  aria-hidden: true;
+}
+
+/* Match / score ring caption sizing helper. */
+.match-caption {
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  font-weight: 600;
+}
+
+/* Pricing center-card vibrant surface helper, themable. */
+.pricing-featured {
+  background: var(--accent);
+  color: var(--accent-fg);
+}
+
+/* Small pill badge with soft claymorphic backing. */
+.pill-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 12px;
+  border-radius: 9999px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  background: var(--bg-elevated);
+  color: var(--text-secondary);
+  border: 1px solid var(--border-default);
+  box-shadow: var(--shadow-clay-subtle);
+}
+
+.pill-badge-accent {
+  background: color-mix(in srgb, var(--accent) 12%, var(--bg-elevated));
+  color: var(--accent);
+  border-color: color-mix(in srgb, var(--accent) 30%, var(--border-default));
+}
+
+/* Sticky-note yellow surface, theme-aware tinting. */
+.sticky-note {
+  background: color-mix(in srgb, #fef08a 92%, var(--bg-elevated));
+  color: color-mix(in srgb, #111827 80%, var(--text-primary));
+  box-shadow: 0 18px 36px -16px rgba(0, 0, 0, 0.18), 0 0 0 1px color-mix(in srgb, #fde047 55%, transparent);
+}
+
+[data-theme="dark"] .sticky-note,
+.dark .sticky-note {
+  background: color-mix(in srgb, #fbbf24 86%, var(--bg-elevated));
+  color: color-mix(in srgb, #fef9c3 90%, var(--text-primary));
+  box-shadow: 0 18px 36px -16px rgba(0, 0, 0, 0.55), 0 0 0 1px color-mix(in srgb, #f59e0b 60%, transparent);
+}
+
+/* Deterministic staggered entrance delay helpers for feature cards. */
+.stagger-enter-delay-1 { animation-delay: 40ms; }
+.stagger-enter-delay-2 { animation-delay: 80ms; }
+.stagger-enter-delay-3 { animation-delay: 120ms; }
+.stagger-enter-delay-4 { animation-delay: 160ms; }
+
+/* =============================================
    Reusable Button Classes
    ============================================= */
 .btn-primary {
@@ -418,12 +587,12 @@ body {
   color: #000000 !important;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08), 0 0 0 1px rgba(0, 0, 0, 0.05) !important;
   transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-  
+
   & section, & div, & p, & ul, & li, & span, & strong, & h1, & h2, & h3, & h4, & a {
     background-color: transparent !important;
     background: transparent !important;
   }
-  
+
   & * {
     color: inherit !important;
   }
@@ -625,4 +794,52 @@ body {
     animation-duration: 1.5s !important;
     animation-iteration-count: infinite !important;
   }
+
+  /* Floating / drifting decorative tiles are decorative only; when motion is
+     reduced they hold their resting position instead of stopping mid-drift. */
+  .animate-float,
+  .animate-float-delayed,
+  .animate-float-slow,
+  .animate-drift {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+  }
+}
+
+@media (min-width: 768px) {
+  .start-float-delayed {
+    animation: float 9s ease-in-out infinite;
+    animation-delay: 1.2s;
+  }
+}
+
+
+/* Doc-like typography helpers for the Chrono dashboard mockup panels. */
+.doc-block {
+  border: 1px solid var(--border-default);
+  background: var(--bg-base);
+  padding: 16px;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
+}
+
+.doc-label {
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  font-weight: 600;
+}
+
+.doc-text {
+  color: var(--text-secondary);
+}
+
+.doc-done {
+  color: var(--text-muted);
+  text-decoration: line-through;
+  text-decoration-color: var(--accent);
+}
+
+.doc-row {
+  align-items: flex-start;
 }

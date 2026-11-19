@@ -121,31 +121,15 @@ export default function Navbar() {
               <Link href="/#how-it-works" className="text-sm font-medium text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors py-1.5 px-3 rounded-md hover:bg-[var(--bg-subtle)]">How it works</Link>
               <Link href="/login" className="text-sm font-medium text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors py-1.5 px-3 rounded-md hover:bg-[var(--bg-subtle)]">Sign in</Link>
               <Link href="/signup"
-                className="px-4 py-2 bg-[var(--text-primary)] text-[var(--bg-base)] text-xs font-medium rounded-[var(--radius-sm)] hover:opacity-90 transition-all duration-150 active:scale-[0.98]">
+                className="px-4 py-2 bg-[var(--accent)] text-white text-xs font-semibold rounded-full hover:bg-[var(--accent-hover)] transition-all duration-150 active:scale-[0.98] shadow-sm">
                 Get Started
               </Link>
             </>
           )}
-
-          {/* Theme Toggle Button */}
-          <button
-            onClick={toggleTheme}
-            className="p-2 text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-subtle)] rounded-lg cursor-pointer transition-colors focus-visible:outline-none flex items-center justify-center"
-            aria-label="Toggle Theme"
-          >
-            {isDark ? <Sun size={18} className="text-amber-500" /> : <Moon size={18} />}
-          </button>
         </div>
 
         {/* Mobile menu triggers */}
         <div className="flex items-center gap-2 md:hidden">
-          <button
-            onClick={toggleTheme}
-            className="p-2 text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-subtle)] rounded-lg cursor-pointer transition-colors focus-visible:outline-none flex items-center justify-center"
-            aria-label="Toggle Theme"
-          >
-            {isDark ? <Sun size={18} className="text-amber-500" /> : <Moon size={18} />}
-          </button>
           <button className="text-[var(--text-primary)] p-1 hover:bg-[var(--bg-subtle)] rounded-lg cursor-pointer transition-colors" onClick={() => setMobileOpen(o => !o)} aria-label="Toggle menu">
             {mobileOpen ? <X size={20} /> : <Menu size={20} />}
           </button>

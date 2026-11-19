@@ -66,20 +66,13 @@ export const metadata: Metadata = {
   robots: { index: true, follow: true },
 };
 
-// Applied before first paint. The theme was previously read from localStorage
-// in a Navbar effect, which had two consequences: the five auth routes render
-// no Navbar and so ignored the saved theme entirely (a dark-mode user got a
-// white login page), and every other route painted light before the effect
-// corrected it. Runs synchronously in <head>, ahead of hydration.
+// Force light mode across the application
 const THEME_INIT = `
 (function () {
   try {
-    var t = localStorage.getItem('theme');
-    if (t !== 'dark' && t !== 'light') {
-      t = matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-    }
-    document.documentElement.classList.toggle('dark', t === 'dark');
-    document.documentElement.setAttribute('data-theme', t);
+    document.documentElement.classList.remove('dark');
+    document.documentElement.setAttribute('data-theme', 'light');
+    localStorage.setItem('theme', 'light');
   } catch (e) {}
 })();
 `;
