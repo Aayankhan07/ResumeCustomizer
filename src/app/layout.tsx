@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { Inter, DM_Serif_Display, JetBrains_Mono } from 'next/font/google';
+import { Inter, JetBrains_Mono } from 'next/font/google';
 import { Toaster } from 'sonner';
 import { Analytics } from '@vercel/analytics/next';
 import { SpeedInsights } from '@vercel/speed-insights/next';
@@ -14,13 +14,6 @@ const inter = Inter({
   subsets: ['latin'],
   weight: ['300', '400', '500', '600', '700', '800'],
   variable: '--font-inter',
-  display: 'swap',
-});
-
-const dmSerif = DM_Serif_Display({
-  subsets: ['latin'],
-  weight: '400',
-  variable: '--font-dm-serif',
   display: 'swap',
 });
 
@@ -46,6 +39,8 @@ export const metadata: Metadata = {
   // Required for Open Graph: relative image and canonical URLs are resolved
   // against this, and without it social previews render with no image at all.
   metadataBase: new URL(siteUrl()),
+  // Browsers request /favicon.ico by default; point them at the SVG that exists.
+  icons: { icon: '/favicon.svg' },
   title: { template: '%s | ResumOrph', default: 'ResumOrph — AI Resume Tailoring' },
   description: DESCRIPTION,
   applicationName: 'ResumOrph',
@@ -66,7 +61,13 @@ export const metadata: Metadata = {
   robots: { index: true, follow: true },
 };
 
-// Force light mode across the application
+// Force light mode across the application.
+//
+// Dark mode is not supported yet: the app has no theme toggle, and many
+// components' dark: variants are incomplete. This script clears any stale
+// 'dark' class or stored preference (e.g. from an older build that had a
+// toggle) so every visitor gets the light theme. The dark: classes are left
+// in place for when a supported dark theme ships.
 const THEME_INIT = `
 (function () {
   try {
@@ -82,7 +83,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html
       lang="en"
       suppressHydrationWarning
-      className={`${inter.variable} ${dmSerif.variable} ${jetbrainsMono.variable}`}
+      className={`${inter.variable} ${jetbrainsMono.variable}`}
     >
       <head>
         <script dangerouslySetInnerHTML={{ __html: THEME_INIT }} />

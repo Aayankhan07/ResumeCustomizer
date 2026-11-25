@@ -82,10 +82,8 @@ export function getFileParseError(code) {
     NO_FILE: 'No file selected.',
     FILE_READ_FAILED: 'The file could not be opened. It may have been moved or renamed.',
 
-    PDF_NO_TEXT:
-      'This PDF contains images only. Please paste your resume as text instead.',
-    PDF_PASSWORD_PROTECTED:
-      'This PDF is password protected. Remove the password and try again.',
+    PDF_NO_TEXT: 'This PDF contains images only. Please paste your resume as text instead.',
+    PDF_PASSWORD_PROTECTED: 'This PDF is password protected. Remove the password and try again.',
     PDF_CORRUPT: 'This PDF appears to be damaged. Try re-exporting it.',
     PDF_LOAD_FAILED: 'Could not open this PDF. Try re-exporting it.',
     PDF_EXTRACTION_FAILED: 'Could not read the text in this PDF.',

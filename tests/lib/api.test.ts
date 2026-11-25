@@ -48,10 +48,13 @@ describe('transformResume', () => {
 
   it('surfaces the server error code rather than a generic failure', async () => {
     fetchMock.mockResolvedValue(
-      new Response(JSON.stringify({ success: false, error: 'RATE_LIMITED', reset_at: '2026-01-01T00:00:00Z' }), {
-        status: 429,
-        headers: { 'content-type': 'application/json' },
-      })
+      new Response(
+        JSON.stringify({ success: false, error: 'RATE_LIMITED', reset_at: '2026-01-01T00:00:00Z' }),
+        {
+          status: 429,
+          headers: { 'content-type': 'application/json' },
+        }
+      )
     );
 
     await expect(transformResume(args)).rejects.toMatchObject({

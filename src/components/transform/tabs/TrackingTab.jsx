@@ -1,7 +1,16 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Calendar, User, Clock, Trash2, CheckCircle2, MessageSquare, Plus, Award } from 'lucide-react';
+import {
+  Calendar,
+  User,
+  Clock,
+  Trash2,
+  CheckCircle2,
+  MessageSquare,
+  Plus,
+  Award,
+} from 'lucide-react';
 import { toast } from 'sonner';
 import { updateTransformationTracking } from '../../../lib/api';
 import { useApplicationEvents } from '../../../hooks/useApplicationEvents';
@@ -10,10 +19,9 @@ import AddEventModal from '../workspace/AddEventModal';
 import Button from '../../ui/Button';
 import Input from '../../ui/Input';
 
-
 export default function TrackingTab({ transformation }) {
   const [status, setStatus] = useState(transformation.status || 'Saved');
-  
+
   // Tracking form fields
   const [appliedAt, setAppliedAt] = useState('');
   const [deadline, setDeadline] = useState('');
@@ -24,7 +32,7 @@ export default function TrackingTab({ transformation }) {
   const [recruiterContact, setRecruiterContact] = useState('');
   const [priority, setPriority] = useState('Medium');
   const [source, setSource] = useState('');
-  
+
   const [savingTracking, setSavingTracking] = useState(false);
   const [isAddEventOpen, setIsAddEventOpen] = useState(false);
 
@@ -42,7 +50,11 @@ export default function TrackingTab({ transformation }) {
   useEffect(() => {
     if (transformation) {
       setStatus(transformation.status || 'Saved');
-      setAppliedAt(transformation.applied_at ? new Date(transformation.applied_at).toISOString().split('T')[0] : '');
+      setAppliedAt(
+        transformation.applied_at
+          ? new Date(transformation.applied_at).toISOString().split('T')[0]
+          : ''
+      );
       setDeadline(transformation.application_deadline || '');
       setJobUrl(transformation.application_url || '');
       setJobLocation(transformation.job_location || '');
@@ -111,11 +123,11 @@ export default function TrackingTab({ transformation }) {
   const formatEventDate = (dateStr) => {
     if (!dateStr) return '';
     const date = new Date(dateStr);
-    return date.toLocaleDateString(undefined, { 
-      month: 'short', 
-      day: 'numeric', 
-      hour: '2-digit', 
-      minute: '2-digit' 
+    return date.toLocaleDateString(undefined, {
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
     });
   };
 
@@ -125,12 +137,18 @@ export default function TrackingTab({ transformation }) {
 
       {/* Grid: Form fields (left) & Timeline Events (right) */}
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
-        
         {/* Left Column: Tracking Details Form */}
-        <form onSubmit={handleSaveTrackingDetails} className="lg:col-span-3 bg-[var(--bg-elevated)] border border-[var(--border-default)] rounded-[var(--radius-lg)] p-6 space-y-5">
+        <form
+          onSubmit={handleSaveTrackingDetails}
+          className="lg:col-span-3 bg-[var(--bg-elevated)] border border-[var(--border-default)] rounded-[var(--radius-lg)] p-6 space-y-5"
+        >
           <div className="border-b border-[var(--border-subtle)] pb-3">
-            <h4 className="text-sm font-bold text-[var(--text-primary)] uppercase tracking-wider font-mono">Job & Contact Details</h4>
-            <p className="text-xs text-[var(--text-muted)] mt-1">Keep track of job info and recruiter contact info.</p>
+            <h4 className="text-sm font-bold text-[var(--text-primary)] uppercase tracking-wider font-mono">
+              Job & Contact Details
+            </h4>
+            <p className="text-xs text-[var(--text-muted)] mt-1">
+              Keep track of job info and recruiter contact info.
+            </p>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -210,7 +228,9 @@ export default function TrackingTab({ transformation }) {
           />
 
           <div className="pt-2 border-t border-[var(--border-subtle)] space-y-4">
-            <h5 className="text-xs font-bold text-[var(--text-secondary)] uppercase tracking-wider font-mono">Recruiter Contact</h5>
+            <h5 className="text-xs font-bold text-[var(--text-secondary)] uppercase tracking-wider font-mono">
+              Recruiter Contact
+            </h5>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <Input
                 label="Name"
@@ -230,12 +250,7 @@ export default function TrackingTab({ transformation }) {
           </div>
 
           <div className="flex justify-end pt-4">
-            <Button
-              type="submit"
-              variant="primary"
-              disabled={savingTracking}
-              className="px-6"
-            >
+            <Button type="submit" variant="primary" disabled={savingTracking} className="px-6">
               {savingTracking ? 'Saving...' : 'Save Tracking Info'}
             </Button>
           </div>
@@ -246,8 +261,12 @@ export default function TrackingTab({ transformation }) {
           <div>
             <div className="flex items-center justify-between border-b border-[var(--border-subtle)] pb-3 mb-4">
               <div>
-                <h4 className="text-sm font-bold text-[var(--text-primary)] uppercase tracking-wider font-mono">Timeline Events</h4>
-                <p className="text-xs text-[var(--text-muted)] mt-1">Log interviews, follow-ups, and notes.</p>
+                <h4 className="text-sm font-bold text-[var(--text-primary)] uppercase tracking-wider font-mono">
+                  Timeline Events
+                </h4>
+                <p className="text-xs text-[var(--text-muted)] mt-1">
+                  Log interviews, follow-ups, and notes.
+                </p>
               </div>
               <button
                 onClick={() => setIsAddEventOpen(true)}
@@ -264,7 +283,9 @@ export default function TrackingTab({ transformation }) {
               </div>
             ) : events.length === 0 ? (
               <div className="text-center py-12 border border-dashed border-[var(--border-default)] rounded-[var(--radius-md)] bg-[var(--bg-base)]/50">
-                <p className="text-xs text-[var(--text-muted)] font-normal">No timeline events logged yet.</p>
+                <p className="text-xs text-[var(--text-muted)] font-normal">
+                  No timeline events logged yet.
+                </p>
                 <button
                   onClick={() => setIsAddEventOpen(true)}
                   className="mt-2 text-[11px] text-[var(--accent)] font-semibold hover:underline"
@@ -290,7 +311,7 @@ export default function TrackingTab({ transformation }) {
                     {/* Timeline Item Content */}
                     <div className="flex items-start gap-2.5">
                       {event.event_type === 'interview' && (
-                        <div className="w-7 h-7 rounded-full bg-indigo-50 dark:bg-indigo-500/10 flex items-center justify-center text-indigo-600 dark:text-indigo-400 shrink-0">
+                        <div className="w-7 h-7 rounded-full bg-[var(--accent-subtle)] dark:bg-indigo-500/10 flex items-center justify-center text-[var(--accent)] dark:text-indigo-400 shrink-0">
                           <Award size={14} />
                         </div>
                       )}
@@ -314,13 +335,17 @@ export default function TrackingTab({ transformation }) {
 
                       <div className="flex-1 min-w-0 pr-4">
                         <div className="flex items-center gap-1.5 flex-wrap">
-                          <h5 className={`text-xs font-semibold text-[var(--text-primary)] ${
-                            event.event_type === 'follow_up' && event.is_done ? 'line-through text-[var(--text-muted)]' : ''
-                          }`}>
+                          <h5
+                            className={`text-xs font-semibold text-[var(--text-primary)] ${
+                              event.event_type === 'follow_up' && event.is_done
+                                ? 'line-through text-[var(--text-muted)]'
+                                : ''
+                            }`}
+                          >
                             {event.title}
                           </h5>
                           {event.event_type === 'interview' && (
-                            <span className="px-1.5 py-0.5 rounded-full text-[11px] font-bold bg-indigo-50 text-indigo-600 dark:bg-indigo-500/10 dark:text-indigo-400 border border-indigo-200/20 uppercase tracking-tight">
+                            <span className="px-1.5 py-0.5 rounded-full text-[11px] font-bold bg-[var(--accent-subtle)] text-[var(--accent)] dark:bg-indigo-500/10 dark:text-indigo-400 border border-indigo-200/20 uppercase tracking-tight">
                               {event.interview_round}
                             </span>
                           )}
@@ -358,7 +383,9 @@ export default function TrackingTab({ transformation }) {
                         {/* Interview Outcome Dropdown */}
                         {event.event_type === 'interview' && (
                           <div className="mt-2 flex items-center gap-1.5">
-                            <span className="text-[11px] text-[var(--text-muted)] font-medium">Outcome:</span>
+                            <span className="text-[11px] text-[var(--text-muted)] font-medium">
+                              Outcome:
+                            </span>
                             <select
                               value={event.outcome || 'Pending'}
                               onChange={(e) => handleEventOutcomeChange(event, e.target.value)}
@@ -380,7 +407,6 @@ export default function TrackingTab({ transformation }) {
             )}
           </div>
         </div>
-
       </div>
 
       {/* Add Event Modal */}

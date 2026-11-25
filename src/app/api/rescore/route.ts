@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '../../../lib/supabase/server';
+import { createServiceClient } from '../../../lib/supabase/service';
 import { computeMatchScore } from '../../../lib/matchScore';
 import { checkRateLimit } from '../../../lib/rateLimit';
 import { apiErrors } from '../../../lib/apiError';
@@ -42,7 +43,13 @@ export async function POST(req: Request) {
 
     // 3. Validate body. Weights are bounded: unbounded values let a client
     // fabricate any score.
-    const parsed = rescoreRequestSchema.safeParse(await req.json());
+    let body: unknown;
+    try {
+      body = await req.json();
+    } catch {
+      return apiErrors.invalidBody();
+    }
+    const parsed = rescoreRequestSchema.safeParse(body);
     if (!parsed.success) {
       return apiErrors.invalidBody(parsed.error.issues);
     }
@@ -68,10 +75,7 @@ export async function POST(req: Request) {
     // rescore against '' and return 0, which reads as a catastrophic match
     // rather than missing data.
     if (!jobDescriptionText) {
-      return NextResponse.json(
-        { success: false, error: 'RESCORE_UNAVAILABLE' },
-        { status: 409 }
-      );
+      return NextResponse.json({ success: false, error: 'RESCORE_UNAVAILABLE' }, { status: 409 });
     }
 
     const optimizationMode =
@@ -91,8 +95,12 @@ export async function POST(req: Request) {
       outputJson.meta.keywords_missing = scoreResult.missing;
     }
 
-    // 7. Persist
-    const { error: updateError } = await supabase
+    // 7. Persist.
+    //
+    // Score and output_json columns are not client-writable (migration 014),
+    // so this write uses the service role. Ownership was established by the
+    // RLS-scoped read in step 4, and the user_id filter is kept as well.
+    const { error: updateError } = await createServiceClient()
       .from('transformations')
       .update({
         match_score: scoreResult.score,
@@ -104,7 +112,7 @@ export async function POST(req: Request) {
       .eq('id', transformation_id)
       .eq('user_id', user.id);
 
-    if (updateError) return apiErrors.database(updateError);
+    if (updateError) return apiErrors.database(updateError.code);
 
     return NextResponse.json(
       {

@@ -28,9 +28,7 @@ export default function Error({
           <AlertTriangle className="w-7 h-7 text-[var(--danger-fg)]" />
         </div>
 
-        <h1 className="text-2xl font-bold text-[var(--text-primary)] mb-2">
-          Something went wrong
-        </h1>
+        <h1 className="text-2xl font-bold text-[var(--text-primary)] mb-2">Something went wrong</h1>
         <p className="text-sm text-[var(--text-secondary)] mb-6">
           This page failed to load. Your data is safe — try again, or head back to your dashboard.
         </p>

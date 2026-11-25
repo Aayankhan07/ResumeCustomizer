@@ -5,13 +5,12 @@ import { Copy, Download } from 'lucide-react';
 import { toast } from 'sonner';
 import { trackEvent } from '../../../utils/analytics';
 
-
-export default function CoverLetterTab({ 
-  coverLetter, 
-  contact = {}, 
-  meta = {}, 
+export default function CoverLetterTab({
+  coverLetter,
+  contact = {},
+  meta = {},
   elevatorPitch,
-  createdAt 
+  createdAt,
 }) {
   const [copiedPitch, setCopiedPitch] = useState(false);
   const [copiedLetter, setCopiedLetter] = useState(false);
@@ -21,7 +20,10 @@ export default function CoverLetterTab({
     if (contact?.name) {
       text = text.replace(/\[Your Name\]/gi, contact.name);
     }
-    const companyName = meta?.detected_company && meta.detected_company !== 'Not Specified' ? meta.detected_company : 'the company';
+    const companyName =
+      meta?.detected_company && meta.detected_company !== 'Not Specified'
+        ? meta.detected_company
+        : 'the company';
     text = text.replace(/\[Hiring Company\]/gi, companyName);
     text = text.replace(/\[Company Name\]/gi, companyName);
     return text;
@@ -29,19 +31,32 @@ export default function CoverLetterTab({
 
   const getFormattedLetter = () => {
     const cleanBody = getCleanLetterBody();
-    
+
     // Check if the body already seems to have contact header
-    const hasHeader = cleanBody.includes('Dear') || cleanBody.includes('Subject') || cleanBody.includes(contact?.name || '___');
+    const hasHeader =
+      cleanBody.includes('Dear') ||
+      cleanBody.includes('Subject') ||
+      cleanBody.includes(contact?.name || '___');
     if (hasHeader) {
       return cleanBody;
     }
 
-    const formattedDate = createdAt 
-      ? new Date(createdAt).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) 
+    const formattedDate = createdAt
+      ? new Date(createdAt).toLocaleDateString('en-US', {
+          year: 'numeric',
+          month: 'long',
+          day: 'numeric',
+        })
       : new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
-      
-    const companyName = meta?.detected_company && meta.detected_company !== 'Not Specified' ? meta.detected_company : 'Hiring Company';
-    const addressee = meta?.detected_company && meta.detected_company !== 'Not Specified' ? meta.detected_company : 'Hiring Team';
+
+    const companyName =
+      meta?.detected_company && meta.detected_company !== 'Not Specified'
+        ? meta.detected_company
+        : 'Hiring Company';
+    const addressee =
+      meta?.detected_company && meta.detected_company !== 'Not Specified'
+        ? meta.detected_company
+        : 'Hiring Team';
 
     return `${contact?.name || 'Your Name'}
 ${[contact?.email, contact?.phone, contact?.location].filter(Boolean).join(' · ')}
@@ -76,10 +91,12 @@ ${cleanBody}`;
 
   const handleDownloadLetter = () => {
     try {
-      const element = document.createElement("a");
-      const file = new Blob([formattedLetter], {type: 'text/plain'});
+      const element = document.createElement('a');
+      const file = new Blob([formattedLetter], { type: 'text/plain' });
       element.href = URL.createObjectURL(file);
-      const jobTitle = meta?.detected_job_title ? meta.detected_job_title.replace(/\s+/g, '_') : 'Job';
+      const jobTitle = meta?.detected_job_title
+        ? meta.detected_job_title.replace(/\s+/g, '_')
+        : 'Job';
       element.download = `Cover_Letter_${jobTitle}.txt`;
       document.body.appendChild(element);
       element.click();
@@ -107,8 +124,12 @@ ${cleanBody}`;
     <div className="animate-fade-in flex flex-col gap-6 text-left font-sans text-[var(--text-primary)] bg-transparent">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 select-none">
         <div>
-          <h3 className="text-lg font-semibold text-[var(--text-primary)]">Application Narratives</h3>
-          <p className="text-xs text-[var(--text-muted)] mt-1 font-normal">Tailored cover letter matching your resume and professional pitch.</p>
+          <h3 className="text-lg font-semibold text-[var(--text-primary)]">
+            Application Narratives
+          </h3>
+          <p className="text-xs text-[var(--text-muted)] mt-1 font-normal">
+            Tailored cover letter matching your resume and professional pitch.
+          </p>
         </div>
 
         {/* Action Buttons */}

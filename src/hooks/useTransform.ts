@@ -8,7 +8,6 @@ import { toast } from 'sonner';
 /** Errors worth one automatic retry: transient rather than caused by input. */
 const RETRY_ERRORS = ['AI_TIMEOUT', 'INTERNAL_SERVER_ERROR', 'NETWORK_ERROR'];
 
-
 type Status = 'idle' | 'loading' | 'success' | 'error';
 
 interface TransformState {

@@ -14,9 +14,9 @@ export interface FaqItem {
 
 export const FAQ_ITEMS: FaqItem[] = [
   {
-    question: 'Is my resume stored anywhere permanently?',
+    question: 'Is my resume stored?',
     answer:
-      'No. To ensure candidate privacy, your raw resume text and job descriptions are never saved in our database. We only persist the finalized, structured AI output for re-download purposes, which you can delete at any time.',
+      'Your resume and job description are saved with each tailored result so you can compare versions and re-score later. Only your signed-in account can read them, and we never sell them. Removed results are permanently deleted within 30 days, and you can delete your account from your profile at any time.',
   },
   {
     question: "Will the AI make up experience I don't have?",

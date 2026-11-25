@@ -42,24 +42,23 @@ export default function TransformErrorPanel({
     }
     const resetTime = new Date(rateLimit.resetAt).getTime();
 
-
     const updateTimer = () => {
       const now = Date.now();
       const diff = resetTime - now;
-      
+
       if (diff <= 0) {
         setTimeLeft('00:00');
         return;
       }
-      
+
       const hours = Math.floor(diff / (1000 * 60 * 60));
       const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
       const seconds = Math.floor((diff % (1000 * 60)) / 1000);
-      
+
       const hrsStr = hours > 0 ? `${hours}:` : '';
       const minsStr = minutes < 10 ? `0${minutes}` : minutes;
       const secsStr = seconds < 10 ? `0${seconds}` : seconds;
-      
+
       setTimeLeft(`${hrsStr}${minsStr}:${secsStr}`);
     };
 

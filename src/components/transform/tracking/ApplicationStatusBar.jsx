@@ -1,12 +1,18 @@
 'use client';
 
-export const STATUS_OPTIONS = ['Saved', 'Applied', 'Interviewing', 'Offer', 'Rejected', 'Withdrawn'];
+export const STATUS_OPTIONS = [
+  'Saved',
+  'Applied',
+  'Interviewing',
+  'Offer',
+  'Rejected',
+  'Withdrawn',
+];
 
 export const STATUS_STYLES = {
   Saved: 'bg-[var(--bg-subtle)] text-[var(--text-secondary)] border-[var(--border-default)]',
   Applied: 'bg-[var(--neutral-subtle)] text-[var(--neutral)] border-[var(--border-default)]',
-  Interviewing:
-    'bg-[var(--warning-subtle)] text-[var(--warning-fg)] border-[var(--warning-fg)]/10',
+  Interviewing: 'bg-[var(--warning-subtle)] text-[var(--warning-fg)] border-[var(--warning-fg)]/10',
   Offer: 'bg-[var(--success-subtle)] text-[var(--success-fg)] border-[var(--success-fg)]/10',
   Rejected: 'bg-[var(--danger-subtle)] text-[var(--danger-fg)] border-[var(--danger-fg)]/10',
   Withdrawn:

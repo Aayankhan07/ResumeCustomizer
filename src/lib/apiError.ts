@@ -15,9 +15,21 @@ export function apiError(
   extra?: Record<string, unknown>
 ) {
   if (detail !== undefined) {
-    console.error(`[api:${code}]`, detail);
+    console.error(`[api:${code}]`, redactDetail(detail));
   }
   return NextResponse.json({ success: false, error: code, ...extra }, { status });
+}
+
+/**
+ * Postgres errors carry the failing row in `details` (and sometimes `hint`),
+ * which can include resume text or notes. Keep only code and message.
+ */
+function redactDetail(detail: unknown): unknown {
+  if (detail && typeof detail === 'object' && !Array.isArray(detail) && 'code' in detail) {
+    const { code, message } = detail as { code?: unknown; message?: unknown };
+    return { code, message };
+  }
+  return detail;
 }
 
 /** Convenience wrappers for the codes used across routes. */

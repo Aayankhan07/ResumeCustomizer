@@ -173,14 +173,73 @@ export async function rescoreTransformation(
 
 // ── Transformations (direct Supabase reads, authorized by RLS)
 
-export async function getTransformations(limit = 20, offset = 0) {
-  const { data, error, count } = await db()
+export interface TransformationFilters {
+  /** Free-text match against label, detected job title and company. */
+  search?: string;
+  /** A tracking status, or the virtual 'Overdue' / 'This Week' / 'All'. */
+  status?: string;
+}
+
+/** YYYY-MM-DD in the browser's local timezone (deadlines are date-only). */
+function localISODate(date: Date): string {
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, '0');
+  const d = String(date.getDate()).padStart(2, '0');
+  return `${y}-${m}-${d}`;
+}
+
+/**
+ * Strips characters that are either LIKE wildcards or reserved in PostgREST's
+ * `or=(...)` syntax, so user input can only ever be a literal substring.
+ */
+function sanitizeSearchTerm(value: string): string {
+  return value
+    .replace(/[%_*\\",()]/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+export async function getTransformations(
+  limit = 20,
+  offset = 0,
+  filters: TransformationFilters = {}
+) {
+  let query = db()
     .from('transformations')
     .select(
       'id, detected_job_title, detected_company, match_score, created_at, label, status, applied_at, application_deadline, priority, application_events(event_date, event_type, is_done)',
       { count: 'exact' }
     )
-    .eq('is_deleted', false)
+    .eq('is_deleted', false);
+
+  // Filtering runs server-side so search and status cover the whole history,
+  // not just the page that happens to be loaded, and `count` is the number of
+  // matches.
+  const term = sanitizeSearchTerm(filters.search ?? '');
+  if (term) {
+    const pattern = `"%${term}%"`;
+    query = query.or(
+      `label.ilike.${pattern},detected_job_title.ilike.${pattern},detected_company.ilike.${pattern}`
+    );
+  }
+
+  const status = filters.status;
+  if (status === 'Overdue') {
+    query = query
+      .lt('application_deadline', localISODate(new Date()))
+      .not('status', 'in', '(Offer,Rejected,Withdrawn)');
+  } else if (status === 'This Week') {
+    const today = new Date();
+    const nextWeek = new Date(today);
+    nextWeek.setDate(nextWeek.getDate() + 7);
+    query = query
+      .gte('application_deadline', localISODate(today))
+      .lte('application_deadline', localISODate(nextWeek));
+  } else if (status && status !== 'All') {
+    query = query.eq('status', status);
+  }
+
+  const { data, error, count } = await query
     .order('created_at', { ascending: false })
     .range(offset, offset + limit - 1);
 
@@ -333,7 +392,10 @@ export async function createEvent(eventData: Record<string, unknown>): Promise<A
   return body.data;
 }
 
-export async function updateEvent(id: string, eventData: Record<string, unknown>): Promise<ApplicationEvent> {
+export async function updateEvent(
+  id: string,
+  eventData: Record<string, unknown>
+): Promise<ApplicationEvent> {
   const headers = await getAuthHeaders();
   const body = await request<ApplicationEvent>(`/events/${id}`, {
     method: 'PATCH',

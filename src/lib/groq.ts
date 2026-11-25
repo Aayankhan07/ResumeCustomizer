@@ -215,11 +215,20 @@ export interface TransformResult {
 
 // Groq production models. mixtral-8x7b-32768 was removed after Groq
 // decommissioned it — it was a guaranteed-wasted retry on every failure path.
-const MODELS = [
-  'llama-3.3-70b-versatile',
-  'llama-3.1-8b-instant',
-  'openai/gpt-oss-120b',
-];
+const MAX_COMPLETION_TOKENS = 8192;
+
+/** Extracts Groq's machine-readable error code without keeping the body. */
+async function readGroqErrorCode(response: Response): Promise<string> {
+  try {
+    const body = (await response.json()) as { error?: { code?: unknown; type?: unknown } };
+    const code = body?.error?.code ?? body?.error?.type;
+    return typeof code === 'string' ? code.slice(0, 64) : 'unknown';
+  } catch {
+    return 'unknown';
+  }
+}
+
+const MODELS = ['llama-3.3-70b-versatile', 'llama-3.1-8b-instant', 'openai/gpt-oss-120b'];
 
 /**
  * Result of checking one model's response against the output schema.
@@ -271,21 +280,24 @@ ${instruction}`;
 
     try {
       console.log(`Attempting Groq call with model: ${model}`);
-      
+
       const response = await fetch(GROQ_URL, {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${apiKey}`,
+          Authorization: `Bearer ${apiKey}`,
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
           model,
           messages: [
             { role: 'system', content: SYSTEM_PROMPT },
-            { role: 'user', content: prompt }
+            { role: 'user', content: prompt },
           ],
           temperature: 0.2,
-          response_format: { type: 'json_object' }
+          // Cost and latency ceiling per attempt. A full result (resume,
+          // cover letter, interview prep, extras) is well under this.
+          max_completion_tokens: MAX_COMPLETION_TOKENS,
+          response_format: { type: 'json_object' },
         }),
         // 3 models x 20s = 60s worst case, which fits inside the route's
         // maxDuration of 90s with room for validation and the DB write. At the
@@ -301,8 +313,10 @@ ${instruction}`;
       }
 
       if (!response.ok) {
-        const err = await response.text();
-        throw new Error(`GROQ_ERROR:${response.status} Details: ${err}`);
+        // Only the status and Groq's error code. The body of some errors
+        // (json_validate_failed) echoes the model's generation, which contains
+        // the user's resume, and this message ends up in logs and Sentry.
+        throw new Error(`GROQ_ERROR:${response.status} ${await readGroqErrorCode(response)}`);
       }
 
       const data = await response.json();

@@ -69,11 +69,9 @@ export default function WorkspaceSidebar({
     });
   };
 
-
   return (
     <aside className="w-full lg:w-64 shrink-0 bg-[var(--bg-base)] border border-[var(--border-default)] rounded-[var(--radius-lg)] p-5 flex flex-col justify-between select-none shadow-[var(--shadow-sm)]">
       <div className="flex flex-col gap-6">
-        
         {/* ATS Score Box */}
         <div className="bg-[var(--bg-elevated)] border border-[var(--border-default)] rounded-[var(--radius-lg)] p-5 flex flex-col items-center gap-1 mb-4">
           <ScoreRing score={currentScore} />
@@ -160,7 +158,6 @@ export default function WorkspaceSidebar({
             );
           })}
         </nav>
-
       </div>
 
       {/* Bottom Sidebar Action Buttons */}
@@ -172,7 +169,11 @@ export default function WorkspaceSidebar({
         >
           {isDownloading ? (
             <>
-              <LoadingSpinner size="sm" strokeWidth={2.5} className="text-[var(--text-secondary)]" />
+              <LoadingSpinner
+                size="sm"
+                strokeWidth={2.5}
+                className="text-[var(--text-secondary)]"
+              />
               Generating PDF...
             </>
           ) : (
@@ -189,7 +190,11 @@ export default function WorkspaceSidebar({
         >
           {isDownloadingDocx ? (
             <>
-              <LoadingSpinner size="sm" strokeWidth={2.5} className="text-[var(--text-secondary)]" />
+              <LoadingSpinner
+                size="sm"
+                strokeWidth={2.5}
+                className="text-[var(--text-secondary)]"
+              />
               Generating DOCX...
             </>
           ) : (

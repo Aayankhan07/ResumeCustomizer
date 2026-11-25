@@ -2,22 +2,13 @@
 
 import { useState, useEffect } from 'react';
 import dynamic from 'next/dynamic';
-import { 
-  LayoutDashboard, 
-  FileText, 
-  Target, 
-  Diff, 
-  Mic, 
-  Mail,
-  ClipboardList
-} from 'lucide-react';
+import { LayoutDashboard, FileText, Target, Diff, Mic, Mail, ClipboardList } from 'lucide-react';
 import { trackEvent } from '../../utils/analytics';
 import useMediaQuery, { DESKTOP_QUERY } from '../../hooks/useMediaQuery';
 // Owns PDF/DOCX/clipboard export and their loading state. The generators
 // (jsPDF ~350KB, docx ~200KB) are imported dynamically at the point of use, so
 // neither ships in the initial chunk of a route that renders a result.
 import useExport from '../../hooks/useExport';
-
 
 // UI components
 import ErrorBoundary from '../ui/ErrorBoundary';
@@ -77,9 +68,21 @@ const VALID_TABS = [
   'cover-letter',
 ];
 
-export default function TransformOutput({ result: initialResult, plainText, originalText, jobDescriptionText: _jobDescriptionText, onReset, transformationId }) {
+export default function TransformOutput({
+  result: initialResult,
+  plainText,
+  originalText,
+  jobDescriptionText: _jobDescriptionText,
+  onReset,
+  transformationId,
+  initialTransformation = null,
+}) {
   const [result, setResult] = useState(initialResult);
-  const [transformation, setTransformation] = useState(null);
+  // The detail route already holds the full row, so it passes it in and the
+  // extra round-trip is skipped. The fresh-result route has only the id.
+  const [transformation, setTransformation] = useState(initialTransformation);
+  const [transformationError, setTransformationError] = useState(false);
+  const [transformationRetry, setTransformationRetry] = useState(0);
 
   // WorkspaceSidebar renders the mobile row and the desktop rail from the same
   // breakpoint, and only one of them carries role="tab". The panel's
@@ -91,19 +94,31 @@ export default function TransformOutput({ result: initialResult, plainText, orig
     setResult(initialResult);
   }, [initialResult]);
 
+  // initialTransformation seeds state only. It is deliberately not re-synced:
+  // the parent's copy goes stale once the Tracking tab saves edits, and
+  // pushing it back in would reset the tab's form to the old values.
+  const hasInitialTransformation = Boolean(initialTransformation);
+
   useEffect(() => {
+    if (!transformationId || hasInitialTransformation) return;
+    let cancelled = false;
     async function fetchTrans() {
-      if (!transformationId) return;
+      setTransformationError(false);
       try {
         const { getTransformation } = await import('../../lib/api');
         const data = await getTransformation(transformationId);
-        setTransformation(data);
+        if (!cancelled) setTransformation(data);
       } catch (err) {
         console.error('Error fetching transformation:', err);
+        // Without this the Tracking tab spun forever on a failed fetch.
+        if (!cancelled) setTransformationError(true);
       }
     }
     fetchTrans();
-  }, [transformationId]);
+    return () => {
+      cancelled = true;
+    };
+  }, [transformationId, hasInitialTransformation, transformationRetry]);
 
   // Read ATS metrics directly from the stateful result payload
   const localScore = result.meta?.match_score ?? 0;
@@ -193,7 +208,8 @@ export default function TransformOutput({ result: initialResult, plainText, orig
   useEffect(() => {
     const handleKeyDown = (e) => {
       // Ignore when user is actively typing in inputs or textareas
-      if (['INPUT', 'TEXTAREA'].includes(document.activeElement?.tagName)) {
+      const active = document.activeElement;
+      if (['INPUT', 'TEXTAREA', 'SELECT'].includes(active?.tagName) || active?.isContentEditable) {
         return;
       }
 
@@ -201,7 +217,15 @@ export default function TransformOutput({ result: initialResult, plainText, orig
       // shadow browser shortcuts.
       if (!e.metaKey && !e.ctrlKey && !e.altKey && e.key >= '1' && e.key <= '7') {
         e.preventDefault();
-        const tabMapping = ['overview', 'tracking', 'resume', 'keywords', 'rewrites', 'interview', 'cover-letter'];
+        const tabMapping = [
+          'overview',
+          'tracking',
+          'resume',
+          'keywords',
+          'rewrites',
+          'interview',
+          'cover-letter',
+        ];
         const selectedTab = tabMapping[parseInt(e.key) - 1];
         if (selectedTab) {
           setActiveTab(selectedTab);
@@ -220,20 +244,14 @@ export default function TransformOutput({ result: initialResult, plainText, orig
 
   // Strict 7 tabs menu items list
   return (
-    <div className="w-full flex flex-col gap-6 select-none animate-fade-in font-sans text-[var(--text-primary)] bg-[var(--bg-base)]">
-      
+    <div className="w-full flex flex-col gap-6 animate-fade-in font-sans text-[var(--text-primary)] bg-[var(--bg-base)]">
       {/* Visual Confirmation Header */}
-      <ScoreBanner 
-        candidateName={candidateName}
-        jobTitle={jobTitle}
-        onReset={onReset}
-      />
+      <ScoreBanner candidateName={candidateName} jobTitle={jobTitle} onReset={onReset} />
 
       {/* Grid Layout: Sidebar & Content Panel */}
       <div className="flex flex-col lg:flex-row gap-6 w-full items-stretch">
-        
         {/* Balanced Light Sidebar */}
-        <WorkspaceSidebar 
+        <WorkspaceSidebar
           activeTab={activeTab}
           setActiveTab={setActiveTab}
           menuItems={MENU_ITEMS}
@@ -260,7 +278,6 @@ export default function TransformOutput({ result: initialResult, plainText, orig
             aria-labelledby={isDesktopTabs ? `tab-desktop-${activeTab}` : `tab-${activeTab}`}
             tabIndex={0}
           >
-
             {activeTab === 'overview' && (
               <ErrorBoundary>
                 <OverviewTab
@@ -281,6 +298,26 @@ export default function TransformOutput({ result: initialResult, plainText, orig
               <ErrorBoundary>
                 {transformation ? (
                   <TrackingTab transformation={transformation} />
+                ) : transformationError || !transformationId ? (
+                  <div
+                    className="flex flex-col items-center justify-center gap-3 py-24 text-center"
+                    role="alert"
+                  >
+                    <p className="text-sm text-[var(--text-secondary)]">
+                      {transformationId
+                        ? 'Could not load tracking details for this application.'
+                        : 'Tracking is available once this result is saved to your history.'}
+                    </p>
+                    {transformationId && (
+                      <button
+                        type="button"
+                        onClick={() => setTransformationRetry((n) => n + 1)}
+                        className="text-sm font-semibold text-[var(--accent)] hover:underline"
+                      >
+                        Try again
+                      </button>
+                    )}
+                  </div>
                 ) : (
                   <div className="flex justify-center items-center py-24">
                     <div className="w-8 h-8 border-2 border-[var(--accent)] border-t-transparent rounded-full animate-spin" />
@@ -291,7 +328,7 @@ export default function TransformOutput({ result: initialResult, plainText, orig
 
             {activeTab === 'resume' && (
               <ErrorBoundary>
-                <ResumeTab 
+                <ResumeTab
                   result={result}
                   plainText={plainText}
                   originalText={originalText}
@@ -311,7 +348,7 @@ export default function TransformOutput({ result: initialResult, plainText, orig
 
             {activeTab === 'keywords' && (
               <ErrorBoundary>
-                <KeywordsTab 
+                <KeywordsTab
                   technicalSkills={technicalSkills}
                   toolsSkills={toolsSkills}
                   softSkills={softSkills}
@@ -325,33 +362,27 @@ export default function TransformOutput({ result: initialResult, plainText, orig
 
             {activeTab === 'rewrites' && (
               <ErrorBoundary>
-                <RewritesTab 
-                  rewritesList={result.rewrites}
-                />
+                <RewritesTab rewritesList={result.rewrites} />
               </ErrorBoundary>
             )}
 
             {activeTab === 'interview' && (
               <ErrorBoundary>
-                <InterviewTab 
-                  interviewPrep={result.interview_prep}
-                  jobTitle={jobTitle}
-                />
+                <InterviewTab interviewPrep={result.interview_prep} jobTitle={jobTitle} />
               </ErrorBoundary>
             )}
 
             {activeTab === 'cover-letter' && (
               <ErrorBoundary>
-                <CoverLetterTab 
+                <CoverLetterTab
                   coverLetter={result.cover_letter}
                   contact={result.contact}
                   meta={result.meta}
-                  elevatorPitch={recruiterScan.elevator_pitch}
+                  elevatorPitch={recruiterScan?.elevator_pitch}
                   createdAt={result.created_at}
                 />
               </ErrorBoundary>
             )}
-
           </div>
 
           {/* Keyboard shortcuts were entirely undiscoverable. Surfacing them
@@ -359,8 +390,15 @@ export default function TransformOutput({ result: initialResult, plainText, orig
               internal version string that meant nothing to users. */}
           <div className="flex justify-end border-t border-[var(--border-subtle)] pt-5 mt-8 select-none">
             <span className="text-[11px] font-mono text-[var(--text-secondary)] hidden sm:block">
-              Press <kbd className="px-1 py-0.5 rounded bg-[var(--bg-subtle)] border border-[var(--border-default)]">1</kbd>–
-              <kbd className="px-1 py-0.5 rounded bg-[var(--bg-subtle)] border border-[var(--border-default)]">7</kbd> to switch tabs
+              Press{' '}
+              <kbd className="px-1 py-0.5 rounded bg-[var(--bg-subtle)] border border-[var(--border-default)]">
+                1
+              </kbd>
+              –
+              <kbd className="px-1 py-0.5 rounded bg-[var(--bg-subtle)] border border-[var(--border-default)]">
+                7
+              </kbd>{' '}
+              to switch tabs
             </span>
           </div>
         </section>

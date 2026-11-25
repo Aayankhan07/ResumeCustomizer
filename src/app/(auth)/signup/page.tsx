@@ -28,7 +28,7 @@ export default function Signup() {
       toast.error('Password must be at least 8 characters long.');
       return;
     }
-    
+
     setLoading(true);
     try {
       const { error } = await supabase.auth.signUp({
@@ -38,11 +38,16 @@ export default function Signup() {
           data: {
             full_name: name,
           },
+          // The confirmation link lands on /auth/callback, which exchanges the
+          // code for a session and then forwards to `next` (validated there by
+          // safeNext). Without this, Supabase fell back to the project's Site
+          // URL and the user arrived signed out on the landing page.
+          emailRedirectTo: `${window.location.origin}/auth/callback?next=/transform`,
         },
       });
       if (error) throw error;
       toast.success('Registration successful! Please check your email.');
-      router.push('/verify-email');
+      router.push(`/verify-email?email=${encodeURIComponent(email)}`);
     } catch (err) {
       toast.error(err.message || 'Signup failed. Try again.');
     } finally {
@@ -67,7 +72,7 @@ export default function Signup() {
       {/* Decorative spotlights */}
       <div className="absolute top-0 left-0 right-0 h-[400px] bg-[radial-gradient(circle_at_top,_var(--tw-gradient-stops))] from-[color-mix(in_srgb,var(--accent)_8%,transparent)] via-transparent to-transparent blur-3xl pointer-events-none" />
       <div className="absolute bottom-0 right-0 w-[500px] h-[500px] bg-[color-mix(in_srgb,var(--accent)_4%,transparent)] rounded-full blur-[120px] pointer-events-none" />
-      
+
       {/* Grid Pattern Overlay */}
       <div className="absolute inset-0 bg-[linear-gradient(to_right,#1f293704_1px,transparent_1px),linear-gradient(to_bottom,#1f293708_1px,transparent_1px)] bg-[size:4rem_4rem] pointer-events-none opacity-40" />
 
@@ -76,7 +81,10 @@ export default function Signup() {
         <div className="absolute inset-0 bg-[linear-gradient(to_right,#33415504_1px,transparent_1px),linear-gradient(to_bottom,#33415504_1px,transparent_1px)] bg-[size:3.5rem_3.5rem] opacity-30 pointer-events-none" />
         <div className="absolute -top-40 -left-40 w-96 h-96 bg-[color-mix(in_srgb,var(--accent)_10%,transparent)] rounded-full blur-[100px]" />
 
-        <Link href="/" className="flex items-center gap-2.5 font-serif text-2xl font-bold text-[var(--text-primary)] tracking-tight">
+        <Link
+          href="/"
+          className="flex items-center gap-2.5 font-serif text-2xl font-bold text-[var(--text-primary)] tracking-tight"
+        >
           <div className="w-8 h-8 rounded-lg bg-[var(--bg-subtle)] border border-[var(--border-default)] flex items-center justify-center">
             <Sparkles size={16} className="text-[var(--accent)] fill-[var(--accent)]/10" />
           </div>
@@ -92,13 +100,16 @@ export default function Signup() {
           </h1>
           <div className="h-1 w-12 bg-[var(--accent)] mb-6 rounded-full" />
           <p className="text-sm text-[var(--text-secondary)] leading-relaxed font-medium">
-            ResumOrph analyzes your resume against industry-specific keywords and automatically formats it to fit high-density ATS standards.
+            ResumOrph analyzes your resume against industry-specific keywords and automatically
+            formats it to fit high-density ATS standards.
           </p>
         </div>
 
         <div className="flex items-center justify-between border-t border-[var(--border-default)] pt-6">
           <p className="text-xs text-[var(--text-secondary)] font-mono">ResumOrph</p>
-          <span className="text-xs text-[var(--text-muted)] font-mono">&copy; {new Date().getFullYear()}</span>
+          <span className="text-xs text-[var(--text-muted)] font-mono">
+            &copy; {new Date().getFullYear()}
+          </span>
         </div>
       </div>
 
@@ -106,10 +117,14 @@ export default function Signup() {
       <div className="flex-1 flex items-center justify-center p-4 sm:p-8 lg:p-16 z-10">
         <div className="w-full max-w-md border border-[var(--border-default)] bg-[var(--bg-elevated)] rounded-[var(--radius-lg)] p-8 sm:p-10 shadow-lg relative">
           <div className="absolute top-0 left-1/2 -translate-x-1/2 w-40 h-px bg-gradient-to-r from-transparent via-[var(--accent)]/40 to-transparent" />
-          
+
           <div className="mb-8">
-            <h2 className="font-serif text-3xl text-[var(--text-primary)] font-bold mb-1.5 tracking-tight">Create Account</h2>
-            <p className="text-xs text-[var(--text-secondary)] font-semibold leading-relaxed">Start optimizing your resumes for free.</p>
+            <h2 className="font-serif text-3xl text-[var(--text-primary)] font-bold mb-1.5 tracking-tight">
+              Create Account
+            </h2>
+            <p className="text-xs text-[var(--text-secondary)] font-semibold leading-relaxed">
+              Start optimizing your resumes for free.
+            </p>
           </div>
 
           <form onSubmit={handleSignup} className="flex flex-col gap-5">
@@ -117,6 +132,7 @@ export default function Signup() {
               type="text"
               label="Full Name"
               placeholder="Aayan Khan"
+              autoComplete="name"
               value={name}
               onChange={(e) => setName(e.target.value)}
               disabled={loading}
@@ -127,24 +143,26 @@ export default function Signup() {
               type="email"
               label="Email Address"
               placeholder="name@email.com"
+              autoComplete="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               disabled={loading}
               required
             />
-            
+
             <Input
               type="password"
               label="Password (min. 8 characters)"
               placeholder="••••••••"
+              autoComplete="new-password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               disabled={loading}
               required
             />
 
-            <button 
-              type="submit" 
+            <button
+              type="submit"
               className="btn-primary w-full py-3 text-sm font-semibold rounded-lg tracking-wide cursor-pointer flex items-center justify-center gap-2"
               disabled={loading}
             >
@@ -157,7 +175,9 @@ export default function Signup() {
               <span className="w-full border-t border-[var(--border-default)]"></span>
             </div>
             <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-[var(--bg-elevated)] px-3.5 text-[var(--text-muted)] font-bold tracking-wider">Or continue with</span>
+              <span className="bg-[var(--bg-elevated)] px-3.5 text-[var(--text-muted)] font-bold tracking-wider">
+                Or continue with
+              </span>
             </div>
           </div>
 
@@ -190,7 +210,10 @@ export default function Signup() {
 
           <p className="mt-8 text-center text-sm text-[var(--text-secondary)] font-semibold">
             Already have an account?{' '}
-            <Link href="/login" className="font-bold text-[var(--text-primary)] hover:text-[var(--accent)] transition-colors">
+            <Link
+              href="/login"
+              className="font-bold text-[var(--text-primary)] hover:text-[var(--accent)] transition-colors"
+            >
               Sign In
             </Link>
           </p>

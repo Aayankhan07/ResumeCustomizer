@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import { getTransformation, updateTransformationLabel } from '../../../lib/api';
 import { Edit2, Check } from 'lucide-react';
@@ -17,6 +18,7 @@ export default function TransformDetail() {
   const router = useRouter();
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(false);
   const [editingLabel, setEditingLabel] = useState(false);
   const [labelValue, setLabelValue] = useState('');
 
@@ -27,8 +29,11 @@ export default function TransformDetail() {
         setData(res);
         setLabelValue(res.label || res.detected_job_title || 'Resume Optimization');
       } catch (err) {
-        toast.error('Failed to load past optimization.');
-        router.push('/dashboard');
+        // Rendered as an in-page error state. The old redirect raced the
+        // `finally` below, which rendered `data.label` with data still null.
+        console.error('Failed to load past optimization:', err);
+        setData(null);
+        setLoadError(true);
       } finally {
         setLoading(false);
       }
@@ -36,13 +41,15 @@ export default function TransformDetail() {
     if (id) {
       fetchDetail();
     }
-  }, [id, router]);
+  }, [id]);
+
+  const isLoading = loading && Boolean(id);
 
   const handleUpdateLabel = async () => {
     if (!labelValue.trim()) return;
     try {
       await updateTransformationLabel(id, labelValue.trim());
-      setData(prev => ({ ...prev, label: labelValue.trim() }));
+      setData((prev) => ({ ...prev, label: labelValue.trim() }));
       setEditingLabel(false);
       toast.success('Label updated');
     } catch (err) {
@@ -54,10 +61,31 @@ export default function TransformDetail() {
     <div className="min-h-screen bg-[var(--bg-subtle)] text-[var(--text-primary)] flex flex-col font-sans transition-colors duration-300">
       <Navbar />
 
-      <main className={`flex-1 ${loading ? 'max-w-4xl' : 'max-w-6xl'} w-full mx-auto px-4 py-12 flex flex-col justify-start transition-all duration-300`}>
-        {loading ? (
+      <main
+        className={`flex-1 ${isLoading ? 'max-w-4xl' : 'max-w-6xl'} w-full mx-auto px-4 py-12 flex flex-col justify-start transition-all duration-300`}
+      >
+        {isLoading ? (
           <div className="flex justify-center items-center py-24 my-auto">
             <div className="w-8 h-8 border-2 border-[var(--accent)] dark:border-indigo-500 border-t-transparent rounded-full animate-spin" />
+          </div>
+        ) : loadError || !data ? (
+          <div
+            className="flex flex-col items-center justify-center gap-4 py-24 my-auto text-center"
+            role="alert"
+          >
+            <h1 className="text-lg font-bold text-[var(--text-primary)]">
+              We couldn&apos;t load this optimization
+            </h1>
+            <p className="text-sm text-[var(--text-secondary)] max-w-sm">
+              It may have been deleted, or there was a problem reaching the server. Check your
+              connection and try again.
+            </p>
+            <Link
+              href="/dashboard"
+              className="inline-flex items-center justify-center rounded-lg bg-[var(--accent)] px-5 py-2.5 text-sm font-semibold text-white hover:opacity-90 transition-opacity"
+            >
+              Back to dashboard
+            </Link>
           </div>
         ) : (
           <div className="flex flex-col gap-6 w-full animate-fade-in">
@@ -77,7 +105,12 @@ export default function TransformDetail() {
                       className="py-1 px-2.5 text-sm"
                       maxLength={100}
                     />
-                    <Button variant="primary" size="sm" onClick={handleUpdateLabel} className="shrink-0 p-2">
+                    <Button
+                      variant="primary"
+                      size="sm"
+                      onClick={handleUpdateLabel}
+                      className="shrink-0 p-2"
+                    >
                       <Check size={14} />
                     </Button>
                   </div>
@@ -102,10 +135,11 @@ export default function TransformDetail() {
             <TransformOutput
               result={data.output_json}
               plainText={data.output_plain_text}
-              originalText={data.input_plain_text || data.output_json?.original_resume_text || ""}
-              jobDescriptionText={data.output_json?.original_job_description || ""}
+              originalText={data.input_plain_text || data.output_json?.original_resume_text || ''}
+              jobDescriptionText={data.output_json?.original_job_description || ''}
               onReset={() => router.push('/transform')}
               transformationId={data.id}
+              initialTransformation={data}
             />
           </div>
         )}

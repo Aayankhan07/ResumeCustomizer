@@ -7,6 +7,7 @@ import {
   deleteTransformation,
   updateTransformationStatus,
   type ApplicationEvent,
+  type TransformationFilters,
 } from '../lib/api';
 
 /**
@@ -45,7 +46,16 @@ export interface UserStats {
 
 const PAGE_SIZE = 20;
 
-export function useHistory() {
+/**
+ * Dashboard history.
+ *
+ * `transformations` is always the unfiltered, most-recent page — the upcoming
+ * widget and stats row are computed from it and must not change when the user
+ * searches. When `filters` are active, a second server-side query backs
+ * `results`, so search and status cover the whole history rather than only
+ * the rows already loaded. With no filters, `results` mirrors the base list.
+ */
+export function useHistory(filters: TransformationFilters = {}) {
   const [transformations, setTransformations] = useState<TransformationItem[]>([]);
   const [stats, setStats] = useState<UserStats | null>(null);
   const [loading, setLoading] = useState(true);
@@ -101,6 +111,54 @@ export function useHistory() {
     load(true);
   }, [load]);
 
+  // ── Filtered results (server-side)
+  const search = (filters.search ?? '').trim();
+  const status = filters.status && filters.status !== 'All' ? filters.status : '';
+  const isFiltering = Boolean(search || status);
+
+  const [filtered, setFiltered] = useState<TransformationItem[]>([]);
+  const [filteredTotal, setFilteredTotal] = useState(0);
+  const [filteredHasMore, setFilteredHasMore] = useState(false);
+  const [filteredLoading, setFilteredLoading] = useState(false);
+  const [filteredError, setFilteredError] = useState<string | null>(null);
+  const filteredRef = useRef<TransformationItem[]>([]);
+  // Responses for a superseded query (the user kept typing) are dropped.
+  const requestIdRef = useRef(0);
+  useEffect(() => {
+    filteredRef.current = filtered;
+  }, [filtered]);
+
+  const loadFiltered = useCallback(
+    async (reset = true) => {
+      const requestId = ++requestIdRef.current;
+      if (!search && !status) return;
+      setFilteredLoading(true);
+      setFilteredError(null);
+      if (reset) setFiltered([]);
+      const offset = reset ? 0 : filteredRef.current.length;
+
+      try {
+        const res = await getTransformations(PAGE_SIZE, offset, { search, status });
+        if (requestId !== requestIdRef.current) return;
+        const newItems = (res.data ?? []) as unknown as TransformationItem[];
+        setFiltered((prev) => (reset ? newItems : [...prev, ...newItems]));
+        setFilteredTotal(res.count ?? 0);
+        setFilteredHasMore(offset + PAGE_SIZE < (res.count ?? 0));
+      } catch (err) {
+        if (requestId !== requestIdRef.current) return;
+        logSupabaseError('History search error:', err);
+        setFilteredError('Could not search your history. Please try again.');
+      } finally {
+        if (requestId === requestIdRef.current) setFilteredLoading(false);
+      }
+    },
+    [search, status]
+  );
+
+  useEffect(() => {
+    loadFiltered(true);
+  }, [loadFiltered]);
+
   const deleteItem = useCallback(
     async (id: string) => {
       // Snapshot for rollback: the row used to be removed before the request
@@ -112,7 +170,12 @@ export function useHistory() {
       const previous = itemsRef.current;
       const previousStats = statsRef.current;
 
+      const previousFiltered = filteredRef.current;
       setTransformations((prev) => prev.filter((t) => t.id !== id));
+      setFiltered((prev) => prev.filter((t) => t.id !== id));
+      if (previousFiltered.some((t) => t.id === id)) {
+        setFilteredTotal((n) => Math.max(0, n - 1));
+      }
       setTotal((n) => Math.max(0, n - 1));
       setStats((s) => (s ? { ...s, total: Math.max(0, s.total - 1) } : null));
 
@@ -123,6 +186,10 @@ export function useHistory() {
         setTransformations(previous);
         setTotal(previous.length);
         setStats(previousStats);
+        if (previousFiltered.some((t) => t.id === id)) {
+          setFiltered(previousFiltered);
+          setFilteredTotal((n) => n + 1);
+        }
         throw err;
       }
     },
@@ -139,8 +206,12 @@ export function useHistory() {
     // list — so the "previous" snapshot became the optimistic state and a
     // failed update rolled back to the wrong data.
     const previous = itemsRef.current;
+    const previousFiltered = filteredRef.current;
 
-    setTransformations((prev) => prev.map((t) => (t.id === id ? { ...t, status } : t)));
+    const apply = (list: TransformationItem[]) =>
+      list.map((t) => (t.id === id ? { ...t, status } : t));
+    setTransformations(apply);
+    setFiltered(apply);
 
     try {
       await updateTransformationStatus(id, status);
@@ -148,6 +219,7 @@ export function useHistory() {
       logSupabaseError('Failed to update status:', err);
       // Roll back to the known-good list rather than refetching the page.
       setTransformations(previous);
+      setFiltered(previousFiltered);
       throw err;
     }
   }, []);
@@ -161,6 +233,15 @@ export function useHistory() {
     total,
     reload: () => load(true),
     loadMore: () => load(false),
+    // Filter-aware view for the history list.
+    isFiltering,
+    results: isFiltering ? filtered : transformations,
+    resultsTotal: isFiltering ? filteredTotal : total,
+    resultsHasMore: isFiltering ? filteredHasMore : hasMore,
+    resultsLoading: isFiltering ? filteredLoading : loading,
+    resultsError: isFiltering ? filteredError : error,
+    loadMoreResults: () => (isFiltering ? loadFiltered(false) : load(false)),
+    reloadResults: () => (isFiltering ? loadFiltered(true) : load(true)),
     deleteItem,
     updateStatus,
   };

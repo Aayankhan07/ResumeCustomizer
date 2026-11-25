@@ -7,9 +7,10 @@
 export const PRIMARY_CTA_LABEL = 'Tailor my resume';
 
 /**
- * sessionStorage key carrying the role typed into the hero across the login
- * redirect. The middleware drops query strings when it bounces an anonymous
- * visitor from /transform to /login, so the query param alone is not enough.
+ * sessionStorage key carrying the role typed into the hero across sign-in.
+ * The proxy keeps the path on the /login redirect, but a visitor who signs up
+ * instead (email confirmation, possibly in another step) loses the query
+ * string, so the role is also kept here for the rest of the tab session.
  */
 export const PENDING_ROLE_KEY = 'resumorph:pending-role';
 

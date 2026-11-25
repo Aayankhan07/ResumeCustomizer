@@ -99,7 +99,9 @@ describe('callGroqWithFallback', () => {
 
     it('advances to the next model when the response fails validation', async () => {
       fetchMock.mockResolvedValueOnce(okBody('{"summary":"missing meta"}'));
-      fetchMock.mockResolvedValueOnce(okBody('{"summary":"ok","meta":{"detected_job_title":"Dev"}}'));
+      fetchMock.mockResolvedValueOnce(
+        okBody('{"summary":"ok","meta":{"detected_job_title":"Dev"}}')
+      );
 
       const validate = (parsed: unknown) => {
         const p = parsed as { meta?: unknown };
@@ -118,9 +120,9 @@ describe('callGroqWithFallback', () => {
 
       const validate = () => ({ ok: false, reason: 'meta' }) as const;
 
-      await expect(
-        callGroqWithFallback('resume', 'jd', 'description', validate)
-      ).rejects.toThrow('PARSE_FAILED');
+      await expect(callGroqWithFallback('resume', 'jd', 'description', validate)).rejects.toThrow(
+        'PARSE_FAILED'
+      );
       expect(fetchMock).toHaveBeenCalledTimes(3);
     });
 

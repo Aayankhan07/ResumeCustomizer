@@ -1,5 +1,6 @@
 import { createClient } from '../../../lib/supabase/server';
 import { NextResponse } from 'next/server';
+import { safeRedirectPath } from '../../../lib/safeRedirect';
 
 /**
  * Only same-origin relative paths are allowed as a post-login destination.
@@ -7,10 +8,7 @@ import { NextResponse } from 'next/server';
  * browsers resolve to a different host once concatenated onto the origin.
  */
 function safeNext(value: string | null): string {
-  if (!value) return '/dashboard';
-  if (!value.startsWith('/')) return '/dashboard';
-  if (value.startsWith('//') || value.startsWith('/\\')) return '/dashboard';
-  return value;
+  return safeRedirectPath(value);
 }
 
 export const runtime = 'nodejs';

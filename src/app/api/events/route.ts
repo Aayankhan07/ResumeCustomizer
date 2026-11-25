@@ -22,7 +22,10 @@ export async function POST(req: Request) {
     if (authError || !user) return apiErrors.unauthorized();
 
     // Previously only 3 of 8 fields were checked; the rest were inserted raw.
-    const parsed = createEventSchema.safeParse(await req.json());
+    const parsed = createEventSchema.safeParse(
+      // Malformed JSON becomes a 400 via the schema, not a thrown 500.
+      await req.json().catch(() => undefined)
+    );
     if (!parsed.success) {
       return apiErrors.invalidBody(parsed.error.issues);
     }

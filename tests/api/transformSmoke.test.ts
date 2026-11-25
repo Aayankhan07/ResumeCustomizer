@@ -16,12 +16,21 @@ import { validTransformOutput } from '../fixtures/transformOutput';
 const mocks = vi.hoisted(() => ({
   getUser: vi.fn(),
   insert: vi.fn(),
+  rpc: vi.fn(),
   checkRateLimit: vi.fn(),
 }));
 
 vi.mock('@/lib/supabase/server', () => ({
   createClient: async () => ({
     auth: { getUser: mocks.getUser },
+  }),
+}));
+
+// Inserts and the global LLM budget run with the service role (migration 014
+// removed client INSERT on transformations).
+vi.mock('@/lib/supabase/service', () => ({
+  createServiceClient: () => ({
+    rpc: (...args: unknown[]) => mocks.rpc(...args),
     from: () => ({
       insert: (row: unknown) => {
         mocks.insert(row);
@@ -82,6 +91,7 @@ let fetchMock: ReturnType<typeof vi.fn>;
 
 beforeEach(() => {
   vi.clearAllMocks();
+  mocks.rpc.mockResolvedValue({ data: true, error: null });
   vi.stubEnv('GROQ_API_KEY', 'gsk_test_key');
   vi.stubEnv('SUPABASE_SERVICE_ROLE_KEY', 'test-service-key');
 

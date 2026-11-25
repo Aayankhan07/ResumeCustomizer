@@ -17,11 +17,11 @@ export default class ErrorBoundary extends React.Component {
   }
 
   componentDidCatch(error, errorInfo) {
-    console.error("ErrorBoundary caught an error:", error, errorInfo);
+    console.error('ErrorBoundary caught an error:', error, errorInfo);
     try {
       Sentry.captureException(error, { extra: errorInfo });
     } catch (err) {
-      console.error("Failed to report exception to Sentry:", err);
+      console.error('Failed to report exception to Sentry:', err);
     }
   }
 
@@ -62,12 +62,15 @@ export default class ErrorBoundary extends React.Component {
               </h1>
 
               <p className="text-sm sm:text-base text-[var(--text-secondary)] mb-8">
-                This page stopped working unexpectedly. Your saved resumes are
-                safe — reloading usually fixes it.
+                This page stopped working unexpectedly. Your saved resumes are safe — reloading
+                usually fixes it.
               </p>
 
               <div className="flex flex-col sm:flex-row gap-3 justify-center">
-                <Button onClick={() => window.location.reload()} className="flex items-center justify-center gap-2">
+                <Button
+                  onClick={() => window.location.reload()}
+                  className="flex items-center justify-center gap-2"
+                >
                   <RefreshCw className="w-4 h-4" />
                   Reload page
                 </Button>

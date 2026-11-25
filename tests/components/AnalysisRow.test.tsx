@@ -35,7 +35,11 @@ function renderRow(overrides: Record<string, unknown> = {}) {
   const onDelete = vi.fn().mockResolvedValue(undefined);
   const onUpdateStatus = vi.fn().mockResolvedValue(undefined);
   const utils = render(
-    <AnalysisRow item={{ ...ITEM, ...overrides }} onDelete={onDelete} onUpdateStatus={onUpdateStatus} />
+    <AnalysisRow
+      item={{ ...ITEM, ...overrides }}
+      onDelete={onDelete}
+      onUpdateStatus={onUpdateStatus}
+    />
   );
   return { ...utils, onDelete, onUpdateStatus };
 }

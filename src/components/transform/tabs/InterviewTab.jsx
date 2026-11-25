@@ -1,7 +1,15 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Target, UserCheck, AlertTriangle, ArrowLeft, ArrowRight, RotateCw, Copy } from 'lucide-react';
+import {
+  Target,
+  UserCheck,
+  AlertTriangle,
+  ArrowLeft,
+  ArrowRight,
+  RotateCw,
+  Copy,
+} from 'lucide-react';
 import { toast } from 'sonner';
 
 export default function InterviewTab({ interviewPrep }) {
@@ -12,9 +20,9 @@ export default function InterviewTab({ interviewPrep }) {
 
   // Combine and tag all questions into a single deck of 10
   const questions = [
-    ...(prep.technical || []).map(q => ({ ...q, category: 'Technical' })),
-    ...(prep.behavioral || []).map(q => ({ ...q, category: 'Behavioral' })),
-    ...(prep.curveball || []).map(q => ({ ...q, category: 'Curveball' }))
+    ...(prep.technical || []).map((q) => ({ ...q, category: 'Technical' })),
+    ...(prep.behavioral || []).map((q) => ({ ...q, category: 'Behavioral' })),
+    ...(prep.curveball || []).map((q) => ({ ...q, category: 'Curveball' })),
   ];
 
   // Helper for difficulty badge styling
@@ -33,7 +41,7 @@ export default function InterviewTab({ interviewPrep }) {
     if (currentIdx < questions.length - 1) {
       setIsFlipped(false);
       setTimeout(() => {
-        setCurrentIdx(prev => prev + 1);
+        setCurrentIdx((prev) => prev + 1);
       }, 150);
     }
   };
@@ -42,7 +50,7 @@ export default function InterviewTab({ interviewPrep }) {
     if (currentIdx > 0) {
       setIsFlipped(false);
       setTimeout(() => {
-        setCurrentIdx(prev => prev - 1);
+        setCurrentIdx((prev) => prev - 1);
       }, 150);
     }
   };
@@ -51,7 +59,10 @@ export default function InterviewTab({ interviewPrep }) {
   useEffect(() => {
     const handleKeyDown = (e) => {
       // Ignore if user is typing in an input/textarea
-      if (document.activeElement?.tagName === 'INPUT' || document.activeElement?.tagName === 'TEXTAREA') {
+      if (
+        document.activeElement?.tagName === 'INPUT' ||
+        document.activeElement?.tagName === 'TEXTAREA'
+      ) {
         return;
       }
       if (e.key === 'ArrowRight') {
@@ -60,7 +71,7 @@ export default function InterviewTab({ interviewPrep }) {
         handlePrev();
       } else if (e.key === ' ' || e.key === 'Enter') {
         e.preventDefault();
-        setIsFlipped(prev => !prev);
+        setIsFlipped((prev) => !prev);
       }
     };
     window.addEventListener('keydown', handleKeyDown);
@@ -85,7 +96,9 @@ export default function InterviewTab({ interviewPrep }) {
   if (questions.length === 0) {
     return (
       <div className="border border-[var(--border-default)] rounded-[var(--radius-lg)] p-8 text-center bg-[var(--bg-elevated)]">
-        <p className="text-sm text-[var(--text-muted)] italic font-normal">No interview questions generated. Try adding more detail to the job description.</p>
+        <p className="text-sm text-[var(--text-muted)] italic font-normal">
+          No interview questions generated. Try adding more detail to the job description.
+        </p>
       </div>
     );
   }
@@ -96,10 +109,14 @@ export default function InterviewTab({ interviewPrep }) {
     <div className="animate-fade-in flex flex-col gap-6 font-sans text-left text-[var(--text-primary)] bg-transparent">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 select-none">
         <div>
-          <h3 className="text-lg font-semibold text-[var(--text-primary)]">Practice Interview Flashcards</h3>
-          <p className="text-xs text-[var(--text-muted)] mt-1 font-normal">Use arrow keys or click the card to flip and practice.</p>
+          <h3 className="text-lg font-semibold text-[var(--text-primary)]">
+            Practice Interview Flashcards
+          </h3>
+          <p className="text-xs text-[var(--text-muted)] mt-1 font-normal">
+            Use arrow keys or click the card to flip and practice.
+          </p>
         </div>
-        
+
         <button
           onClick={handleCopyAll}
           className="btn-default py-1.5 px-3 text-xs font-medium rounded-[var(--radius-sm)] flex items-center gap-1.5 shrink-0"
@@ -111,7 +128,7 @@ export default function InterviewTab({ interviewPrep }) {
 
       {/* Progress Bar */}
       <div className="w-full bg-[var(--bg-subtle)] h-1.5 rounded-full overflow-hidden select-none">
-        <div 
+        <div
           className="bg-[var(--accent)] h-full transition-all duration-300 rounded-full"
           style={{ width: `${((currentIdx + 1) / questions.length) * 100}%` }}
         />
@@ -130,24 +147,32 @@ export default function InterviewTab({ interviewPrep }) {
           style={{
             transform: isFlipped ? 'rotateY(180deg)' : 'none',
             transformStyle: 'preserve-3d',
-            transition: 'transform 0.6s cubic-bezier(0.4, 0, 0.2, 1)'
+            transition: 'transform 0.6s cubic-bezier(0.4, 0, 0.2, 1)',
           }}
           className="w-full h-full relative cursor-pointer text-left appearance-none bg-transparent border-0 p-0 rounded-[var(--radius-lg)] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[var(--accent)]"
         >
           {/* FRONT OF THE CARD (Question) */}
-          <div 
+          <div
             style={{ backfaceVisibility: 'hidden' }}
             className="absolute inset-0 w-full h-full p-8 rounded-[var(--radius-lg)] bg-[var(--bg-elevated)] border border-[var(--border-default)] shadow-[var(--shadow-md)] flex flex-col justify-between items-center text-center z-10"
           >
             {/* Top Bar */}
             <div className="w-full flex justify-between items-center text-xs text-[var(--text-muted)] font-medium">
               <span className="flex items-center gap-1.5 uppercase tracking-wider">
-                {qItem.category === 'Technical' && <Target size={13} className="text-[var(--accent)]" />}
-                {qItem.category === 'Behavioral' && <UserCheck size={13} className="text-emerald-600" />}
-                {qItem.category === 'Curveball' && <AlertTriangle size={13} className="text-[var(--warning)]" />}
+                {qItem.category === 'Technical' && (
+                  <Target size={13} className="text-[var(--accent)]" />
+                )}
+                {qItem.category === 'Behavioral' && (
+                  <UserCheck size={13} className="text-emerald-600" />
+                )}
+                {qItem.category === 'Curveball' && (
+                  <AlertTriangle size={13} className="text-[var(--warning)]" />
+                )}
                 {qItem.category}
               </span>
-              <span className={`px-2 py-0.5 rounded-[var(--radius-xs)] text-[11px] font-bold uppercase tracking-wide border ${getDifficultyBadge(qItem.difficulty)}`}>
+              <span
+                className={`px-2 py-0.5 rounded-[var(--radius-xs)] text-[11px] font-bold uppercase tracking-wide border ${getDifficultyBadge(qItem.difficulty)}`}
+              >
                 {qItem.difficulty}
               </span>
             </div>
@@ -167,17 +192,19 @@ export default function InterviewTab({ interviewPrep }) {
           </div>
 
           {/* BACK OF THE CARD (Expectation / Answer) */}
-          <div 
-            style={{ 
+          <div
+            style={{
               backfaceVisibility: 'hidden',
-              transform: 'rotateY(180deg)'
+              transform: 'rotateY(180deg)',
             }}
             className="absolute inset-0 w-full h-full p-8 rounded-[var(--radius-lg)] bg-[var(--bg-elevated)] border border-[var(--border-default)] shadow-[var(--shadow-md)] flex flex-col justify-between items-center text-center"
           >
             {/* Top Bar */}
             <div className="w-full flex justify-between items-center text-xs text-[var(--text-muted)] font-medium">
               <span className="uppercase tracking-wider">Suggested Response</span>
-              <span className="text-[11px] font-semibold">Question {currentIdx + 1} of {questions.length}</span>
+              <span className="text-[11px] font-semibold">
+                Question {currentIdx + 1} of {questions.length}
+              </span>
             </div>
 
             {/* Response Content */}

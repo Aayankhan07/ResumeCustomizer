@@ -40,7 +40,7 @@ describe('checkRateLimit', () => {
 
   it('allows a request below the limit', async () => {
     rpcMock.mockResolvedValue({
-      data: [{ used: 3, oldest_at: new Date().toISOString() }],
+      data: [{ used: 3, oldest_at: new Date().toISOString(), allowed: true }],
       error: null,
     });
 
@@ -53,7 +53,7 @@ describe('checkRateLimit', () => {
 
   it('allows the request that exactly reaches the limit', async () => {
     rpcMock.mockResolvedValue({
-      data: [{ used: 10, oldest_at: new Date().toISOString() }],
+      data: [{ used: 10, oldest_at: new Date().toISOString(), allowed: true }],
       error: null,
     });
 
@@ -63,9 +63,11 @@ describe('checkRateLimit', () => {
     expect(result.remaining).toBe(0);
   });
 
-  it('denies the request past the limit', async () => {
+  it('denies the request once the limit is reached', async () => {
+    // v2 does not record denied requests, so a denied call reports the
+    // existing window count (10) with allowed = false.
     rpcMock.mockResolvedValue({
-      data: [{ used: 11, oldest_at: new Date().toISOString() }],
+      data: [{ used: 10, oldest_at: new Date().toISOString(), allowed: false }],
       error: null,
     });
 
@@ -79,7 +81,7 @@ describe('checkRateLimit', () => {
     // A request made 30 minutes ago should reset in ~30 minutes, not 60.
     const thirtyMinutesAgo = new Date(Date.now() - 30 * 60 * 1000);
     rpcMock.mockResolvedValue({
-      data: [{ used: 11, oldest_at: thirtyMinutesAgo.toISOString() }],
+      data: [{ used: 10, oldest_at: thirtyMinutesAgo.toISOString(), allowed: false }],
       error: null,
     });
 
@@ -92,7 +94,7 @@ describe('checkRateLimit', () => {
 
   it('applies the rescore bucket independently', async () => {
     rpcMock.mockResolvedValue({
-      data: [{ used: 15, oldest_at: new Date().toISOString() }],
+      data: [{ used: 15, oldest_at: new Date().toISOString(), allowed: true }],
       error: null,
     });
 
@@ -101,6 +103,33 @@ describe('checkRateLimit', () => {
     // rescore allows 30/hour, so 15 is still under.
     expect(result.allowed).toBe(true);
     expect(result.remaining).toBe(15);
+  });
+
+  it('calls the v2 function with the action limit', async () => {
+    rpcMock.mockResolvedValue({
+      data: [{ used: 1, oldest_at: new Date().toISOString(), allowed: true }],
+      error: null,
+    });
+
+    await checkRateLimit('user-1', 'transform');
+
+    expect(rpcMock).toHaveBeenCalledWith('consume_rate_limit_v2', {
+      p_user_id: 'user-1',
+      p_action: 'transform',
+      p_window_ms: 3600000,
+      p_limit: 10,
+    });
+  });
+
+  it('treats a missing allowed flag as denied', async () => {
+    rpcMock.mockResolvedValue({
+      data: [{ used: 1, oldest_at: new Date().toISOString() }],
+      error: null,
+    });
+
+    const result = await checkRateLimit('user-1', 'transform');
+
+    expect(result.allowed).toBe(false);
   });
 
   it('passes through unknown actions without consuming a slot', async () => {

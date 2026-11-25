@@ -22,7 +22,10 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
 
     // Was mass-assignment: 11 fields copied straight from the body, including
     // application_url, which is later rendered as a link.
-    const parsed = updateTransformationSchema.safeParse(await req.json());
+    const parsed = updateTransformationSchema.safeParse(
+      // Malformed JSON becomes a 400 via the schema, not a thrown 500.
+      await req.json().catch(() => undefined)
+    );
     if (!parsed.success) {
       return apiErrors.invalidBody(parsed.error.issues);
     }
@@ -33,9 +36,11 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
       .eq('id', id)
       .eq('user_id', user.id)
       .select()
-      .single();
+      .maybeSingle();
 
     if (error) return apiErrors.database(error);
+    // No row: the id does not exist or belongs to someone else.
+    if (!data) return apiErrors.notFound();
 
     return NextResponse.json({ success: true, data });
   } catch (err) {

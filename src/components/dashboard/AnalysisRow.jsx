@@ -7,42 +7,44 @@ import { timeAgo } from '../../utils/formatDate';
 import { trackEvent } from '../../utils/analytics';
 import { toast } from 'sonner';
 
-
 const STATUS_STYLES = {
-  Saved:        'bg-[var(--bg-subtle)] text-[var(--text-secondary)] border-[var(--border-default)]',
-  Applied:      'bg-[var(--neutral-subtle)] text-[var(--neutral)] border-[var(--border-default)]',
+  Saved: 'bg-[var(--bg-subtle)] text-[var(--text-secondary)] border-[var(--border-default)]',
+  Applied: 'bg-[var(--neutral-subtle)] text-[var(--neutral)] border-[var(--border-default)]',
   Interviewing: 'bg-[var(--warning-subtle)] text-[var(--warning-fg)] border-[var(--warning-fg)]/10',
-  Offer:        'bg-[var(--success-subtle)] text-[var(--success-fg)] border-[var(--success-fg)]/10',
-  Rejected:     'bg-[var(--danger-subtle)] text-[var(--danger-fg)] border-[var(--danger-fg)]/10',
-  Withdrawn:    'bg-[var(--bg-subtle)] text-[var(--text-muted)] border-[var(--border-default)] opacity-75 line-through',
+  Offer: 'bg-[var(--success-subtle)] text-[var(--success-fg)] border-[var(--success-fg)]/10',
+  Rejected: 'bg-[var(--danger-subtle)] text-[var(--danger-fg)] border-[var(--danger-fg)]/10',
+  Withdrawn:
+    'bg-[var(--bg-subtle)] text-[var(--text-muted)] border-[var(--border-default)] opacity-75 line-through',
 };
 
 export default function AnalysisRow({ item, onDelete, onUpdateStatus }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
   const menuRef = useRef(null);
-  
+
   const upcomingInterviews = (item.application_events || [])
-    .filter(e => e.event_type === 'interview' && !e.is_done && e.event_date)
+    .filter((e) => e.event_type === 'interview' && !e.is_done && e.event_date)
     .sort((a, b) => new Date(a.event_date).getTime() - new Date(b.event_date).getTime());
   const nextInterview = upcomingInterviews[0];
 
   const hasEvents = (item.application_events || []).length > 0;
-  const appliedDaysAgo = item.applied_at 
-    ? Math.floor((Date.now() - new Date(item.applied_at).getTime()) / (1000 * 60 * 60 * 24)) 
+  const appliedDaysAgo = item.applied_at
+    ? Math.floor((Date.now() - new Date(item.applied_at).getTime()) / (1000 * 60 * 60 * 24))
     : 0;
   const showFollowUpNudge = item.status === 'Applied' && appliedDaysAgo >= 7 && !hasEvents;
 
   const getDeadlineBadgeStyle = () => {
     if (!item.application_deadline) return '';
     const now = new Date();
-    now.setHours(0,0,0,0);
+    now.setHours(0, 0, 0, 0);
     const deadline = new Date(item.application_deadline);
-    deadline.setHours(0,0,0,0);
+    deadline.setHours(0, 0, 0, 0);
     const diffDays = Math.ceil((deadline.getTime() - now.getTime()) / (1000 * 3600 * 24));
-    
-    if (diffDays < 2) return 'bg-rose-50 text-rose-600 border-rose-100 dark:bg-rose-500/10 dark:text-rose-400 dark:border-rose-500/20';
-    if (diffDays < 7) return 'bg-amber-50 text-amber-600 border-amber-100 dark:bg-amber-500/10 dark:text-amber-400 dark:border-amber-500/20';
+
+    if (diffDays < 2)
+      return 'bg-rose-50 text-rose-600 border-rose-100 dark:bg-rose-500/10 dark:text-rose-400 dark:border-rose-500/20';
+    if (diffDays < 7)
+      return 'bg-amber-50 text-amber-600 border-amber-100 dark:bg-amber-500/10 dark:text-amber-400 dark:border-amber-500/20';
     return 'bg-[var(--bg-subtle)] text-[var(--text-secondary)] border-[var(--border-default)]';
   };
 
@@ -69,7 +71,6 @@ export default function AnalysisRow({ item, onDelete, onUpdateStatus }) {
     if (score >= 40) return 'bg-[var(--warning-subtle)] text-[var(--warning-fg)]';
     return 'bg-[var(--danger-subtle)] text-[var(--danger-fg)]';
   };
-
 
   const handleStatusChange = async (e) => {
     const newStatus = e.target.value;
@@ -114,7 +115,7 @@ export default function AnalysisRow({ item, onDelete, onUpdateStatus }) {
     <div className="flex flex-col sm:flex-row sm:items-center justify-between p-3.5 px-4 bg-[var(--bg-elevated)] hover:bg-[var(--bg-subtle)] border border-[var(--border-default)] rounded-[var(--radius-md)] transition-colors duration-150 select-none group gap-4 relative mb-2 focus-within:ring-2 focus-within:ring-[var(--accent)] focus-within:ring-offset-1">
       {/* Inline Deletion Confirmation Panel */}
       {showConfirm ? (
-        <div 
+        <div
           className="absolute inset-0 bg-[var(--bg-elevated)] flex items-center justify-between px-6 z-30 animate-fade-in rounded-[var(--radius-md)]"
           onClick={(e) => e.stopPropagation()}
         >
@@ -122,10 +123,7 @@ export default function AnalysisRow({ item, onDelete, onUpdateStatus }) {
             Are you sure? This cannot be undone.
           </span>
           <div className="flex items-center gap-2">
-            <button
-              onClick={cancelDelete}
-              className="btn-ghost px-3 py-1 text-xs"
-            >
+            <button onClick={cancelDelete} className="btn-ghost px-3 py-1 text-xs">
               Cancel
             </button>
             <button
@@ -154,7 +152,9 @@ export default function AnalysisRow({ item, onDelete, onUpdateStatus }) {
         <div className="text-xs text-[var(--text-secondary)] truncate mt-1 flex items-center gap-1.5 font-normal">
           <span>{item.detected_company || '—'}</span>
           <span className="text-[var(--text-muted)] select-none">&bull;</span>
-          <span className="font-mono text-[11px] text-[var(--text-muted)]">{timeAgo(item.created_at)}</span>
+          <span className="font-mono text-[11px] text-[var(--text-muted)]">
+            {timeAgo(item.created_at)}
+          </span>
         </div>
         {showFollowUpNudge && (
           <div className="mt-1.5 text-[11px] font-semibold text-amber-600 dark:text-amber-400 flex items-center gap-1 bg-amber-500/[0.03] border border-amber-500/10 px-2 py-0.5 rounded w-max animate-pulse">
@@ -167,9 +167,8 @@ export default function AnalysisRow({ item, onDelete, onUpdateStatus }) {
           relative + z-10 keeps these above the stretched link overlay so they
           remain independently clickable. */}
       <div className="relative z-10 flex items-center justify-between sm:justify-end gap-3 sm:gap-4 w-full sm:w-auto pt-3 sm:pt-0 border-t sm:border-t-0 border-[var(--border-subtle)]">
-        
         {/* Score Badge: small circle (36px) showing match score */}
-        <div 
+        <div
           className={`w-9 h-9 rounded-full flex items-center justify-center shrink-0 text-xs font-bold font-sans ${getScoreBadgeStyle(item.match_score)}`}
           title={`Match Score: ${item.match_score}%`}
         >
@@ -179,22 +178,22 @@ export default function AnalysisRow({ item, onDelete, onUpdateStatus }) {
         {/* Badges */}
         <div className="hidden md:flex items-center gap-2">
           {nextInterview && (
-            <span className="px-2 py-0.5 border text-[11px] font-semibold rounded-[var(--radius-xs)] bg-indigo-50 text-indigo-600 border-indigo-100 dark:bg-indigo-500/10 dark:text-indigo-400 dark:border-indigo-500/20 flex items-center gap-1 shrink-0">
+            <span className="px-2 py-0.5 border text-[11px] font-semibold rounded-[var(--radius-xs)] bg-[var(--accent-subtle)] text-[var(--accent)] border-[var(--accent-border)] dark:bg-indigo-500/10 dark:text-indigo-400 dark:border-indigo-500/20 flex items-center gap-1 shrink-0">
               🎤 {formatBadgeDate(nextInterview.event_date)}
             </span>
           )}
-          {item.application_deadline && !['Offer', 'Rejected', 'Withdrawn'].includes(item.status || '') && (
-            <span className={`px-2 py-0.5 border text-[11px] font-semibold rounded-[var(--radius-xs)] flex items-center gap-1 shrink-0 ${getDeadlineBadgeStyle()}`}>
-              📅 Due {formatBadgeDate(item.application_deadline)}
-            </span>
-          )}
+          {item.application_deadline &&
+            !['Offer', 'Rejected', 'Withdrawn'].includes(item.status || '') && (
+              <span
+                className={`px-2 py-0.5 border text-[11px] font-semibold rounded-[var(--radius-xs)] flex items-center gap-1 shrink-0 ${getDeadlineBadgeStyle()}`}
+              >
+                📅 Due {formatBadgeDate(item.application_deadline)}
+              </span>
+            )}
         </div>
 
         {/* Status Dropdown */}
-        <div 
-          className="relative shrink-0" 
-          onClick={(e) => e.stopPropagation()}
-        >
+        <div className="relative shrink-0" onClick={(e) => e.stopPropagation()}>
           <select
             value={item.status || 'Saved'}
             onChange={handleStatusChange}
@@ -221,7 +220,7 @@ export default function AnalysisRow({ item, onDelete, onUpdateStatus }) {
           >
             <MoreVertical size={14} className="stroke-[2.5]" />
           </button>
-          
+
           {menuOpen && (
             <div className="absolute right-0 top-7 w-32 bg-[var(--bg-elevated)] border border-[var(--border-default)] rounded-[var(--radius-md)] shadow-[var(--shadow-lg)] py-1 z-35 animate-fade-in text-left">
               <button
@@ -238,7 +237,6 @@ export default function AnalysisRow({ item, onDelete, onUpdateStatus }) {
         <div className="text-[var(--text-muted)] group-hover:text-[var(--text-primary)] transition-colors shrink-0">
           <ChevronRight size={16} />
         </div>
-
       </div>
     </div>
   );

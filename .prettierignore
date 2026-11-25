@@ -5,3 +5,11 @@ coverage
 package-lock.json
 supabase/.temp
 *.md
+
+# Generated / vendored — not ours to format
+next-env.d.ts
+public/pdfjs
+
+# Local tool state
+.claude
+.impeccable

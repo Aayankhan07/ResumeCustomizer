@@ -1,6 +1,6 @@
 # Landing Page UX/UI Improvement Plan
 
-Source: senior UI/UX review of the landing page (`src/components/landing/Id*.tsx`, `LandingClient.tsx`, `src/app/page.tsx`) and `landing-full-1.png`.
+Source: senior UI/UX review of the landing page (`src/components/landing/Id*.tsx`, `LandingClient.tsx`, `src/app/page.tsx`) and `screenshots/landing-full-1.png`.
 
 Goal: turn a polished-looking page into one that converts and earns trust. Fix broken flows and unverifiable claims first, then fill the information-architecture gaps, then refine visuals, accessibility and performance.
 

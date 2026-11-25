@@ -9,13 +9,18 @@ interface StatsRowProps {
 
 export default function StatsRow({ stats, transformations = [] }: StatsRowProps) {
   // Compute response rate
-  const appliedList = transformations.filter(t => ['Applied', 'Interviewing', 'Offer', 'Rejected', 'Withdrawn'].includes(t.status || ''));
-  const respondedList = transformations.filter(t => ['Interviewing', 'Offer', 'Rejected'].includes(t.status || ''));
+  const appliedList = transformations.filter((t) =>
+    ['Applied', 'Interviewing', 'Offer', 'Rejected', 'Withdrawn'].includes(t.status || '')
+  );
+  const respondedList = transformations.filter((t) =>
+    ['Interviewing', 'Offer', 'Rejected'].includes(t.status || '')
+  );
   const appliedCount = appliedList.length;
   const respondedCount = respondedList.length;
   const responseRate = appliedCount > 0 ? Math.round((respondedCount / appliedCount) * 100) : null;
   const responseRateValue = responseRate !== null ? `${responseRate}%` : '—';
-  const responseRateLabel = appliedCount > 0 ? `Response Rate (${respondedCount}/${appliedCount})` : 'Response Rate';
+  const responseRateLabel =
+    appliedCount > 0 ? `Response Rate (${respondedCount}/${appliedCount})` : 'Response Rate';
 
   const items = [
     {
@@ -26,7 +31,8 @@ export default function StatsRow({ stats, transformations = [] }: StatsRowProps)
     },
     {
       label: 'Best Match Score',
-      value: stats?.bestScore !== null && stats?.bestScore !== undefined ? `${stats.bestScore}%` : '—',
+      value:
+        stats?.bestScore !== null && stats?.bestScore !== undefined ? `${stats.bestScore}%` : '—',
       icon: <Star className="text-[var(--text-secondary)]" size={18} />,
       bgClass: 'bg-[var(--bg-subtle)] border-[var(--border-default)]',
     },
@@ -48,12 +54,18 @@ export default function StatsRow({ stats, transformations = [] }: StatsRowProps)
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 select-none">
       {items.map((item, idx) => (
         <GlassPanel key={idx} hoverEffect className="flex items-center gap-5 !p-5">
-          <div className={`p-2.5 rounded-md border ${item.bgClass} flex items-center justify-center shrink-0 shadow-sm`}>
+          <div
+            className={`p-2.5 rounded-md border ${item.bgClass} flex items-center justify-center shrink-0 shadow-sm`}
+          >
             {item.icon}
           </div>
           <div>
-            <p className="text-2xl font-serif text-[var(--text-primary)] font-bold tracking-tight">{item.value}</p>
-            <p className="text-[11px] font-bold text-[var(--text-secondary)] uppercase tracking-wider mt-1 font-mono">{item.label}</p>
+            <p className="text-2xl font-serif text-[var(--text-primary)] font-bold tracking-tight">
+              {item.value}
+            </p>
+            <p className="text-[11px] font-bold text-[var(--text-secondary)] uppercase tracking-wider mt-1 font-mono">
+              {item.label}
+            </p>
           </div>
         </GlassPanel>
       ))}

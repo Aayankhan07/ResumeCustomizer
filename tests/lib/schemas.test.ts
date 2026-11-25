@@ -78,7 +78,11 @@ describe('TransformOutputSchema', () => {
     it('salvages the resume when ats_quality is outside the enum', () => {
       const result = TransformOutputSchema.safeParse({
         ...validTransformOutput,
-        ats_quality: { keyword_density: 'Excellent', section_headings: 'Standard', formatting_risk: 'Zero Flags' },
+        ats_quality: {
+          keyword_density: 'Excellent',
+          section_headings: 'Standard',
+          formatting_risk: 'Zero Flags',
+        },
       });
       expect(result.success).toBe(true);
       expect(result.data?.ats_quality).toBeNull();

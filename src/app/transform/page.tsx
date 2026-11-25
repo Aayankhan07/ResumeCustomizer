@@ -15,7 +15,6 @@ import { trackEvent } from '../../utils/analytics';
 import { RESUME_LIMITS, JD_LIMITS, JOB_TITLE_LIMITS } from '../../lib/limits';
 import { PENDING_ROLE_KEY } from '../../components/landing/constants';
 
-
 /**
  * Draft persistence.
  *
@@ -35,7 +34,6 @@ interface Draft {
 }
 
 function readDraft(): Partial<Draft> {
-  if (typeof window === 'undefined') return {};
   try {
     return JSON.parse(sessionStorage.getItem(DRAFT_KEY) ?? '{}');
   } catch {
@@ -46,10 +44,9 @@ function readDraft(): Partial<Draft> {
 /**
  * Role typed into the landing-page hero. It arrives as ?role= (signed-in
  * visitors) or via sessionStorage (signed-out visitors, whose query string is
- * dropped by the /login redirect). Read once, on first render.
+ * dropped by the /login redirect). Read once, after mount.
  */
 function readPendingRole(): string {
-  if (typeof window === 'undefined') return '';
   let role = '';
   try {
     role = new URLSearchParams(window.location.search).get('role') ?? '';
@@ -61,19 +58,16 @@ function readPendingRole(): string {
 }
 
 export default function Transform() {
-  // Lazy initialisers so the draft is restored before first paint rather
-  // than flashing empty fields.
-  const [step, setStep] = useState(() => readDraft().step ?? 1);
-  const [resumeText, setResumeText] = useState(() => readDraft().resumeText ?? '');
-  // The hero role prefills job-title mode, but never overwrites a job
-  // description already in the draft.
-  const [pendingRole] = useState(() => (readDraft().jobDescriptionText ? '' : readPendingRole()));
-  const [jobDescriptionText, setJobDescriptionText] = useState(
-    () => readDraft().jobDescriptionText ?? pendingRole
-  );
-  const [optimizationMode, setOptimizationMode] = useState<'description' | 'title'>(
-    () => (pendingRole ? 'title' : readDraft().optimizationMode ?? 'description')
-  );
+  // Server-safe defaults. The draft and hero role live in sessionStorage and
+  // the URL, which the server cannot see, so reading them in lazy initialisers
+  // made the first client render disagree with the server HTML (hydration
+  // mismatch). They are restored in a mount effect instead, and the wizard is
+  // held behind a skeleton until then so empty fields never flash.
+  const [restored, setRestored] = useState(false);
+  const [step, setStep] = useState(1);
+  const [resumeText, setResumeText] = useState('');
+  const [jobDescriptionText, setJobDescriptionText] = useState('');
+  const [optimizationMode, setOptimizationMode] = useState<'description' | 'title'>('description');
   const {
     status,
     isRetrying,
@@ -117,23 +111,48 @@ export default function Transform() {
     }
   }, [status, result, error]);
 
-
-  // The hero role is consumed once: clear the handoff key and the query
-  // string so a refresh or a later visit does not re-apply it.
+  // Restore the draft and the landing-page hero role once, after mount.
   useEffect(() => {
+    const draft = readDraft();
+    // The hero role prefills job-title mode, but never overwrites a job
+    // description already in the draft.
+    const pendingRole = draft.jobDescriptionText ? '' : readPendingRole();
+
+    /* eslint-disable react-hooks/set-state-in-effect -- one-time restore of
+       client-only state (sessionStorage / URL) after hydration. */
+    if (draft.step === 1 || draft.step === 2) setStep(draft.step);
+    if (draft.resumeText) setResumeText(draft.resumeText);
+    if (pendingRole) {
+      setJobDescriptionText(pendingRole);
+      setOptimizationMode('title');
+    } else {
+      if (draft.jobDescriptionText) setJobDescriptionText(draft.jobDescriptionText);
+      if (draft.optimizationMode === 'title' || draft.optimizationMode === 'description') {
+        setOptimizationMode(draft.optimizationMode);
+      }
+    }
+    setRestored(true);
+    /* eslint-enable react-hooks/set-state-in-effect */
+
+    // The hero role is consumed once: clear the handoff key and the query
+    // string so a refresh or a later visit does not re-apply it.
     try {
       sessionStorage.removeItem(PENDING_ROLE_KEY);
     } catch {
       // Storage disabled: nothing to clear.
     }
-    if (window.location.search.includes('role=')) {
-      window.history.replaceState(null, '', window.location.pathname);
+    const url = new URL(window.location.href);
+    if (url.searchParams.has('role')) {
+      url.searchParams.delete('role');
+      window.history.replaceState(window.history.state, '', url.pathname + url.search + url.hash);
     }
   }, []);
 
   // Persist the draft as it changes so a refresh does not lose it.
   useEffect(() => {
-    if (typeof window === 'undefined') return;
+    // Until the restore above has run, state still holds the empty defaults;
+    // writing (or clearing) now would clobber the stored draft.
+    if (!restored) return;
     // Nothing worth keeping once a result exists — that lives in history.
     if (status === 'success') {
       sessionStorage.removeItem(DRAFT_KEY);
@@ -150,7 +169,7 @@ export default function Transform() {
       // Quota exceeded or storage disabled — drafts are a convenience, not a
       // requirement, so a failure here must not break the flow.
     }
-  }, [resumeText, jobDescriptionText, optimizationMode, step, status]);
+  }, [resumeText, jobDescriptionText, optimizationMode, step, status, restored]);
 
   // Navigation guard.
   //
@@ -214,12 +233,14 @@ export default function Transform() {
 
   const handleTransform = () => {
     const minLen = optimizationMode === 'title' ? JOB_TITLE_LIMITS.min : JD_LIMITS.min;
-    if (resumeText.trim().length >= RESUME_LIMITS.min && jobDescriptionText.trim().length >= minLen) {
+    if (
+      resumeText.trim().length >= RESUME_LIMITS.min &&
+      jobDescriptionText.trim().length >= minLen
+    ) {
       trackEvent('analysis_started', { optimization_mode: optimizationMode });
       transform({ resumeText, jobDescriptionText, optimizationMode });
     }
   };
-
 
   // Returns to the wizard with both fields intact. Without this, errors that
   // can only be fixed by editing the input (too long, too short, invalid job
@@ -256,19 +277,21 @@ export default function Transform() {
   };
 
   const isStep1Valid =
-    resumeText.trim().length >= RESUME_LIMITS.min &&
-    resumeText.trim().length <= RESUME_LIMITS.max;
-  const isStep2Valid = optimizationMode === 'title'
-    ? jobDescriptionText.trim().length >= JOB_TITLE_LIMITS.min &&
-      jobDescriptionText.trim().length <= JOB_TITLE_LIMITS.max
-    : jobDescriptionText.trim().length >= JD_LIMITS.min &&
-      jobDescriptionText.trim().length <= JD_LIMITS.max;
+    resumeText.trim().length >= RESUME_LIMITS.min && resumeText.trim().length <= RESUME_LIMITS.max;
+  const isStep2Valid =
+    optimizationMode === 'title'
+      ? jobDescriptionText.trim().length >= JOB_TITLE_LIMITS.min &&
+        jobDescriptionText.trim().length <= JOB_TITLE_LIMITS.max
+      : jobDescriptionText.trim().length >= JD_LIMITS.min &&
+        jobDescriptionText.trim().length <= JD_LIMITS.max;
 
   return (
     <div className="min-h-screen bg-[var(--bg-base)] text-[var(--text-primary)] flex flex-col font-sans transition-colors duration-300">
       <Navbar />
 
-      <main className={`flex-1 ${status === 'success' && !showLoading ? 'max-w-6xl' : 'max-w-4xl'} w-full mx-auto px-4 py-12 flex flex-col justify-start transition-all duration-300`}>
+      <main
+        className={`flex-1 ${status === 'success' && !showLoading ? 'max-w-6xl' : 'max-w-4xl'} w-full mx-auto px-4 py-12 flex flex-col justify-start transition-all duration-300`}
+      >
         {showLoading && (
           <div className="my-auto">
             <StepProgress
@@ -300,40 +323,65 @@ export default function Transform() {
           />
         )}
 
-        {status === 'idle' && (
+        {status === 'idle' && !restored && (
+          <div className="w-full flex flex-col gap-4" role="status" aria-live="polite">
+            <div className="h-7 w-48 rounded-md bg-[var(--bg-subtle)] animate-pulse" />
+            <div className="h-64 w-full rounded-lg bg-[var(--bg-subtle)] animate-pulse" />
+            <span className="sr-only">Loading your draft…</span>
+          </div>
+        )}
+
+        {status === 'idle' && restored && (
           <div className="w-full flex flex-col gap-8 stagger-children">
             {/* Header */}
             <div>
               <h1 className="text-2xl font-bold text-[var(--text-primary)]">Tailor your resume</h1>
-              <p className="text-xs text-[var(--text-muted)] mt-1 font-medium">Transform your resume to match the requirements of the job description.</p>
+              <p className="text-xs text-[var(--text-muted)] mt-1 font-medium">
+                Transform your resume to match the requirements of the job description.
+              </p>
             </div>
-
 
             {/* Step progress bar */}
             <div className="flex items-center justify-between max-w-sm w-full mx-auto mb-6 select-none px-4">
               <div className="flex items-center gap-2.5">
-                <div className={`w-8 h-8 rounded-md flex items-center justify-center text-xs font-bold transition-all duration-150 ${
-                  step === 1 ? 'bg-slate-900 dark:bg-indigo-600 text-white shadow-sm' : 'bg-emerald-600 text-white border border-emerald-500'
-                }`}>
+                <div
+                  className={`w-8 h-8 rounded-md flex items-center justify-center text-xs font-bold transition-all duration-150 ${
+                    step === 1
+                      ? 'bg-[var(--accent)] text-[var(--accent-fg)] shadow-sm'
+                      : 'bg-[var(--success)] text-white border border-[var(--success)]'
+                  }`}
+                >
                   {step > 1 ? '✓' : '1'}
                 </div>
-                <span className={`text-xs font-semibold tracking-wide uppercase ${step === 1 ? 'text-slate-900 dark:text-slate-200' : 'text-slate-600 dark:text-slate-400'}`}>Resume</span>
+                <span
+                  className={`text-xs font-semibold tracking-wide uppercase ${step === 1 ? 'text-slate-900 dark:text-slate-200' : 'text-slate-600 dark:text-slate-400'}`}
+                >
+                  Resume
+                </span>
               </div>
-              
+
               <div className="flex-1 h-0.5 mx-4 bg-slate-200 dark:bg-slate-800 relative rounded-full">
-                <div 
-                  className="absolute inset-y-0 left-0 bg-slate-900 dark:bg-indigo-600 transition-all duration-300 ease-in-out rounded-full" 
+                <div
+                  className="absolute inset-y-0 left-0 bg-[var(--accent)] transition-all duration-300 ease-in-out rounded-full"
                   style={{ width: step > 1 ? '100%' : '0%' }}
                 />
               </div>
 
               <div className="flex items-center gap-2.5">
-                <div className={`w-8 h-8 rounded-md flex items-center justify-center text-xs font-bold transition-all duration-150 border ${
-                  step === 2 ? 'bg-slate-900 dark:bg-indigo-600 text-white border-transparent' : 'bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-800'
-                }`}>
+                <div
+                  className={`w-8 h-8 rounded-md flex items-center justify-center text-xs font-bold transition-all duration-150 border ${
+                    step === 2
+                      ? 'bg-[var(--accent)] text-[var(--accent-fg)] border-transparent'
+                      : 'bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-800'
+                  }`}
+                >
                   2
                 </div>
-                <span className={`text-xs font-semibold tracking-wide uppercase ${step === 2 ? 'text-slate-900 dark:text-slate-200' : 'text-slate-600 dark:text-slate-400'}`}>Job description</span>
+                <span
+                  className={`text-xs font-semibold tracking-wide uppercase ${step === 2 ? 'text-slate-900 dark:text-slate-200' : 'text-slate-600 dark:text-slate-400'}`}
+                >
+                  Job description
+                </span>
               </div>
             </div>
 
@@ -343,7 +391,7 @@ export default function Transform() {
                 <div className="flex flex-col gap-6 animate-fade-in">
                   <ResumeInput value={resumeText} onChange={setResumeText} />
                   <div className="flex justify-end mt-2">
-                    <Button 
+                    <Button
                       onClick={handleNext}
                       disabled={!isStep1Valid}
                       className="flex items-center gap-2 px-6 py-2.5 rounded-lg font-bold"
@@ -355,14 +403,14 @@ export default function Transform() {
                 </div>
               ) : (
                 <div className="flex flex-col gap-6 animate-fade-in">
-                  <JobInput 
-                    value={jobDescriptionText} 
-                    onChange={setJobDescriptionText} 
+                  <JobInput
+                    value={jobDescriptionText}
+                    onChange={setJobDescriptionText}
                     optimizationMode={optimizationMode}
                     onModeChange={handleModeChange}
                   />
                   <div className="flex justify-between mt-2">
-                    <Button 
+                    <Button
                       variant="ghost"
                       onClick={handleBack}
                       className="flex items-center gap-2 px-5 py-2.5 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-700 dark:text-slate-300 font-semibold"
@@ -370,7 +418,7 @@ export default function Transform() {
                       <ArrowLeft size={14} className="stroke-[2.5]" />
                       Back to Resume
                     </Button>
-                    <Button 
+                    <Button
                       onClick={handleTransform}
                       disabled={!isStep2Valid}
                       className="flex items-center gap-2 px-6 py-2.5 rounded-lg font-bold bg-emerald-600 hover:bg-emerald-500 text-white border-0 shadow-md shadow-emerald-600/10"

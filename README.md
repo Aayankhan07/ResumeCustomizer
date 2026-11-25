@@ -19,6 +19,8 @@ AI resume tailoring. Upload a resume and paste a job description; a Groq LLM ret
 
 ## Getting started
 
+Requires Node 22 (see `.nvmrc`).
+
 ```bash
 npm install
 cp .env.example .env.local   # then fill in the values
@@ -48,9 +50,36 @@ Migration `011` adds `consume_rate_limit`, which the rate limiter calls on every
 | `npm test` | Vitest (single run) |
 | `npm run test:watch` | Vitest (watch) |
 | `npm run test:coverage` | Coverage report |
-| `npm run format` | Prettier |
+| `npm run format` | Prettier (write) |
+| `npm run format:check` | Prettier (check, as CI runs it) |
 
-CI runs lint → typecheck → test → build on pushes to `main`/`develop` and PRs to `main`.
+CI runs format check → lint → typecheck → test → build on pushes and PRs to `main`, plus a job that replays every migration against a fresh Supabase Postgres.
+
+## Deploy
+
+Hosted on Vercel, Node 22.
+
+**Environment variables** (set in Vercel for Production and Preview; `.env.example` documents each):
+
+| Variable | Required |
+| --- | --- |
+| `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Yes |
+| `SUPABASE_SERVICE_ROLE_KEY` | Yes (server-only) |
+| `GROQ_API_KEY` | Yes (server-only) |
+| `CRON_SECRET` | Yes in production |
+| `LLM_DAILY_BUDGET` | No (default 2000 AI calls per UTC day, all users) |
+| `NEXT_PUBLIC_SITE_URL` | Recommended (canonical origin for sitemap/OG) |
+| `NEXT_PUBLIC_SENTRY_DSN`, `SENTRY_DSN` | Optional |
+| `SENTRY_ORG`, `SENTRY_PROJECT`, `SENTRY_AUTH_TOKEN` | Optional (source-map upload at build) |
+
+**Cron.** `vercel.json` schedules `/api/cleanup` daily at 00:00 UTC. Vercel sends `CRON_SECRET` as a bearer token; the route fails closed (500) when it is unset, so cleanup will not run until it is configured. The job clears old rate-limit rows and permanently deletes history items removed more than 30 days ago.
+
+**Migrations.** Apply pending migrations to production before (or alongside) deploying code that depends on them:
+
+```bash
+supabase link --project-ref <project-ref>
+supabase db push
+```
 
 ## Architecture
 
@@ -61,7 +90,7 @@ src/
     (auth)/            Login, signup, password reset
   components/          UI, organised by feature
   contexts/            AuthContext
-  hooks/               useTransform, useHistory
+  hooks/               useTransform, useHistory, useExport, useApplicationEvents
   lib/                 Core logic
     schemas.ts         LLM output validation (zod)
     schemas/api.ts     Request validation for every mutating route

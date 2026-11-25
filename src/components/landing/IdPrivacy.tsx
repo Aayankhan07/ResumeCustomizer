@@ -4,24 +4,24 @@ import { Ban, Database, Trash2, Lock } from 'lucide-react';
 
 const FACTS = [
   {
-    icon: Ban,
-    title: 'Your raw resume is not stored',
-    body: 'The resume and job description you submit are used for the run and are not saved in our database. We keep only their lengths.',
-  },
-  {
     icon: Database,
-    title: 'Only the result is saved',
-    body: 'The tailored output is saved to your account so you can download it again and track the application.',
-  },
-  {
-    icon: Trash2,
-    title: 'Delete it whenever you want',
-    body: 'Remove any saved result from your history at any time. You can also ask us to remove your account and everything tied to it.',
+    title: 'Saved with your result',
+    body: 'Your resume and the job description are saved with each tailored result, so you can compare versions and re-score later.',
   },
   {
     icon: Lock,
     title: 'Private to you',
     body: 'Saved results are protected by row-level security, so only your signed-in account can read them.',
+  },
+  {
+    icon: Ban,
+    title: 'Never sold or shared',
+    body: 'Your content is sent to our AI provider only to run your request. We do not sell it or use it for advertising.',
+  },
+  {
+    icon: Trash2,
+    title: 'You control your history',
+    body: 'Removed results are permanently deleted within 30 days. Delete your whole account from your profile at any time.',
   },
 ];
 
@@ -38,8 +38,8 @@ export default function IdPrivacy() {
             Your resume stays yours
           </h2>
           <p className="mt-4 text-base text-slate-600 leading-relaxed max-w-md">
-            A resume holds your work history and contact details. Here is exactly what we keep and
-            what we don&apos;t.
+            A resume holds your work history and contact details. Here is what we keep, why, and who
+            can see it.
           </p>
           <Link
             href="/privacy"

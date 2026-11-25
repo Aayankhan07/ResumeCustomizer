@@ -1,6 +1,6 @@
 # ResumOrph Master Bible Alignment Report
 
-We have analyzed the entire codebase against the [ResumOrph_MASTER.md](file:///c:/Users/Adeen/OneDrive/Desktop/ResumeCustomizer/ResumOrph_MASTER.md) specification. Here is a summary of how the implementation matches up, including recently resolved technical debt and cleanups.
+We have analyzed the entire codebase against the [ResumOrph_MASTER.md](ResumOrph_MASTER.md) specification. Here is a summary of how the implementation matches up, including recently resolved technical debt and cleanups.
 
 ---
 

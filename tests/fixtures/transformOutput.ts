@@ -56,18 +56,14 @@ export const validTransformOutput: TransformOutput = {
     elevator_pitch: 'Engineer with data platform depth.',
   },
   roadmap: {
-    tasks: [
-      { task: 'Add Kubernetes exposure', type: 'skill', impact: 'high', points: 10 },
-    ],
+    tasks: [{ task: 'Add Kubernetes exposure', type: 'skill', impact: 'high', points: 10 }],
   },
   ats_quality: {
     keyword_density: 'Optimal',
     section_headings: 'Standard',
     formatting_risk: 'Zero Flags',
   },
-  rewrites: [
-    { section: 'summary', before: 'Did stuff.', after: 'Delivered measurable outcomes.' },
-  ],
+  rewrites: [{ section: 'summary', before: 'Did stuff.', after: 'Delivered measurable outcomes.' }],
   interview_prep: {
     technical: [
       { question: 'Explain indexing.', difficulty: 'medium', expectation: 'B-tree fundamentals.' },

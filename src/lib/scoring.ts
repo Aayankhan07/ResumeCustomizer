@@ -34,14 +34,17 @@ export function getScoreLabel(score: number): string {
 }
 
 /** Tailwind utility classes, keyed by band. */
-const BAND_CLASSES: Record<ScoreBand, {
-  text: string;
-  bg: string;
-  border: string;
-  pill: string;
-  dot: string;
-  bar: string;
-}> = {
+const BAND_CLASSES: Record<
+  ScoreBand,
+  {
+    text: string;
+    bg: string;
+    border: string;
+    pill: string;
+    dot: string;
+    bar: string;
+  }
+> = {
   strong: {
     text: 'text-emerald-700 dark:text-emerald-400',
     bg: 'bg-emerald-50 dark:bg-emerald-500/15',

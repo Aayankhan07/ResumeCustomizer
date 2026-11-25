@@ -1,29 +1,45 @@
 import jsPDF from 'jspdf';
 
+/**
+ * Joins only the parts that have content, so a missing field does not print
+ * "Degree in " or " – 2020".
+ */
+function joinPresent(parts, separator) {
+  return parts
+    .map((part) => (part == null ? '' : String(part).trim()))
+    .filter(Boolean)
+    .join(separator);
+}
+
 export function generateResumePDF(data, templateId = 'classic', pageBudget = 'standard') {
   const doc = new jsPDF({ unit: 'pt', format: 'letter', compress: true });
-  const PAGE_W  = 612;
-  const PAGE_H  = 792;
-  
+  const PAGE_W = 612;
+  const PAGE_H = 792;
+
   // ── BUDGET CONFIGURATION
   const isFit = pageBudget === 'fit';
   const MARGIN = isFit ? 36 : 54; // 0.5" (36pt) vs 0.75" (54pt)
   const CW = PAGE_W - MARGIN * 2;
   let y = MARGIN;
 
-  const newPage = () => { doc.addPage(); y = MARGIN; };
-  const spaceCheck = (h) => { if (y + h > PAGE_H - MARGIN) newPage(); };
+  const newPage = () => {
+    doc.addPage();
+    y = MARGIN;
+  };
+  const spaceCheck = (h) => {
+    if (y + h > PAGE_H - MARGIN) newPage();
+  };
 
   // ── TYPOGRAPHY & SPACING SETUP
-  const fontMain = (templateId === 'classic' || templateId === 'executive') ? 'times' : 'helvetica';
-  const fontHeader = (templateId === 'tech') ? 'courier' : fontMain;
+  const fontMain = templateId === 'classic' || templateId === 'executive' ? 'times' : 'helvetica';
+  const fontHeader = templateId === 'tech' ? 'courier' : fontMain;
 
   // Spacing scales based on page budget
-  const hText = isFit ? 10.5 : 13;       // line height for normal text
-  const hBullet = isFit ? 9.5 : 12;      // line height for bullet points
-  const gapSection = isFit ? 8 : 15;     // gap after sections
-  const gapBullet = isFit ? 1 : 2.5;     // gap between bullet points
-  const gapItem = isFit ? 4 : 10;        // gap between experiences/projects
+  const hText = isFit ? 10.5 : 13; // line height for normal text
+  const hBullet = isFit ? 9.5 : 12; // line height for bullet points
+  const gapSection = isFit ? 8 : 15; // gap after sections
+  const gapBullet = isFit ? 1 : 2.5; // gap between bullet points
+  const gapItem = isFit ? 4 : 10; // gap between experiences/projects
 
   // Helper to set font and size quickly
   const setFont = (style, size) => doc.setFont(fontMain, style).setFontSize(size);
@@ -60,7 +76,7 @@ export function generateResumePDF(data, templateId = 'classic', pageBudget = 'st
       doc.setFillColor(15, 23, 42); // dark slate/black solid bar
       const barH = isFit ? 11 : 13;
       doc.rect(MARGIN, y - 9, 3, barH, 'F');
-      
+
       setHeaderFont('bold', isFit ? 9.5 : 10.5);
       setColor(15, 23, 42);
       doc.text(title.toUpperCase(), MARGIN + 8, y);
@@ -69,9 +85,12 @@ export function generateResumePDF(data, templateId = 'classic', pageBudget = 'st
       // Executive: Centered elegant header
       setFont('normal', isFit ? 9.5 : 10.5);
       setColor(30, 41, 59);
-      // Letter spacing simulation for centered title
-      const spacedTitle = title.toUpperCase().split('').join(' ');
-      doc.text(spacedTitle, PAGE_W / 2, y, { align: 'center' });
+      // Real character spacing rather than inserting spaces between letters:
+      // "S U M M A R Y" was extracted by ATS parsers as single letters.
+      // jsPDF includes charSpace when measuring for align: 'center'.
+      doc.setCharSpace(isFit ? 1.5 : 2);
+      doc.text(title.toUpperCase(), PAGE_W / 2, y, { align: 'center' });
+      doc.setCharSpace(0);
       y += isFit ? 4 : 6;
       drawSectionDivider();
     } else if (templateId === 'modern') {
@@ -103,8 +122,10 @@ export function generateResumePDF(data, templateId = 'classic', pageBudget = 'st
   } else if (templateId === 'executive') {
     setFont('normal', isFit ? 18 : 22);
     setColor(30, 41, 59);
-    const spacedName = data.contact.name.toUpperCase().split('').join(' ');
-    doc.text(spacedName, PAGE_W / 2, y, { align: 'center' });
+    // See sectionHead: character spacing keeps the name a single word for ATS.
+    doc.setCharSpace(isFit ? 2.5 : 3);
+    doc.text(data.contact.name.toUpperCase(), PAGE_W / 2, y, { align: 'center' });
+    doc.setCharSpace(0);
     y += isFit ? 12 : 16;
   } else if (templateId === 'modern') {
     setFont('bold', isFit ? 18 : 22);
@@ -154,7 +175,7 @@ export function generateResumePDF(data, templateId = 'classic', pageBudget = 'st
     sectionHead('Summary');
     setFont('normal', isFit ? 9 : 10);
     setColor(30, 41, 59);
-    
+
     const summaryLines = doc.splitTextToSize(data.summary, CW);
     spaceCheck(summaryLines.length * hText);
     doc.text(summaryLines, MARGIN, y);
@@ -168,12 +189,18 @@ export function generateResumePDF(data, templateId = 'classic', pageBudget = 'st
     setColor(30, 41, 59);
 
     const skillGroups = [
-      data.skills.technical?.length ? { label: 'Technical', list: data.skills.technical.join(', ') } : null,
-      data.skills.tools?.length ? { label: 'Tools & Platforms', list: data.skills.tools.join(', ') } : null,
-      data.skills.soft?.length ? { label: 'Core Capabilities', list: data.skills.soft.join(', ') } : null
+      data.skills.technical?.length
+        ? { label: 'Technical', list: data.skills.technical.join(', ') }
+        : null,
+      data.skills.tools?.length
+        ? { label: 'Tools & Platforms', list: data.skills.tools.join(', ') }
+        : null,
+      data.skills.soft?.length
+        ? { label: 'Core Capabilities', list: data.skills.soft.join(', ') }
+        : null,
     ].filter(Boolean);
 
-    skillGroups.forEach(group => {
+    skillGroups.forEach((group) => {
       const fullText = `${group.label}: ${group.list}`;
       const lines = doc.splitTextToSize(fullText, CW);
       spaceCheck(lines.length * hText);
@@ -188,7 +215,7 @@ export function generateResumePDF(data, templateId = 'classic', pageBudget = 'st
     sectionHead('Experience');
     data.experience.forEach((exp) => {
       spaceCheck(isFit ? 45 : 60); // check space for heading + at least 1 bullet
-      
+
       // Job Title and Date
       setFont('bold', isFit ? 9.5 : 10.5);
       setColor(15, 23, 42);
@@ -196,9 +223,9 @@ export function generateResumePDF(data, templateId = 'classic', pageBudget = 'st
 
       setFont('normal', isFit ? 8.5 : 9.5);
       setColor(100, 116, 139); // gray-500
-      const dateStr = `${exp.start_date} – ${exp.end_date}`;
-      doc.text(dateStr, PAGE_W - MARGIN, y, { align: 'right' });
-      
+      const dateStr = joinPresent([exp.start_date, exp.end_date], ' – ');
+      if (dateStr) doc.text(dateStr, PAGE_W - MARGIN, y, { align: 'right' });
+
       y += isFit ? 11 : 13;
 
       // Company and Location
@@ -209,15 +236,15 @@ export function generateResumePDF(data, templateId = 'classic', pageBudget = 'st
       y += isFit ? 10 : 12;
 
       // Bullets
-      exp.bullets?.forEach(bullet => {
+      exp.bullets?.forEach((bullet) => {
         let bulletMarker = '•  ';
         if (templateId === 'modern') bulletMarker = '–  ';
         if (templateId === 'tech') bulletMarker = '>  ';
-        if (templateId === 'executive') bulletMarker = '▪  ';
+        if (templateId === 'executive') bulletMarker = '•  '; // '▪' is not in WinAnsi
 
         const lines = doc.splitTextToSize(`${bulletMarker}${bullet}`, CW - 20);
         spaceCheck(lines.length * hBullet + gapBullet);
-        
+
         // Bullet styling
         if (templateId === 'tech') {
           setHeaderFont('normal', isFit ? 9 : 10);
@@ -243,12 +270,14 @@ export function generateResumePDF(data, templateId = 'classic', pageBudget = 'st
       // Degree/Field and Dates
       setFont('bold', isFit ? 9.5 : 10.5);
       setColor(15, 23, 42);
-      doc.text(`${edu.degree} in ${edu.field}`, MARGIN, y);
+      const degreeLine = joinPresent([edu.degree, edu.field], ' in ');
+      if (degreeLine) doc.text(degreeLine, MARGIN, y);
 
       setFont('normal', isFit ? 8.5 : 9.5);
       setColor(100, 116, 139);
-      doc.text(`${edu.start_year} – ${edu.end_year}`, PAGE_W - MARGIN, y, { align: 'right' });
-      
+      const eduDates = joinPresent([edu.start_year, edu.end_year], ' – ');
+      if (eduDates) doc.text(eduDates, PAGE_W - MARGIN, y, { align: 'right' });
+
       y += isFit ? 11 : 13;
 
       // Institution and Location
@@ -286,11 +315,11 @@ export function generateResumePDF(data, templateId = 'classic', pageBudget = 'st
       }
 
       // Bullets (if present)
-      proj.bullets?.forEach(bullet => {
+      proj.bullets?.forEach((bullet) => {
         let bulletMarker = '•  ';
         if (templateId === 'modern') bulletMarker = '–  ';
         if (templateId === 'tech') bulletMarker = '>  ';
-        if (templateId === 'executive') bulletMarker = '▪  ';
+        if (templateId === 'executive') bulletMarker = '•  '; // '▪' is not in WinAnsi
 
         const lines = doc.splitTextToSize(`${bulletMarker}${bullet}`, CW - 12);
         spaceCheck(lines.length * hBullet + gapBullet);

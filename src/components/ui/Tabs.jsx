@@ -2,8 +2,10 @@
 
 export default function Tabs({ tabs = [], activeTab, onChange, className = '' }) {
   return (
-    <div className={`border-b border-[var(--border-default)] flex gap-6 overflow-x-auto scrollbar-none whitespace-nowrap -mx-4 px-4 sm:mx-0 sm:px-0 ${className}`}>
-      {tabs.map(tab => {
+    <div
+      className={`border-b border-[var(--border-default)] flex gap-6 overflow-x-auto scrollbar-none whitespace-nowrap -mx-4 px-4 sm:mx-0 sm:px-0 ${className}`}
+    >
+      {tabs.map((tab) => {
         const isActive = tab.id === activeTab;
         return (
           <button

@@ -3,8 +3,7 @@ import LegalPage from '../../components/legal/LegalPage';
 
 export const metadata: Metadata = {
   title: 'Privacy Policy',
-  description:
-    'What ResumOrph stores, what it does not, and how to delete your data. Raw resume text and job descriptions are never saved.',
+  description: 'What ResumOrph stores, who can see it, and how to remove your data.',
   alternates: { canonical: '/privacy' },
 };
 
@@ -14,9 +13,9 @@ export default function PrivacyPage() {
       <section>
         <h2>The short version</h2>
         <p>
-          The resume and job description you submit are used to produce your result and are not
-          saved in our database. We save the tailored result to your account so you can download it
-          again, and you can delete it at any time.
+          When you tailor a resume, we save the result together with the resume and job description
+          you submitted, so you can compare versions and re-score later. Only your account can read
+          them, and we never sell them.
         </p>
       </section>
 
@@ -25,19 +24,12 @@ export default function PrivacyPage() {
         <ul>
           <li>Your account details: email address and, if you add them, your name and avatar.</li>
           <li>
-            Each tailored result: the generated resume and related output, the job title and company
-            detected from the job description, and the character counts of what you submitted.
+            Each tailored result: the generated resume and related output, the text of the resume
+            and job description you submitted, the detected job title and company, and the match
+            score.
           </li>
           <li>Application tracking details you add, such as status and events.</li>
           <li>Timestamps of tailoring requests, used only to apply the hourly limit.</li>
-        </ul>
-      </section>
-
-      <section>
-        <h2>What we do not store</h2>
-        <ul>
-          <li>The raw text of the resume you upload or paste.</li>
-          <li>The raw text of the job description you paste.</li>
         </ul>
       </section>
 
@@ -69,8 +61,9 @@ export default function PrivacyPage() {
       <section>
         <h2>Deleting your data</h2>
         <p>
-          You can delete any saved result from your history at any time. To remove your account and
-          everything tied to it, contact us and we will delete it.
+          You can remove any result from your history at any time. Removed results are permanently
+          deleted from our database within 30 days. You can delete your account, and everything tied
+          to it, immediately from your profile page.
         </p>
       </section>
     </LegalPage>

@@ -14,6 +14,7 @@ import { validTransformOutput } from '../fixtures/transformOutput';
 const mocks = vi.hoisted(() => ({
   getUser: vi.fn(),
   insert: vi.fn(),
+  rpc: vi.fn(),
   checkRateLimit: vi.fn(),
   callGroq: vi.fn(),
 }));
@@ -21,6 +22,14 @@ const mocks = vi.hoisted(() => ({
 vi.mock('@/lib/supabase/server', () => ({
   createClient: async () => ({
     auth: { getUser: mocks.getUser },
+  }),
+}));
+
+// Inserts and the global LLM budget run with the service role (migration 014
+// removed client INSERT on transformations).
+vi.mock('@/lib/supabase/service', () => ({
+  createServiceClient: () => ({
+    rpc: (...args: unknown[]) => mocks.rpc(...args),
     from: () => ({
       insert: (row: unknown) => {
         mocks.insert(row);
@@ -51,6 +60,7 @@ function request(body: unknown = VALID_BODY): Request {
 
 beforeEach(() => {
   vi.clearAllMocks();
+  mocks.rpc.mockResolvedValue({ data: true, error: null });
   mocks.getUser.mockResolvedValue({ data: { user: { id: 'user-1' } }, error: null });
   mocks.checkRateLimit.mockResolvedValue({
     allowed: true,
@@ -180,5 +190,52 @@ describe('POST /api/transform', () => {
     const row = mocks.insert.mock.calls[0][0];
     expect(row.output_json.original_resume_text).toBe(VALID_BODY.resume_text.trim());
     expect(row.output_json.original_job_description).toBe(VALID_BODY.job_description_text.trim());
+  });
+
+  it('returns 400 for a body that is not JSON', async () => {
+    const res = await POST(
+      new Request('http://localhost/api/transform', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: '{not json',
+      })
+    );
+    expect(res.status).toBe(400);
+    expect(mocks.callGroq).not.toHaveBeenCalled();
+  });
+
+  it('stops before the model call when the daily LLM budget is spent', async () => {
+    mocks.rpc.mockResolvedValue({ data: false, error: null });
+
+    const res = await POST(request());
+    expect(res.status).toBe(503);
+    expect((await res.json()).error).toBe('DAILY_CAPACITY_REACHED');
+    expect(mocks.callGroq).not.toHaveBeenCalled();
+  });
+
+  it('fails closed when the budget check itself errors', async () => {
+    mocks.rpc.mockResolvedValue({ data: null, error: { code: 'PGRST202' } });
+
+    const res = await POST(request());
+    expect(res.status).toBe(503);
+    expect(mocks.callGroq).not.toHaveBeenCalled();
+  });
+
+  it('does not let the rate-limit-denied path reach the budget or the model', async () => {
+    mocks.checkRateLimit.mockResolvedValue({
+      allowed: false,
+      remaining: 0,
+      resetAt: new Date(Date.now() + 3600000),
+    });
+
+    const res = await POST(request());
+    expect(res.status).toBe(429);
+    expect(mocks.rpc).not.toHaveBeenCalled();
+    expect(mocks.callGroq).not.toHaveBeenCalled();
+  });
+
+  it('writes the verified session user id, not anything from the request', async () => {
+    await POST(request({ ...VALID_BODY }));
+    expect(mocks.insert).toHaveBeenCalledWith(expect.objectContaining({ user_id: 'user-1' }));
   });
 });

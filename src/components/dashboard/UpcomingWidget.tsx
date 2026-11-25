@@ -13,7 +13,10 @@ interface UpcomingWidgetProps {
 
 export default function UpcomingWidget({ transformations = [] }: UpcomingWidgetProps) {
   const router = useRouter();
-  const [events, setEvents] = useState<{ overdue: any[]; upcoming: any[] }>({ overdue: [], upcoming: [] });
+  const [events, setEvents] = useState<{ overdue: any[]; upcoming: any[] }>({
+    overdue: [],
+    upcoming: [],
+  });
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState(false);
 
@@ -36,7 +39,7 @@ export default function UpcomingWidget({ transformations = [] }: UpcomingWidgetP
 
   useEffect(() => {
     if (typeof window === 'undefined' || !('Notification' in window)) return;
-    
+
     // Only notify if permission was already granted. Requesting it
     // unprompted on dashboard mount — with no explanation of why — is the
     // classic permission anti-pattern and gets denied permanently.
@@ -46,7 +49,7 @@ export default function UpcomingWidget({ transformations = [] }: UpcomingWidgetP
     const triggerNotification = (id: string, title: string, body: string) => {
       const storageKey = `notified:${id}:${todayStr}`;
       if (localStorage.getItem(storageKey)) return;
-      
+
       try {
         new Notification(title, { body });
         localStorage.setItem(storageKey, 'true');
@@ -63,26 +66,33 @@ export default function UpcomingWidget({ transformations = [] }: UpcomingWidgetP
     // Notify about upcoming events in next 24 hours
     const tomorrow = new Date();
     tomorrow.setDate(tomorrow.getDate() + 1);
-    
+
     events.upcoming.forEach((evt: any) => {
       const evtDate = new Date(evt.event_date);
       if (evtDate <= tomorrow) {
-        const timeStr = evtDate.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' });
-        triggerNotification(evt.id, `Upcoming: ${evt.title}`, `Scheduled for ${evtDate.toDateString()} at ${timeStr}`);
+        const timeStr = evtDate.toLocaleTimeString(undefined, {
+          hour: '2-digit',
+          minute: '2-digit',
+        });
+        triggerNotification(
+          evt.id,
+          `Upcoming: ${evt.title}`,
+          `Scheduled for ${evtDate.toDateString()} at ${timeStr}`
+        );
       }
     });
 
     // Check deadlines from transformations
-    transformations.forEach(item => {
+    transformations.forEach((item) => {
       if (!item.application_deadline) return;
       const dl = new Date(item.application_deadline);
-      dl.setHours(0,0,0,0);
+      dl.setHours(0, 0, 0, 0);
       const today = new Date();
-      today.setHours(0,0,0,0);
-      
+      today.setHours(0, 0, 0, 0);
+
       const diffTime = dl.getTime() - today.getTime();
       const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-      
+
       const isFinished = ['Offer', 'Rejected', 'Withdrawn'].includes(item.status || '');
       if (diffDays >= 0 && diffDays <= 2 && !isFinished) {
         triggerNotification(
@@ -143,7 +153,7 @@ export default function UpcomingWidget({ transformations = [] }: UpcomingWidgetP
         date: deadlineDate,
         daysDifference: Math.abs(diffDays),
         label: `Deadline overdue: ${item.detected_job_title || 'CV'} @ ${item.detected_company || 'Unknown Company'} (${Math.abs(diffDays)} ${Math.abs(diffDays) === 1 ? 'day' : 'days'} ago)`,
-        transformationId: item.id
+        transformationId: item.id,
       });
     } else if (diffDays <= 14) {
       deadlineItems.push({
@@ -153,7 +163,7 @@ export default function UpcomingWidget({ transformations = [] }: UpcomingWidgetP
         date: deadlineDate,
         daysDifference: diffDays,
         label: `Deadline ${diffDays === 0 ? 'today' : diffDays === 1 ? 'tomorrow' : `in ${diffDays} days`} — ${item.detected_job_title || 'CV'} @ ${item.detected_company || 'Unknown Company'}`,
-        transformationId: item.id
+        transformationId: item.id,
       });
     }
   });
@@ -169,20 +179,20 @@ export default function UpcomingWidget({ transformations = [] }: UpcomingWidgetP
       isOverdue: true,
       date: new Date(evt.event_date),
       label: `Overdue: ${evt.title} — ${compName} (${diffDays === 0 ? 'today' : diffDays === 1 ? 'yesterday' : `${diffDays} days ago`})`,
-      transformationId: evt.transformation_id
+      transformationId: evt.transformation_id,
     };
   });
 
   const upcomingEvents = events.upcoming.map((evt: any) => {
     const date = new Date(evt.event_date);
     const compName = evt.transformations?.detected_company || 'Unknown Company';
-    
+
     // Format date readable
     let dateStr = '';
     const eventDay = new Date(evt.event_date);
-    eventDay.setHours(0,0,0,0);
+    eventDay.setHours(0, 0, 0, 0);
     const today = new Date(now);
-    today.setHours(0,0,0,0);
+    today.setHours(0, 0, 0, 0);
     const tomorrow = new Date(today);
     tomorrow.setDate(tomorrow.getDate() + 1);
 
@@ -203,13 +213,17 @@ export default function UpcomingWidget({ transformations = [] }: UpcomingWidgetP
       isOverdue: false,
       date,
       label: `${emoji} ${dateStr} at ${timeStr} — ${evt.title} @ ${compName}`,
-      transformationId: evt.transformation_id
+      transformationId: evt.transformation_id,
     };
   });
 
   // Combine overdue and upcoming
-  const allOverdue = [...deadlineItems.filter(d => d.isOverdue), ...overdueEvents].sort((a, b) => b.date.getTime() - a.date.getTime());
-  const allUpcoming = [...deadlineItems.filter(d => !d.isOverdue), ...upcomingEvents].sort((a, b) => a.date.getTime() - b.date.getTime());
+  const allOverdue = [...deadlineItems.filter((d) => d.isOverdue), ...overdueEvents].sort(
+    (a, b) => b.date.getTime() - a.date.getTime()
+  );
+  const allUpcoming = [...deadlineItems.filter((d) => !d.isOverdue), ...upcomingEvents].sort(
+    (a, b) => a.date.getTime() - b.date.getTime()
+  );
 
   if (allOverdue.length === 0 && allUpcoming.length === 0) return null;
 
@@ -245,7 +259,10 @@ export default function UpcomingWidget({ transformations = [] }: UpcomingWidgetP
             onClick={() => router.push(`/transform/${item.transformationId}?tab=tracking`)}
             className="flex items-start gap-2.5 px-3 py-2 border border-[var(--border-default)] hover:border-[var(--accent)] bg-[var(--bg-base)]/40 hover:bg-[var(--bg-subtle)] rounded-lg cursor-pointer text-xs text-[var(--text-secondary)] hover:text-[var(--text-primary)] font-medium transition-all group duration-150"
           >
-            <Clock size={14} className="shrink-0 mt-0.5 text-[var(--text-muted)] group-hover:text-[var(--accent)] transition-colors" />
+            <Clock
+              size={14}
+              className="shrink-0 mt-0.5 text-[var(--text-muted)] group-hover:text-[var(--accent)] transition-colors"
+            />
             <span className="flex-1 line-clamp-1 group-hover:underline">{item.label}</span>
           </div>
         ))}

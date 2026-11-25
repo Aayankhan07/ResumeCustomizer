@@ -22,7 +22,9 @@ export function resumeToPlainText(data: TransformOutput): string {
     data.contact?.linkedin,
     data.contact?.github,
     data.contact?.portfolio,
-  ].filter(Boolean).join(' | ');
+  ]
+    .filter(Boolean)
+    .join(' | ');
   lines.push(contactLine);
   lines.push('');
 

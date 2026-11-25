@@ -2,9 +2,13 @@ name: CI
 
 on:
   push:
-    branches: [main, develop]
+    branches: [main]
   pull_request:
     branches: [main]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   quality:
@@ -13,10 +17,35 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version-file: '.nvmrc'
           cache: 'npm'
       - run: npm ci
       - run: npm run lint
       - run: npm run typecheck
       - run: npm test
       - run: npm run build
+      # Last so a formatting backlog never hides lint/type/test failures.
+      - run: npm run format:check
+
+  # Applies every file in supabase/migrations to a fresh database to catch
+  # migrations that only worked against prod's accumulated state.
+  #
+  # Uses the Supabase CLI rather than a plain postgres service: the migrations
+  # reference auth.users, auth.uid() and the anon/authenticated/service_role
+  # roles, which only exist in the supabase/postgres image. The repo has no
+  # supabase/config.toml, so `supabase init` generates a default one here.
+  migrations:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: supabase/setup-cli@v1
+        with:
+          version: latest
+      - name: Generate default Supabase config
+        run: test -f supabase/config.toml || supabase init
+      # Starts only Postgres and applies all migrations; fails on any SQL error.
+      - run: supabase db start
+      # Drops and rebuilds from scratch, proving a clean replay is repeatable.
+      - run: supabase db reset
+      - if: always()
+        run: supabase stop --no-backup

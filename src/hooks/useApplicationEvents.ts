@@ -63,9 +63,7 @@ export function useApplicationEvents(transformationId: string | null | undefined
     // Optimistic, with rollback: the previous version awaited the round trip
     // before showing any change.
     const previous = eventsRef.current;
-    setEvents((prev) =>
-      prev.map((e) => (e.id === event.id ? { ...e, is_done: !e.is_done } : e))
-    );
+    setEvents((prev) => prev.map((e) => (e.id === event.id ? { ...e, is_done: !e.is_done } : e)));
     try {
       const updated = await updateEvent(event.id, { is_done: !event.is_done });
       setEvents((prev) => prev.map((e) => (e.id === event.id ? updated : e)));

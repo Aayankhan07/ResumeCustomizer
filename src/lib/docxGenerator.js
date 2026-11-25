@@ -11,21 +11,29 @@ const createHeading = (text) => {
         text: text.toUpperCase(),
         bold: true,
         size: 24, // 12pt
-        font: "Calibri",
-        color: "1A365D", // Dark navy accent
+        font: 'Calibri',
+        color: '1A365D', // Dark navy accent
       }),
     ],
   });
 };
 
 // Helper for bold run
-const boldRun = (text, size = 20) => new TextRun({ text, bold: true, font: "Calibri", size });
+const boldRun = (text, size = 20) => new TextRun({ text, bold: true, font: 'Calibri', size });
 
 // Helper for normal run
-const normalRun = (text, size = 20) => new TextRun({ text, font: "Calibri", size });
+const normalRun = (text, size = 20) => new TextRun({ text, font: 'Calibri', size });
 
 // Helper for italic run
-const italicRun = (text, size = 18) => new TextRun({ text, italic: true, font: "Calibri", size });
+const italicRun = (text, size = 18) => new TextRun({ text, italic: true, font: 'Calibri', size });
+
+// Joins only the parts that have content, so a missing field does not print
+// "Degree in " or " – 2020".
+const joinPresent = (parts, separator) =>
+  parts
+    .map((part) => (part == null ? '' : String(part).trim()))
+    .filter(Boolean)
+    .join(separator);
 
 export async function generateResumeDOCX(data) {
   const { contact, summary, skills, experience, education, projects } = data;
@@ -42,8 +50,8 @@ export async function generateResumeDOCX(data) {
           text: contact.name,
           bold: true,
           size: 36, // 18pt
-          font: "Calibri",
-          color: "0F172A",
+          font: 'Calibri',
+          color: '0F172A',
         }),
       ],
     })
@@ -65,10 +73,10 @@ export async function generateResumeDOCX(data) {
       spacing: { after: 240 },
       children: [
         new TextRun({
-          text: contactParts.join("  |  "),
+          text: contactParts.join('  |  '),
           size: 19, // 9.5pt
-          font: "Calibri",
-          color: "475569",
+          font: 'Calibri',
+          color: '475569',
         }),
       ],
     })
@@ -76,7 +84,7 @@ export async function generateResumeDOCX(data) {
 
   // 3. Summary
   if (summary) {
-    docChildren.push(createHeading("Summary"));
+    docChildren.push(createHeading('Summary'));
     docChildren.push(
       new Paragraph({
         spacing: { after: 120 },
@@ -87,28 +95,22 @@ export async function generateResumeDOCX(data) {
 
   // 4. Skills
   if (skills?.technical?.length || skills?.tools?.length || skills?.soft?.length) {
-    docChildren.push(createHeading("Skills"));
-    
+    docChildren.push(createHeading('Skills'));
+
     if (skills.technical?.length > 0) {
       docChildren.push(
         new Paragraph({
           spacing: { after: 60 },
-          children: [
-            boldRun("Technical: "),
-            normalRun(skills.technical.join(" · ")),
-          ],
+          children: [boldRun('Technical: '), normalRun(skills.technical.join(' · '))],
         })
       );
     }
-    
+
     if (skills.tools?.length > 0) {
       docChildren.push(
         new Paragraph({
           spacing: { after: 60 },
-          children: [
-            boldRun("Tools: "),
-            normalRun(skills.tools.join(" · ")),
-          ],
+          children: [boldRun('Tools: '), normalRun(skills.tools.join(' · '))],
         })
       );
     }
@@ -117,10 +119,7 @@ export async function generateResumeDOCX(data) {
       docChildren.push(
         new Paragraph({
           spacing: { after: 120 },
-          children: [
-            boldRun("Core: "),
-            normalRun(skills.soft.join(" · ")),
-          ],
+          children: [boldRun('Core: '), normalRun(skills.soft.join(' · '))],
         })
       );
     }
@@ -128,7 +127,7 @@ export async function generateResumeDOCX(data) {
 
   // 5. Experience
   if (experience?.length > 0) {
-    docChildren.push(createHeading("Experience"));
+    docChildren.push(createHeading('Experience'));
     experience.forEach((exp) => {
       // Title and Date
       docChildren.push(
@@ -136,8 +135,8 @@ export async function generateResumeDOCX(data) {
           spacing: { before: 120, after: 40 },
           children: [
             boldRun(exp.title),
-            new TextRun({ text: "\t", tab: true }),
-            boldRun(`${exp.start_date} – ${exp.end_date}`),
+            new TextRun({ text: '\t', tab: true }),
+            boldRun(joinPresent([exp.start_date, exp.end_date], ' – ')),
           ],
         })
       );
@@ -146,9 +145,7 @@ export async function generateResumeDOCX(data) {
       docChildren.push(
         new Paragraph({
           spacing: { after: 80 },
-          children: [
-            italicRun([exp.company, exp.location].filter(Boolean).join(", ")),
-          ],
+          children: [italicRun([exp.company, exp.location].filter(Boolean).join(', '))],
         })
       );
 
@@ -169,13 +166,13 @@ export async function generateResumeDOCX(data) {
 
   // 6. Projects
   if (projects?.length > 0) {
-    docChildren.push(createHeading("Projects"));
+    docChildren.push(createHeading('Projects'));
     projects.forEach((proj) => {
       // Title
       docChildren.push(
         new Paragraph({
           spacing: { before: 120, after: 40 },
-          children: [boldRun(proj.title || "Project")],
+          children: [boldRun(proj.title || 'Project')],
         })
       );
 
@@ -183,7 +180,7 @@ export async function generateResumeDOCX(data) {
       docChildren.push(
         new Paragraph({
           spacing: { after: 40 },
-          children: [normalRun(proj.description || "")],
+          children: [normalRun(proj.description || '')],
         })
       );
 
@@ -202,15 +199,15 @@ export async function generateResumeDOCX(data) {
 
   // 7. Education
   if (education?.length > 0) {
-    docChildren.push(createHeading("Education"));
+    docChildren.push(createHeading('Education'));
     education.forEach((edu) => {
       docChildren.push(
         new Paragraph({
           spacing: { before: 120, after: 40 },
           children: [
-            boldRun(`${edu.degree} in ${edu.field}`),
-            new TextRun({ text: "\t", tab: true }),
-            boldRun(`${edu.start_year} – ${edu.end_year}`),
+            boldRun(joinPresent([edu.degree, edu.field], ' in ')),
+            new TextRun({ text: '\t', tab: true }),
+            boldRun(joinPresent([edu.start_year, edu.end_year], ' – ')),
           ],
         })
       );
@@ -240,7 +237,7 @@ export async function generateResumeDOCX(data) {
   // revokeObjectURL sat after click() with no finally, so any throw in
   // between leaked the object URL for the lifetime of the document.
   try {
-    const element = document.createElement("a");
+    const element = document.createElement('a');
     element.href = url;
     element.download = `${(contact?.name || 'Resume').replace(/\s+/g, '_')}_Tailored_Resume.docx`;
     document.body.appendChild(element);

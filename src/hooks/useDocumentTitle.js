@@ -1,10 +1,9 @@
-
 import { useEffect, useRef } from 'react';
 
 /**
  * Custom hook to dynamically manage the document.title (browser tab title).
  * Supports setting a title on mount and restoring the previous title on unmount.
- * 
+ *
  * @param {string} title - The title to set.
  * @param {boolean} [retainOnUnmount=false] - Whether to keep the title when the component unmounts.
  */

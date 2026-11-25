@@ -2,6 +2,7 @@
 
 import React, { useEffect } from 'react';
 import Lenis from 'lenis';
+import { toast } from 'sonner';
 import IdNavbar from './IdNavbar';
 import IdHero from './IdHero';
 import IdHowItWorks from './IdHowItWorks';
@@ -24,6 +25,16 @@ interface LandingClientProps {
 }
 
 export default function LandingClient({ initialStats }: LandingClientProps) {
+  // Confirmation after account deletion (profile page redirects here).
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('account') !== 'deleted') return;
+    toast.success('Your account and all of its data have been deleted.');
+    params.delete('account');
+    const query = params.toString();
+    window.history.replaceState(null, '', window.location.pathname + (query ? `?${query}` : ''));
+  }, []);
+
   // Inertial smooth scroll, skipped entirely for visitors who ask for reduced
   // motion. `anchors` routes in-page hash links through Lenis so nav links
   // still land on their section.

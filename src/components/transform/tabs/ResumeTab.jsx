@@ -68,7 +68,11 @@ export default function ResumeTab({
           >
             {isDownloadingDocx ? (
               <>
-                <LoadingSpinner size="sm" strokeWidth={2.5} className="text-[var(--text-secondary)]" />
+                <LoadingSpinner
+                  size="sm"
+                  strokeWidth={2.5}
+                  className="text-[var(--text-secondary)]"
+                />
                 Generating…
               </>
             ) : (
@@ -120,7 +124,7 @@ export default function ResumeTab({
       {/* Sub-tab Content */}
       {cvSubTab === 'optimized' && (
         <div className="flex flex-col gap-6 animate-fade-in">
-          <StyleControlPanel 
+          <StyleControlPanel
             selectedTemplate={selectedTemplate}
             setSelectedTemplate={setSelectedTemplate}
             pageBudget={pageBudget}

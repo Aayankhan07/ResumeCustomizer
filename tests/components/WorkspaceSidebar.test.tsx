@@ -22,19 +22,16 @@ const MENU = [
 ];
 
 function setMatchMedia(isDesktop: boolean) {
-  vi.stubGlobal(
-    'matchMedia',
-    (query: string) => ({
-      matches: isDesktop,
-      media: query,
-      addEventListener: () => {},
-      removeEventListener: () => {},
-      addListener: () => {},
-      removeListener: () => {},
-      onchange: null,
-      dispatchEvent: () => false,
-    })
-  );
+  vi.stubGlobal('matchMedia', (query: string) => ({
+    matches: isDesktop,
+    media: query,
+    addEventListener: () => {},
+    removeEventListener: () => {},
+    addListener: () => {},
+    removeListener: () => {},
+    onchange: null,
+    dispatchEvent: () => false,
+  }));
 }
 
 function renderSidebar(overrides: Record<string, unknown> = {}) {
@@ -159,7 +156,10 @@ describe('WorkspaceSidebar', () => {
     setMatchMedia(true);
     renderSidebar({
       originalText: '',
-      menuItems: [...MENU, { id: 'compare', label: 'Compare', icon: FileText, hideIfNoOriginal: true }],
+      menuItems: [
+        ...MENU,
+        { id: 'compare', label: 'Compare', icon: FileText, hideIfNoOriginal: true },
+      ],
     });
 
     expect(screen.queryByRole('tab', { name: /compare/i })).toBeNull();
