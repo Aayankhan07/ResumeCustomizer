@@ -13,6 +13,7 @@ import TransformErrorPanel from '../../components/transform/workspace/TransformE
 import Button from '../../components/ui/Button';
 import { trackEvent } from '../../utils/analytics';
 import { RESUME_LIMITS, JD_LIMITS, JOB_TITLE_LIMITS } from '../../lib/limits';
+import { PENDING_ROLE_KEY } from '../../components/landing/constants';
 
 
 /**
@@ -42,16 +43,36 @@ function readDraft(): Partial<Draft> {
   }
 }
 
+/**
+ * Role typed into the landing-page hero. It arrives as ?role= (signed-in
+ * visitors) or via sessionStorage (signed-out visitors, whose query string is
+ * dropped by the /login redirect). Read once, on first render.
+ */
+function readPendingRole(): string {
+  if (typeof window === 'undefined') return '';
+  let role = '';
+  try {
+    role = new URLSearchParams(window.location.search).get('role') ?? '';
+    if (!role) role = sessionStorage.getItem(PENDING_ROLE_KEY) ?? '';
+  } catch {
+    // Storage disabled: nothing to restore.
+  }
+  return role.trim().slice(0, JOB_TITLE_LIMITS.max);
+}
+
 export default function Transform() {
   // Lazy initialisers so the draft is restored before first paint rather
   // than flashing empty fields.
   const [step, setStep] = useState(() => readDraft().step ?? 1);
   const [resumeText, setResumeText] = useState(() => readDraft().resumeText ?? '');
+  // The hero role prefills job-title mode, but never overwrites a job
+  // description already in the draft.
+  const [pendingRole] = useState(() => (readDraft().jobDescriptionText ? '' : readPendingRole()));
   const [jobDescriptionText, setJobDescriptionText] = useState(
-    () => readDraft().jobDescriptionText ?? ''
+    () => readDraft().jobDescriptionText ?? pendingRole
   );
   const [optimizationMode, setOptimizationMode] = useState<'description' | 'title'>(
-    () => readDraft().optimizationMode ?? 'description'
+    () => (pendingRole ? 'title' : readDraft().optimizationMode ?? 'description')
   );
   const {
     status,
@@ -96,6 +117,19 @@ export default function Transform() {
     }
   }, [status, result, error]);
 
+
+  // The hero role is consumed once: clear the handoff key and the query
+  // string so a refresh or a later visit does not re-apply it.
+  useEffect(() => {
+    try {
+      sessionStorage.removeItem(PENDING_ROLE_KEY);
+    } catch {
+      // Storage disabled: nothing to clear.
+    }
+    if (window.location.search.includes('role=')) {
+      window.history.replaceState(null, '', window.location.pathname);
+    }
+  }, []);
 
   // Persist the draft as it changes so a refresh does not lose it.
   useEffect(() => {

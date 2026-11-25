@@ -7,12 +7,15 @@ import { siteUrl } from '../lib/siteUrl';
  * `noindex` — a sitemap that lists noindex URLs sends Search Console
  * conflicting signals and reports them as errors, so they are excluded.
  *
- * That currently leaves exactly one URL. This is the real finding: the site has
- * no indexable surface area beyond its homepage.
+ * That leaves the homepage and the two public legal pages.
  */
 export default function sitemap(): MetadataRoute.Sitemap {
   const base = siteUrl();
   const now = new Date();
 
-  return [{ url: base, lastModified: now, changeFrequency: 'weekly', priority: 1 }];
+  return [
+    { url: base, lastModified: now, changeFrequency: 'weekly', priority: 1 },
+    { url: `${base}/privacy`, lastModified: now, changeFrequency: 'yearly', priority: 0.3 },
+    { url: `${base}/terms`, lastModified: now, changeFrequency: 'yearly', priority: 0.3 },
+  ];
 }

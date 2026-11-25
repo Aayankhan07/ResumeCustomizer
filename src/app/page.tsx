@@ -88,7 +88,9 @@ function buildJsonLd(base: string) {
 }
 
 export default async function LandingPage() {
-  let stats = { total_transformations: 12400, total_users: 3800 };
+  // No invented fallback numbers: if the real counters are unavailable the
+  // metrics section hides the counts instead of showing placeholder figures.
+  let stats: { total_transformations: number; total_users: number } | null = null;
   try {
     const supabase = createAnonClient();
     const { data } = await supabase

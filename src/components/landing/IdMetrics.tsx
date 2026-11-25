@@ -1,74 +1,94 @@
-'use client';
+import React from 'react';
+import type { LandingStats } from './LandingClient';
 
-import React, { useRef } from 'react';
-import { motion, useInView } from 'framer-motion';
+/**
+ * Only figures the product actually records. The counts come from the
+ * `usage_stats` table; the timing figure is the typical run time of a single
+ * tailoring request. When stats are unavailable the counts are left out
+ * rather than replaced with placeholder numbers.
+ *
+ * Small counts read as a negative signal, so each count only shows once it
+ * passes a threshold, and the whole section hides until at least one does.
+ */
 
-export default function IdMetrics() {
-  const containerRef = useRef<HTMLDivElement>(null);
+const MIN_TRANSFORMATIONS = 1000;
+const MIN_USERS = 250;
 
-  const metrics = [
-    {
-      value: 94,
-      suffix: '%',
-      label: 'Average ATS match score',
-      subtext:
-        'Calculated by direct keyword frequency comparison against the posting requirements — not a number the model reports.',
-    },
-    {
-      value: 3.8,
-      suffix: 'x',
-      label: 'More recruiter callbacks',
-      subtext:
-        'Observed across 12,400+ targeted applications submitted through Greenhouse, Lever, and Workday.',
-    },
-    {
-      value: 60,
-      suffix: 's',
-      label: 'Average tailoring time',
-      subtext:
-        'Full experience rewrite, before/after diffs, and ATS-safe document export in about one minute.',
-    },
-  ];
+interface Metric {
+  value: string;
+  label: string;
+  detail: string;
+}
+
+function formatCount(n: number): string {
+  return new Intl.NumberFormat('en-US').format(n);
+}
+
+export default function IdMetrics({ stats }: { stats: LandingStats | null }) {
+  const metrics: Metric[] = [];
+
+  if (stats && stats.total_transformations >= MIN_TRANSFORMATIONS) {
+    metrics.push({
+      value: formatCount(stats.total_transformations),
+      label: 'Resumes tailored',
+      detail: 'Counted from every completed tailoring run.',
+    });
+  }
+  if (stats && stats.total_users >= MIN_USERS) {
+    metrics.push({
+      value: formatCount(stats.total_users),
+      label: 'People signed up',
+      detail: 'Accounts created to tailor and save resumes.',
+    });
+  }
+  // Run time alone is not a section; it is already stated in the hero.
+  if (metrics.length === 0) return null;
+
+  metrics.push({
+    value: '~60s',
+    label: 'Typical run time',
+    detail: 'From submitting your resume and job to a full result, including the cover letter.',
+  });
+
+  const gridCols =
+    metrics.length === 3
+      ? 'md:grid-cols-3'
+      : metrics.length === 2
+        ? 'md:grid-cols-2'
+        : 'md:grid-cols-1';
 
   return (
     <section
-      ref={containerRef}
       id="metrics"
-      className="py-24 md:py-28 px-6 max-w-7xl mx-auto border-t border-slate-100 select-none"
+      className="scroll-mt-28 py-20 md:py-28 px-6 max-w-7xl mx-auto border-t border-slate-100"
     >
-      {/* Section Headline */}
-      <div className="text-center max-w-3xl mx-auto mb-16">
-        <h2 className="text-3xl sm:text-5xl font-medium tracking-tight text-slate-900 leading-tight">
-          The numbers behind the tailor
-        </h2>
-        <p className="mt-4 text-sm sm:text-base text-slate-500 max-w-lg mx-auto leading-relaxed">
-          A quick look at what the process tends to move — match scores, callbacks, and time.
+      <div className="text-center max-w-2xl mx-auto mb-14">
+        <p className="text-xs font-semibold uppercase tracking-widest text-blue-700">
+          By the numbers
         </p>
+        <h2 className="mt-3 text-3xl sm:text-5xl font-medium tracking-tight text-slate-900 leading-tight text-balance">
+          Used for real applications
+        </h2>
       </div>
 
-      {/* Calm numeral strip — three cards, big number + label + subtext */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {metrics.map((item, idx) => (
-          <motion.div
-            key={idx}
-            initial={{ opacity: 0, y: 18 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.5, delay: idx * 0.1, ease: [0.16, 1, 0.3, 1] }}
-            whileHover={{ y: -4 }}
-            className="bg-white rounded-3xl p-7 sm:p-8 border border-slate-200/80 shadow-[0_10px_30px_rgba(0,0,0,0.03)] hover:shadow-[0_16px_32px_rgba(15,23,42,0.06)] transition-all"
+      <dl className={`grid grid-cols-1 ${gridCols} gap-6 max-w-5xl mx-auto`}>
+        {metrics.map((item) => (
+          <div
+            key={item.label}
+            className="flex flex-col bg-white rounded-3xl p-7 sm:p-8 border border-slate-200/80 shadow-[0_10px_30px_rgba(15,23,42,0.04)]"
           >
-            <div className="text-5xl sm:text-6xl font-semibold tracking-tight text-slate-900 leading-none">
+            <dt className="text-base sm:text-lg font-semibold text-slate-900 mt-4 order-2">
+              {item.label}
+            </dt>
+            <dd className="text-5xl sm:text-6xl font-semibold tracking-tight text-slate-900 leading-none tabular-nums order-1">
               {item.value}
-              <span className="text-2xl sm:text-3xl font-medium text-slate-400">{item.suffix}</span>
-            </div>
-            <h3 className="mt-4 text-base sm:text-lg font-semibold text-slate-900">{item.label}</h3>
-            <p className="mt-2 text-xs sm:text-sm text-slate-500 leading-relaxed max-w-sm">
-              {item.subtext}
-            </p>
-          </motion.div>
+            </dd>
+            <dd className="order-3 mt-2 text-sm sm:text-base text-slate-600 leading-relaxed">
+              {item.detail}
+            </dd>
+          </div>
         ))}
-      </div>
+      </dl>
     </section>
   );
 }

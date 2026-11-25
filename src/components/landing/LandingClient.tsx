@@ -4,35 +4,46 @@ import React, { useEffect } from 'react';
 import Lenis from 'lenis';
 import IdNavbar from './IdNavbar';
 import IdHero from './IdHero';
-import IdInlineStatement from './IdInlineStatement';
+import IdHowItWorks from './IdHowItWorks';
+import IdDemo from './IdDemo';
 import IdBentoGrid from './IdBentoGrid';
 import IdMetrics from './IdMetrics';
-import IdCaseStudies from './IdCaseStudies';
+import IdPrivacy from './IdPrivacy';
+import IdFaq from './IdFaq';
+import IdFinalCta from './IdFinalCta';
 import IdFooter from './IdFooter';
 
+export interface LandingStats {
+  total_transformations: number;
+  total_users: number;
+}
+
 interface LandingClientProps {
-  initialStats?: {
-    total_transformations: number;
-    total_users: number;
-  };
+  /** Null when the stats could not be loaded; the metrics section then hides the counts. */
+  initialStats: LandingStats | null;
 }
 
 export default function LandingClient({ initialStats }: LandingClientProps) {
-  // Initialize Lenis smooth scroll for inertial luxury scrolling (matching video feel)
+  // Inertial smooth scroll, skipped entirely for visitors who ask for reduced
+  // motion. `anchors` routes in-page hash links through Lenis so nav links
+  // still land on their section.
   useEffect(() => {
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
     const lenis = new Lenis({
       duration: 1.2,
       easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
       smoothWheel: true,
       wheelMultiplier: 0.9,
+      anchors: { offset: -96 },
     });
 
+    let rafId = 0;
     function raf(time: number) {
       lenis.raf(time);
-      requestAnimationFrame(raf);
+      rafId = requestAnimationFrame(raf);
     }
-
-    const rafId = requestAnimationFrame(raf);
+    rafId = requestAnimationFrame(raf);
 
     return () => {
       cancelAnimationFrame(rafId);
@@ -41,17 +52,20 @@ export default function LandingClient({ initialStats }: LandingClientProps) {
   }, []);
 
   return (
-    // Outer Luxury Frame (Warm Gray canvas matching the video container)
-    <div className="min-h-screen bg-[#E5E6EA] p-2 sm:p-4 md:p-6 lg:p-8 font-sans selection:bg-blue-600 selection:text-white">
-      {/* Inner Elevated Pristine White Stage with Soft Ambient Shadow */}
-      <div className="w-full bg-white rounded-[28px] sm:rounded-[36px] md:rounded-[44px] shadow-[0_25px_60px_-15px_rgba(15,23,42,0.08)] border border-slate-200/60 overflow-hidden relative">
+    // Outer frame. Below `sm` the padding and rounding are dropped so small
+    // screens get the full width.
+    <div className="min-h-screen bg-white sm:bg-[#E5E6EA] sm:p-4 md:p-6 lg:p-8 font-sans selection:bg-blue-600 selection:text-white">
+      <div className="w-full bg-white sm:rounded-[36px] md:rounded-[44px] sm:shadow-[0_25px_60px_-15px_rgba(15,23,42,0.08)] sm:border sm:border-slate-200/60 overflow-hidden relative">
         <IdNavbar />
         <main>
           <IdHero />
-          <IdInlineStatement />
+          <IdHowItWorks />
+          <IdDemo />
           <IdBentoGrid />
-          <IdMetrics />
-          <IdCaseStudies />
+          <IdMetrics stats={initialStats} />
+          <IdPrivacy />
+          <IdFaq />
+          <IdFinalCta />
         </main>
         <IdFooter />
       </div>

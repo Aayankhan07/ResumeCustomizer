@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { motion } from 'framer-motion';
+import { motion, useReducedMotion } from 'framer-motion';
 
 interface ClayJackProps {
   color?: 'coral' | 'white' | 'blue';
@@ -52,15 +52,22 @@ export const ClayJack: React.FC<ClayJackProps> = ({
     }
   };
 
+  const reduceMotion = useReducedMotion();
   const g = getGradients();
   const uid = `${g.id}-${size}-${rotateOffset}`;
 
   return (
     <motion.div
-      animate={{
-        y: [-8, 8, -8],
-        rotate: [rotateOffset, rotateOffset + 5, rotateOffset - 5, rotateOffset],
-      }}
+      aria-hidden="true"
+      initial={{ rotate: rotateOffset }}
+      animate={
+        reduceMotion
+          ? { rotate: rotateOffset }
+          : {
+              y: [-8, 8, -8],
+              rotate: [rotateOffset, rotateOffset + 5, rotateOffset - 5, rotateOffset],
+            }
+      }
       transition={{
         duration: 7,
         repeat: Infinity,
@@ -82,14 +89,7 @@ export const ClayJack: React.FC<ClayJackProps> = ({
       >
         <defs>
           {/* Radial light fill mimicking 3D sphere ray-tracing */}
-          <radialGradient
-            id={`${uid}-rad`}
-            cx="32%"
-            cy="28%"
-            r="68%"
-            fx="28%"
-            fy="24%"
-          >
+          <radialGradient id={`${uid}-rad`} cx="32%" cy="28%" r="68%" fx="28%" fy="24%">
             <stop offset="0%" stopColor={g.highlight} stopOpacity="1" />
             <stop offset="40%" stopColor={g.main} stopOpacity="1" />
             <stop offset="100%" stopColor={g.shadow} stopOpacity="1" />
@@ -126,23 +126,9 @@ export const ClayJack: React.FC<ClayJackProps> = ({
           />
 
           {/* Horizontal Pill Bar */}
-          <rect
-            x="32"
-            y="88"
-            width="176"
-            height="64"
-            rx="32"
-            fill={`url(#${uid}-rad)`}
-          />
+          <rect x="32" y="88" width="176" height="64" rx="32" fill={`url(#${uid}-rad)`} />
           {/* Vertical Pill Bar */}
-          <rect
-            x="88"
-            y="32"
-            width="64"
-            height="176"
-            rx="32"
-            fill={`url(#${uid}-rad)`}
-          />
+          <rect x="88" y="32" width="64" height="176" rx="32" fill={`url(#${uid}-rad)`} />
 
           {/* Center blending node for seamless metaball effect */}
           <circle cx="120" cy="120" r="40" fill={`url(#${uid}-rad)`} />

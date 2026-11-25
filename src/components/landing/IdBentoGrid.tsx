@@ -2,282 +2,260 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { motion } from 'framer-motion';
-import { Shield, Sparkles, Check, Zap, FileCheck } from 'lucide-react';
+import { ArrowRight, FileText, FileType, MessageSquareText, Mail, ShieldCheck } from 'lucide-react';
 import { ClayJack } from './ClayJack';
+import { PRIMARY_CTA_LABEL } from './constants';
+
+/**
+ * Feature grid. Every card has the same structure: a visual on top, then a
+ * title and one or two sentences. Visuals are static illustrations, except the
+ * score card, which is an interactive example and says so.
+ */
+
+function Card({
+  title,
+  body,
+  children,
+  className = '',
+}: {
+  title: string;
+  body: string;
+  children: React.ReactNode;
+  className?: string;
+}) {
+  return (
+    <article
+      className={`bg-white rounded-3xl p-7 sm:p-8 border border-slate-200/80 shadow-[0_10px_30px_rgba(15,23,42,0.04)] flex flex-col relative overflow-hidden ${className}`}
+    >
+      <div className="flex-1 min-h-[160px] flex items-center">{children}</div>
+      <h3 className="mt-7 text-xl font-semibold text-slate-900">{title}</h3>
+      <p className="mt-2 text-base text-slate-600 leading-relaxed">{body}</p>
+    </article>
+  );
+}
+
+const ALIGNMENT_BARS = [
+  { label: 'Role', height: '60%' },
+  { label: 'Skills', height: '85%' },
+  { label: 'Impact', height: '72%' },
+  { label: 'Format', height: '95%' },
+];
+
+const SCORES = { before: 48, after: 67 } as const;
+
+function ScoreExample() {
+  const [view, setView] = useState<'before' | 'after'>('after');
+  const value = SCORES[view];
+
+  return (
+    <div className="w-full bg-slate-50 border border-slate-200/80 rounded-2xl p-4">
+      <div className="flex items-center justify-between">
+        <span className="text-xs font-semibold uppercase tracking-wider text-slate-600">
+          Match score
+        </span>
+        <span className="text-xs font-semibold text-slate-600 bg-white border border-slate-200 rounded-full px-2.5 py-0.5">
+          Try it
+        </span>
+      </div>
+      <p
+        className="mt-3 text-5xl font-semibold tracking-tight text-slate-900 tabular-nums"
+        aria-live="polite"
+      >
+        {value}
+        <span className="text-2xl text-slate-500">%</span>
+      </p>
+      <div className="mt-3 h-2 w-full rounded-full bg-slate-200 overflow-hidden" aria-hidden="true">
+        <div
+          className={`h-full rounded-full transition-[width] duration-500 ${view === 'after' ? 'bg-blue-600' : 'bg-slate-400'}`}
+          style={{ width: `${value}%` }}
+        />
+      </div>
+      <div className="mt-4 grid grid-cols-2 gap-2" role="group" aria-label="Show score">
+        {(['before', 'after'] as const).map((key) => (
+          <button
+            key={key}
+            type="button"
+            aria-pressed={view === key}
+            onClick={() => setView(key)}
+            className={`py-2 text-sm font-semibold rounded-lg transition-colors ${
+              view === key
+                ? 'bg-blue-600 text-white shadow-sm'
+                : 'bg-white border border-slate-200 text-slate-700 hover:bg-slate-100'
+            }`}
+          >
+            {key === 'before' ? 'Original' : 'Tailored'}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
 
 export default function IdBentoGrid() {
-  const [matchScore, setMatchScore] = useState(['8', '8', '%']);
-  const [verified, setVerified] = useState(false);
-  const [tailorMode, setTailorMode] = useState<'standard' | 'aggressive'>('standard');
+  return (
+    <section
+      id="features"
+      className="scroll-mt-28 py-20 md:py-28 px-6 max-w-7xl mx-auto border-t border-slate-100"
+    >
+      <div className="text-center max-w-2xl mx-auto mb-14">
+        <p className="text-xs font-semibold uppercase tracking-widest text-blue-700">Features</p>
+        <h2 className="mt-3 text-3xl sm:text-5xl font-medium tracking-tight text-slate-900 leading-tight text-balance">
+          Everything you need for one application
+        </h2>
+      </div>
 
-    const handleRescore = () => {
-      setVerified(true);
-      setTimeout(() => {
-        setMatchScore(['9', '4', '%']);
-        setVerified(false);
-      }, 800);
-    };
-
-    return (
-      <section id="technology" className="py-20 md:py-28 px-6 max-w-7xl mx-auto select-none">
-        {/* Header Pill */}
-        <div className="text-center mb-16">
-          <span className="inline-block text-xs font-semibold uppercase tracking-wider text-slate-500 bg-slate-100 px-4 py-1.5 rounded-full mb-3">
-            Our Technology
-          </span>
-          <h2 className="text-3xl sm:text-5xl font-medium tracking-tight text-slate-900 leading-tight">
-            The ResumOrph Engine: Engineering <br />High-Impact Resumes
-          </h2>
-        </div>
-
-        {/* Complete 6-Card Bento Architecture grounded in ResumOrph core features */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-
-          {/* ============================================================== */}
-          {/* ROW 1 - CARD 1: Human-in-the-Loop Resume Customizer            */}
-          {/* ============================================================== */}
-          <motion.div
-            whileHover={{ y: -4 }}
-            transition={{ duration: 0.3 }}
-            className="bg-white rounded-3xl p-8 border border-slate-200/80 shadow-[0_10px_30px_rgba(0,0,0,0.03)] flex flex-col justify-between relative overflow-hidden"
-          >
-            <div>
-              <h3 className="text-xl font-semibold text-slate-900">Experience Alignment</h3>
-              <p className="text-sm text-slate-500 mt-2 leading-relaxed">
-                ResumOrph reframes your authentic career achievements into quantifiable action bullets that directly match the employer&apos;s job criteria.
-              </p>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <Card
+          title="Matched to the job"
+          body="Your bullets are reworded around the role's skills and language, so the right experience reads first."
+        >
+          <div className="w-full relative">
+            <div className="absolute -top-8 -right-2 pointer-events-none">
+              <ClayJack color="blue" size={56} delay={0.2} rotateOffset={12} />
             </div>
-
-            <div className="mt-8 pt-4 relative">
-              <div className="absolute -top-6 right-1 pointer-events-none">
-                <ClayJack color="blue" size={54} delay={0.2} rotateOffset={12} />
-              </div>
-
-              {/* Resume Match Score Gauge Card */}
-              <div className="bg-slate-50/80 border border-slate-200/90 rounded-2xl p-5 shadow-sm">
-                <div className="flex items-center justify-between mb-4">
-                  <span className="text-xs font-semibold text-slate-700">ATS Keyword Match</span>
-                  <span className="text-sm font-bold text-blue-600">88.4%</span>
-                </div>
-
-                {/* Keyword Alignment Bar */}
-                <div className="flex items-end gap-2 h-16 pt-2">
-                  {[
-                    { label: 'Role', height: '60%' },
-                    { label: 'Stack', height: '85%' },
-                    { label: 'Metrics', height: '75%' },
-                    { label: 'ATS', height: '95%' },
-                  ].map((bar, i) => (
-                    <div key={i} className="flex-1 flex flex-col items-center gap-1 h-full justify-end">
-                      <div
-                        className="w-full bg-blue-100 rounded-md transition-all duration-500 hover:bg-blue-600"
-                        style={{ height: bar.height }}
-                      />
-                      <span className="text-xs text-slate-400 font-mono">{bar.label}</span>
-                    </div>
-                  ))}
-                </div>
-
-                <Link
-                  href="/transform"
-                  className="w-full mt-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-semibold transition-colors shadow-sm block text-center"
-                >
-                  Tailor My Resume
-                </Link>
-              </div>
-            </div>
-          </motion.div>
-
-          {/* ============================================================== */}
-          {/* ROW 1 - CARD 2: Zero Hallucination Guarantee                  */}
-          {/* ============================================================== */}
-          <motion.div
-            whileHover={{ y: -4 }}
-            transition={{ duration: 0.3 }}
-            className="bg-white rounded-3xl p-8 border border-slate-200/80 shadow-[0_10px_30px_rgba(0,0,0,0.03)] flex flex-col justify-between"
-          >
-            {/* 3D Dual Pill Pill Accent Icons */}
-            <div className="flex items-center gap-3 mb-6">
-              <div className="w-12 h-12 rounded-2xl bg-orange-50 border border-orange-100 flex items-center justify-center text-orange-500 shadow-sm">
-                <Sparkles size={20} />
-              </div>
-              <div className="text-slate-300 text-lg">&#8644;</div>
-              <div className="w-12 h-12 rounded-2xl bg-blue-50 border border-blue-100 flex items-center justify-center text-blue-600 shadow-sm">
-                <Shield size={20} />
-              </div>
-            </div>
-
-              <div>
-                <h3 className="text-xl font-semibold text-slate-900">Zero Hallucination</h3>
-                <p className="text-sm text-slate-500 mt-2 leading-relaxed">
-                  We never fabricate past companies, degrees, dates, or skills. Our AI solely reorganizes and elevates your verified experience.
-                </p>
-              </div>
-          </motion.div>
-
-          {/* ============================================================== */}
-          {/* ROW 1 - CARD 3: ATS Match Verification Score                   */}
-          {/* ============================================================== */}
-          <motion.div
-            whileHover={{ y: -4 }}
-            transition={{ duration: 0.3 }}
-            className="bg-white rounded-3xl p-8 border border-slate-200/80 shadow-[0_10px_30px_rgba(0,0,0,0.03)] flex flex-col justify-between"
-          >
-            <div className="bg-slate-50 border border-slate-200/80 rounded-2xl p-4 shadow-sm">
-              <span className="text-xs text-slate-500 font-medium block mb-3">
-                Example: how the score compares before and after tailoring
-              </span>
-
-              <div className="grid grid-cols-3 gap-2 mb-4">
-                {matchScore.map((digit, idx) => (
+            <div
+              className="bg-slate-50 border border-slate-200/80 rounded-2xl p-4"
+              aria-hidden="true"
+            >
+              <div className="flex items-end gap-2 h-24">
+                {ALIGNMENT_BARS.map((bar) => (
                   <div
-                    key={idx}
-                    className="h-14 bg-white border border-slate-200 rounded-xl flex items-center justify-center text-2xl font-bold text-slate-900 shadow-inner"
+                    key={bar.label}
+                    className="flex-1 flex flex-col items-center gap-1.5 h-full justify-end"
                   >
-                    {digit}
+                    <div className="w-full bg-blue-200 rounded-md" style={{ height: bar.height }} />
+                    <span className="text-xs text-slate-600 font-medium">{bar.label}</span>
                   </div>
                 ))}
               </div>
-
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={() => setMatchScore(['6', '2', '%'])}
-                  className="flex-1 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-medium rounded-lg transition-colors"
-                >
-                  Before
-                </button>
-                <button
-                  onClick={handleRescore}
-                  className="flex-1 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold rounded-lg transition-colors shadow-sm"
-                >
-                  {verified ? 'Scoring...' : 'Tailored'}
-                </button>
-              </div>
             </div>
+          </div>
+        </Card>
 
-            <div className="mt-4">
-              <span className="text-xs font-semibold text-slate-400 tracking-wider">See the gap before you export</span>
-            </div>
-          </motion.div>
-
-          {/* ============================================================== */}
-          {/* ROW 2 - CARD 4: Export Deliverables */}
-          <motion.div
-            whileHover={{ y: -4 }}
-            transition={{ duration: 0.3 }}
-            className="bg-white rounded-3xl p-8 border border-slate-200/80 shadow-[0_10px_30px_rgba(0,0,0,0.03)] flex flex-col justify-between relative overflow-hidden"
+        <Card
+          title="Nothing made up"
+          body="Employers, dates, degrees and skills come only from your resume. Missing keywords are flagged for you, never added."
+        >
+          <div
+            className="w-full bg-slate-50 border border-slate-200/80 rounded-2xl p-4 space-y-2.5"
+            aria-hidden="true"
           >
-            <div className="relative mb-6">
-              <div className="absolute -top-4 -right-2 pointer-events-none">
-                <ClayJack color="coral" size={48} delay={0.4} rotateOffset={-18} />
-              </div>
-              <div className="bg-slate-50 border border-slate-200 rounded-2xl p-4 shadow-sm max-w-[240px]">
-                <div className="flex items-center justify-between text-xs font-semibold text-slate-800">
-                  <span className="flex items-center gap-1.5 text-blue-600">
-                    <FileCheck size={14} />
-                    Export Bundle
-                  </span>
-                  <span className="text-[10px] text-emerald-600 font-bold bg-emerald-50 px-2 py-0.5 rounded-full">Ready</span>
-                </div>
-                <p className="text-xs text-slate-500 mt-1">ATS-safe PDF, DOCX, interview prep, and a cover letter.</p>
-              </div>
-            </div>
-            <div>
-              <h3 className="text-xl font-semibold text-slate-900">One tailoring, everything it needs</h3>
-              <p className="text-sm text-slate-500 mt-2 leading-relaxed">
-                Each transformation produces a resume, the keyword delta behind it, interview prep, and a cover letter in one pass.
-              </p>
-            </div>
-          </motion.div>
-
-          {/* ============================================================== */}
-          {/* ROW 2 - CARD 5: Tailoring Strategy Mode Settings               */}
-          {/* ============================================================== */}
-          <motion.div
-            whileHover={{ y: -4 }}
-            transition={{ duration: 0.3 }}
-            className="bg-white rounded-3xl p-8 border border-slate-200/80 shadow-[0_10px_30px_rgba(0,0,0,0.03)] flex flex-col justify-between"
-          >
-            <div className="bg-slate-50/80 border border-slate-200/90 rounded-2xl p-4 mb-4">
-              <div className="flex items-center gap-2 mb-3">
-                <span className="px-2.5 py-0.5 bg-orange-50 text-orange-600 border border-orange-200 rounded-full text-[10px] font-semibold flex items-center gap-1">
-                  <Zap size={10} /> Tailoring mode
-                </span>
-                <span className="px-2.5 py-0.5 bg-blue-50 text-blue-600 rounded-full text-[10px] font-medium flex items-center gap-1">
-                  <Check size={10} /> Profile saved
+            {['Employers', 'Dates', 'Degrees', 'Skills'].map((item) => (
+              <div
+                key={item}
+                className="flex items-center justify-between bg-white border border-slate-200 rounded-xl px-3 py-2"
+              >
+                <span className="text-sm font-medium text-slate-700">{item}</span>
+                <span className="flex items-center gap-1 text-xs font-semibold text-emerald-700">
+                  <ShieldCheck size={14} /> From your resume
                 </span>
               </div>
+            ))}
+          </div>
+        </Card>
 
-              <div className="space-y-1.5 text-xs font-medium text-slate-700">
-                <label
-                  onClick={() => setTailorMode('standard')}
-                  className="flex items-center gap-2 p-1.5 rounded-lg hover:bg-white cursor-pointer transition-colors"
-                >
-                  <input
-                    type="radio"
-                    name="tailor-mode"
-                    checked={tailorMode === 'standard'}
-                    onChange={() => setTailorMode('standard')}
-                    className="text-blue-600"
-                  />
-                  Balanced ATS keyword matching
-                </label>
-                <label
-                  onClick={() => setTailorMode('aggressive')}
-                  className="flex items-center gap-2 p-1.5 rounded-lg hover:bg-white cursor-pointer transition-colors"
-                >
-                  <input
-                    type="radio"
-                    name="tailor-mode"
-                    checked={tailorMode === 'aggressive'}
-                    onChange={() => setTailorMode('aggressive')}
-                    className="text-blue-600"
-                  />
-                  Executive impact & metric re-weighting
-                </label>
-              </div>
+        <Card
+          title="A score you can check"
+          body="The match score is calculated on our server from the job's keywords, for both your original and the tailored version."
+        >
+          <ScoreExample />
+        </Card>
 
-              <div className="mt-3 pt-2.5 border-t border-slate-200/60 flex items-center justify-between">
-                <button className="px-3 py-1 bg-blue-600 text-white text-xs font-semibold rounded-lg hover:bg-blue-700 transition-colors">
-                  Apply mode
-                </button>
-                <span className="text-[10px] text-slate-400 font-medium">Safe mode</span>
-              </div>
-            </div>
+        <Card
+          title="More than a resume"
+          body="Each run also gives you a cover letter, interview questions for the role, and a recruiter-style scan."
+        >
+          <ul className="w-full grid grid-cols-2 gap-2.5" aria-hidden="true">
+            {[
+              { icon: FileText, label: 'PDF resume' },
+              { icon: FileType, label: 'DOCX resume' },
+              { icon: Mail, label: 'Cover letter' },
+              { icon: MessageSquareText, label: 'Interview prep' },
+            ].map(({ icon: Icon, label }) => (
+              <li
+                key={label}
+                className="flex items-center gap-2 bg-slate-50 border border-slate-200/80 rounded-xl px-3 py-3 text-sm font-medium text-slate-700"
+              >
+                <Icon size={16} className="text-blue-600 shrink-0" />
+                {label}
+              </li>
+            ))}
+          </ul>
+        </Card>
 
-            <div>
-              <h3 className="text-xl font-semibold text-slate-900">Model Customization</h3>
-              <p className="text-sm text-slate-500 mt-2 leading-relaxed">
-                Tuned for applicant tracking systems and the way recruiters actually skim a resume.
-              </p>
-            </div>
-          </motion.div>
-
-          {/* ============================================================== */}
-          {/* ROW 2 - CARD 6: Zero Retention & Privacy Protection            */}
-          {/* ============================================================== */}
-          <motion.div
-            whileHover={{ y: -4 }}
-            transition={{ duration: 0.3 }}
-            className="bg-white rounded-3xl p-8 border border-slate-200/80 shadow-[0_10px_30px_rgba(0,0,0,0.03)] flex flex-col justify-between relative overflow-hidden"
+        <Card
+          title="Full description or just a title"
+          body="Paste the whole posting for the closest match. Only have a job title? That works too."
+        >
+          <div
+            className="w-full bg-slate-50 border border-slate-200/80 rounded-2xl p-4"
+            aria-hidden="true"
           >
-            <div>
-              <h3 className="text-xl font-semibold text-slate-900">Privacy & Data Security</h3>
-              <p className="text-sm text-slate-500 mt-2 leading-relaxed">
-                Your raw resume text is never retained in our database. We only store your structured exports with full deletion controls.
-              </p>
+            <div className="grid grid-cols-2 gap-1 bg-slate-200/70 rounded-lg p-1 text-sm font-semibold">
+              <span className="text-center py-1.5 rounded-md bg-white text-slate-900 shadow-sm">
+                Job description
+              </span>
+              <span className="text-center py-1.5 rounded-md text-slate-600">Job title</span>
             </div>
+            <div className="mt-3 space-y-2">
+              <div className="h-2.5 rounded-full bg-slate-200 w-full" />
+              <div className="h-2.5 rounded-full bg-slate-200 w-11/12" />
+              <div className="h-2.5 rounded-full bg-slate-200 w-4/5" />
+              <div className="h-2.5 rounded-full bg-slate-200 w-2/3" />
+            </div>
+          </div>
+        </Card>
 
-            {/* Giant 3D Royal Blue Sculpture Cross */}
-            <div className="mt-6 flex justify-end items-end relative h-40">
-              <div className="absolute -bottom-6 -right-6 scale-110">
-                <ClayJack color="blue" size={175} delay={0.3} rotateOffset={-15} />
+        <Card
+          title="Track where you applied"
+          body="Tailored resumes are saved to your history, each with an application status like applied, interviewing or offer."
+        >
+          <div
+            className="w-full bg-slate-50 border border-slate-200/80 rounded-2xl p-4 space-y-2.5"
+            aria-hidden="true"
+          >
+            {[
+              {
+                role: 'Frontend Engineer',
+                status: 'Interviewing',
+                tone: 'bg-amber-50 text-amber-800 border-amber-200',
+              },
+              {
+                role: 'Product Designer',
+                status: 'Applied',
+                tone: 'bg-slate-100 text-slate-700 border-slate-200',
+              },
+              {
+                role: 'Data Analyst',
+                status: 'Offer',
+                tone: 'bg-emerald-50 text-emerald-800 border-emerald-200',
+              },
+            ].map((row) => (
+              <div
+                key={row.role}
+                className="flex items-center justify-between bg-white border border-slate-200 rounded-xl px-3 py-2"
+              >
+                <span className="text-sm font-medium text-slate-700">{row.role}</span>
+                <span
+                  className={`text-xs font-semibold border rounded-full px-2.5 py-0.5 ${row.tone}`}
+                >
+                  {row.status}
+                </span>
               </div>
-            </div>
-          </motion.div>
+            ))}
+          </div>
+        </Card>
+      </div>
 
-        </div>
-      </section>
-    );
-  }
+      <div className="mt-12 flex justify-center">
+        <Link
+          href="/transform"
+          className="inline-flex items-center gap-2 text-base font-semibold text-white bg-blue-600 hover:bg-blue-700 active:scale-95 transition-all px-6 py-3 rounded-full shadow-[0_4px_14px_rgba(37,99,235,0.3)]"
+        >
+          {PRIMARY_CTA_LABEL}
+          <ArrowRight size={16} aria-hidden="true" />
+        </Link>
+      </div>
+    </section>
+  );
+}
